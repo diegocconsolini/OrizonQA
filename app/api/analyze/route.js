@@ -1,17 +1,22 @@
 import { NextResponse } from 'next/server';
+import { buildPrompt, parseResponse } from '../../../lib/promptBuilder.js';
 
 export async function POST(request) {
   try {
-    const { apiKey, prompt, model = 'claude-sonnet-4-20250514', maxTokens = 4096 } = await request.json();
+    const { apiKey, content, config } = await request.json();
 
     if (!apiKey) {
       return NextResponse.json({ error: 'API key is required' }, { status: 400 });
     }
 
-    if (!prompt) {
-      return NextResponse.json({ error: 'Prompt is required' }, { status: 400 });
+    if (!content?.trim()) {
+      return NextResponse.json({ error: 'Code content is required' }, { status: 400 });
     }
 
+    // Build prompt from content and config using our prompt builder
+    const prompt = buildPrompt(content, config);
+
+    // Call Claude API
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
@@ -20,19 +25,19 @@ export async function POST(request) {
         'anthropic-version': '2023-06-01'
       },
       body: JSON.stringify({
-        model: model,
-        max_tokens: maxTokens,
+        model: config.model || 'claude-sonnet-4-20250514',
+        max_tokens: 4096,
         messages: [{ role: 'user', content: prompt }]
       })
     });
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
-      
+
       if (response.status === 429) {
         return NextResponse.json({ error: 'Rate limited. Please wait and try again.' }, { status: 429 });
       }
-      
+
       if (response.status === 401) {
         return NextResponse.json({ error: 'Invalid API key' }, { status: 401 });
       }
@@ -44,7 +49,15 @@ export async function POST(request) {
     }
 
     const data = await response.json();
-    return NextResponse.json(data);
+    const responseText = data.content[0].text;
+
+    // Parse response into sections
+    const parsed = parseResponse(responseText, config.outputFormat);
+
+    return NextResponse.json({
+      ...parsed,
+      usage: data.usage
+    });
 
   } catch (error) {
     console.error('API route error:', error);
