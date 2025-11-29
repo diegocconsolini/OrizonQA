@@ -46,8 +46,8 @@ Brand-agnostic structural specifications
 #### **ORIZON_DESIGN_SYSTEM.md** ⭐ **FINAL PACKAGE**
 Complete branded design system with ORIZON identity
 - Event Horizon Blue (#00D4FF) primary color
-- Accretion Orange (#FF9500) accent color
-- Quantum Violet (#6A00FF) energy accent
+- Quantum Violet (#6A00FF) secondary color
+- Accretion Orange (#FF9500) accent color (warnings/highlights)
 - Dark theme optimized (#0A0A0A backgrounds)
 - Cosmic glow effects
 - Complete component library
@@ -70,8 +70,8 @@ Complete branded design system with ORIZON identity
 **Primary Colors:**
 ```
 Event Horizon Blue:  #00D4FF (primary actions, brand)
-Accretion Orange:    #FF9500 (warnings, accents)
-Quantum Violet:      #6A00FF (energy glow)
+Quantum Violet:      #6A00FF (secondary actions, cosmic energy)
+Accretion Orange:    #FF9500 (warnings, highlights, accents)
 ```
 
 **Backgrounds:**
@@ -123,8 +123,8 @@ CSS variables and base styles:
 ## 📋 Component Library Specifications
 
 ### Buttons
-- **Primary Button**: Blue gradient with cosmic glow
-- **Secondary Button**: Orange gradient with glow
+- **Primary Button**: Event Horizon Blue solid with cosmic glow
+- **Secondary Button**: Quantum Violet solid with purple glow
 - **Ghost Button**: Transparent with blue border
 - **Icon Button**: 40×40px with glow on hover
 - **Sizes**: Small (36px), Medium (44px), Large (52px)
