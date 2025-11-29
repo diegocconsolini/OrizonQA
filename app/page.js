@@ -74,7 +74,9 @@ export default function Home() {
     githubBranch,
     setGithubBranch,
     loading: githubLoading,
-    fetchGitHub
+    fetchGitHub,
+    availableBranches,
+    fetchingBranches
   } = useGitHubFetch(setUploadedFiles, setInputTab, setError, setSuccess);
 
   const loading = analysisLoading || githubLoading;
