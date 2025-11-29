@@ -31,7 +31,7 @@ import {
   NoResults,
   NoData,
   ErrorState,
-} from '@/app/components/ui';
+} from '../components/ui';
 
 import {
   Home,
