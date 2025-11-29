@@ -126,6 +126,26 @@ The app constructs prompts dynamically based on:
 - **`tailwind.config.js`**: Standard Tailwind setup scanning `app/**` directory
 - **`postcss.config.js`**: Standard PostCSS with Tailwind and Autoprefixer
 
+## Prompt System
+
+The app uses a modular prompt construction system:
+- **Templates**: Adapted from Codebase-Digest (MIT license) in `prompts/templates/`
+- **Builder**: `lib/promptBuilder.js` combines templates based on user configuration
+- **Dynamic**: Prompts adjust based on outputFormat, testFramework, edgeCases, securityTests options
+
+Key templates:
+- `learning_user_story_reconstruction.md` - User story generation
+- `testing_unit_test_generation.md` - Test case generation
+- `performance_test_scenario_generation.md` - Performance test scenarios
+- `quality_documentation_generation.md` - Acceptance criteria
+
+The prompt builder:
+1. Loads templates from filesystem
+2. Combines them based on config options
+3. Adds framework-specific instructions (Jest, Pytest, JUnit, Generic)
+4. Formats output instructions (Markdown, JSON, Jira)
+5. Includes edge cases and security tests when requested
+
 ## Model Usage
 
 The app is hardcoded to use `claude-sonnet-4-20250514` model. This is the latest Claude Sonnet 4 model available when the app was created.
@@ -137,3 +157,7 @@ The app is hardcoded to use `claude-sonnet-4-20250514` model. This is the latest
 - Direct API calls to Anthropic (no intermediary storage)
 - Files processed in-memory only
 - All processing happens in real-time with no logging
+
+## ES Module Configuration
+
+The project uses ES modules (`"type": "module"` in package.json) to enable modern JavaScript features in the prompt builder. Config files use `.cjs` extension to maintain CommonJS compatibility with Next.js tooling.
