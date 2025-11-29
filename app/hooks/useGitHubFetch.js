@@ -1,9 +1,11 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 export default function useGitHubFetch(setUploadedFiles, setInputTab, setError, setSuccess) {
   const [githubUrl, setGithubUrl] = useState('');
   const [githubBranch, setGithubBranch] = useState('main');
   const [loading, setLoading] = useState(false);
+  const [availableBranches, setAvailableBranches] = useState([]);
+  const [fetchingBranches, setFetchingBranches] = useState(false);
 
   const acceptedTypes = [
     '.zip', '.txt', '.md', '.json', '.py', '.js', '.ts', '.jsx', '.tsx',

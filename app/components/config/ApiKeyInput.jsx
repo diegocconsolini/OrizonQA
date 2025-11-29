@@ -83,8 +83,8 @@ export default function ApiKeyInput({
 
       {/* Claude API Key */}
       {provider === 'claude' && (
-        <div className="flex flex-col md:flex-row gap-4">
-          <div className="flex-1">
+        <div className="flex flex-col md:flex-row gap-4" suppressHydrationWarning>
+          <div className="flex-1" suppressHydrationWarning>
             <label className="block text-sm text-slate-400 mb-2 font-medium">Claude API Key</label>
             <input
               type="password"
