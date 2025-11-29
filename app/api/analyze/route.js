@@ -3,7 +3,7 @@ import { buildPrompt, parseResponse } from '../../../lib/promptBuilder.js';
 
 export async function POST(request) {
   try {
-    const { apiKey, content, config, provider = 'claude', lmStudioUrl } = await request.json();
+    const { apiKey, content, config = {}, provider = 'claude', lmStudioUrl } = await request.json();
 
     // Validate API key for Claude, optional for LM Studio
     if (provider === 'claude' && !apiKey) {
@@ -14,8 +14,21 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Code content is required' }, { status: 400 });
     }
 
+    // Ensure config has defaults
+    const analysisConfig = {
+      userStories: true,
+      testCases: true,
+      acceptanceCriteria: true,
+      edgeCases: false,
+      securityTests: false,
+      outputFormat: 'markdown',
+      testFramework: 'generic',
+      additionalContext: '',
+      ...config
+    };
+
     // Build prompt from content and config using our prompt builder
-    const prompt = buildPrompt(content, config);
+    const prompt = buildPrompt(content, analysisConfig);
 
     let response;
     let responseText;

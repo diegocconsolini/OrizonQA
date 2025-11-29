@@ -1,5 +1,5 @@
 import { AlertCircle, Server, RefreshCw, CheckCircle, XCircle, Loader2 } from 'lucide-react';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import useLMStudio from '../../hooks/useLMStudio';
 
 export default function ApiKeyInput({
@@ -13,6 +13,7 @@ export default function ApiKeyInput({
   setSelectedModel,
   model
 }) {
+  const [mounted, setMounted] = useState(false);
   const {
     testing,
     testStatus,
@@ -24,12 +25,17 @@ export default function ApiKeyInput({
     testPrompt
   } = useLMStudio();
 
-  // Fetch models when LM Studio URL changes
+  // Set mounted state on client only
   useEffect(() => {
-    if (provider === 'lmstudio' && lmStudioUrl) {
+    setMounted(true);
+  }, []);
+
+  // Fetch models when LM Studio URL changes (only after mount)
+  useEffect(() => {
+    if (mounted && provider === 'lmstudio' && lmStudioUrl) {
       fetchModels(lmStudioUrl);
     }
-  }, [provider, lmStudioUrl]);
+  }, [mounted, provider, lmStudioUrl, fetchModels]);
 
   const handleTestConnection = async () => {
     await testConnection(lmStudioUrl);
