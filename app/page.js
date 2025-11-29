@@ -113,7 +113,7 @@ export default function Home() {
 
   return (
     <div className="min-h-screen p-4 md:p-8">
-      <div className="max-w-5xl mx-auto">
+      <div>
         <Header onHelpClick={() => setShowHelp(!showHelp)} />
 
         {showHelp && <HelpModal onClose={() => setShowHelp(false)} />}
