@@ -54,6 +54,7 @@ export default function Home() {
 
   const {
     uploadedFiles,
+    setUploadedFiles,
     isDragging,
     setIsDragging,
     handleDrop,
@@ -68,17 +69,7 @@ export default function Home() {
     setGithubBranch,
     loading: githubLoading,
     fetchGitHub
-  } = useGitHubFetch(
-    (files) => {
-      clearFiles();
-      files.forEach(file => {
-        uploadedFiles.push(file);
-      });
-    },
-    setInputTab,
-    setError,
-    setSuccess
-  );
+  } = useGitHubFetch(setUploadedFiles, setInputTab, setError, setSuccess);
 
   const loading = analysisLoading || githubLoading;
 
@@ -130,10 +121,7 @@ export default function Home() {
           setGithubBranch={setGithubBranch}
           fetchGitHub={fetchGitHub}
           uploadedFiles={uploadedFiles}
-          setUploadedFiles={(files) => {
-            clearFiles();
-            files.forEach(file => uploadedFiles.push(file));
-          }}
+          setUploadedFiles={setUploadedFiles}
           isDragging={isDragging}
           setIsDragging={setIsDragging}
           handleDrop={handleDrop}

@@ -74,6 +74,7 @@ export default function useFileUpload(setError, setSuccess) {
 
   return {
     uploadedFiles,
+    setUploadedFiles,
     isDragging,
     setIsDragging,
     handleDrop,
