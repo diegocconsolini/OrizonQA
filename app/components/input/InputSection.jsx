@@ -108,6 +108,21 @@ def helper():
               <AlertCircle size={12} />
               Only public repositories are supported (max 50 files)
             </p>
+
+            {uploadedFiles.length > 0 && (
+              <div className="mt-4">
+                <div className="flex justify-between items-center mb-2">
+                  <span className="text-sm text-slate-400 font-medium">{uploadedFiles.length} file(s) loaded</span>
+                  <button
+                    onClick={() => setUploadedFiles([])}
+                    className="text-xs text-red-400 hover:text-red-300 font-medium transition-colors"
+                  >
+                    Clear all
+                  </button>
+                </div>
+                <FileTree files={uploadedFiles} />
+              </div>
+            )}
           </div>
         )}
 

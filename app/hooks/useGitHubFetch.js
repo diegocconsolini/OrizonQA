@@ -99,7 +99,6 @@ export default function useGitHubFetch(setUploadedFiles, setInputTab, setError, 
 
       const validContents = contents.filter(Boolean);
       setUploadedFiles(validContents);
-      setInputTab('upload');
       setSuccess(`Fetched ${validContents.length} files from repository`);
       setTimeout(() => setSuccess(''), 3000);
     } catch (err) {
