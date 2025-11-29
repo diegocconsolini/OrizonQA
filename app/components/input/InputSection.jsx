@@ -71,13 +71,30 @@ def helper():
             </div>
             <div className="flex gap-3 items-end">
               <div className="flex-1">
-                <label className="block text-sm text-slate-400 mb-2 font-medium">Branch</label>
-                <input
-                  type="text"
-                  value={githubBranch}
-                  onChange={(e) => setGithubBranch(e.target.value)}
-                  className="w-full bg-slate-900/70 border border-slate-700/50 rounded-xl p-3 text-sm text-slate-200 focus:outline-none focus:border-indigo-500/50 focus:ring-2 focus:ring-indigo-500/20 transition-all"
-                />
+                <label className="block text-sm text-slate-400 mb-2 font-medium">
+                  Branch {fetchingBranches && <Loader2 className="inline animate-spin ml-2" size={12} />}
+                </label>
+                {availableBranches.length > 0 ? (
+                  <select
+                    value={githubBranch}
+                    onChange={(e) => setGithubBranch(e.target.value)}
+                    className="w-full bg-slate-900/70 border border-slate-700/50 rounded-xl p-3 text-sm text-slate-200 focus:outline-none focus:border-indigo-500/50 focus:ring-2 focus:ring-indigo-500/20 transition-all cursor-pointer"
+                  >
+                    {availableBranches.map((branch) => (
+                      <option key={branch} value={branch}>
+                        {branch}
+                      </option>
+                    ))}
+                  </select>
+                ) : (
+                  <input
+                    type="text"
+                    value={githubBranch}
+                    onChange={(e) => setGithubBranch(e.target.value)}
+                    placeholder="main"
+                    className="w-full bg-slate-900/70 border border-slate-700/50 rounded-xl p-3 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-indigo-500/50 focus:ring-2 focus:ring-indigo-500/20 transition-all"
+                  />
+                )}
               </div>
               <button
                 onClick={fetchGitHub}
