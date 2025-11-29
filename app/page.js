@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useCallback } from 'react';
+import dynamic from 'next/dynamic';
 import { Loader2, Sparkles } from 'lucide-react';
 
 // Components
@@ -9,8 +10,10 @@ import HelpModal from './components/shared/HelpModal';
 import Alert from './components/shared/Alert';
 import InputSection from './components/input/InputSection';
 import ConfigSection from './components/config/ConfigSection';
-import ApiKeyInput from './components/config/ApiKeyInput';
 import OutputSection from './components/output/OutputSection';
+
+// Disable SSR for ApiKeyInput to prevent hydration mismatch from browser extensions
+const ApiKeyInput = dynamic(() => import('./components/config/ApiKeyInput'), { ssr: false });
 
 // Hooks
 import useAnalysis from './hooks/useAnalysis';
