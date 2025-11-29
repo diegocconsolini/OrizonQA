@@ -2,11 +2,68 @@
 @tailwind components;
 @tailwind utilities;
 
-@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@400;500;600;700&display=swap');
+/* ORIZON Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
 
 :root {
+  /* === ORIZON BRAND COLORS === */
+
+  /* Primary (Event Horizon Blue) */
+  --orizon-primary: #00D4FF;
+  --orizon-primary-hover: #00B8E6;
+  --orizon-primary-active: #009CCC;
+  --orizon-primary-light: #33DDFF;
+  --orizon-primary-dark: #0088CC;
+
+  /* Accent (Accretion Orange) */
+  --orizon-accent: #FF9500;
+  --orizon-accent-hover: #E68500;
+  --orizon-accent-light: #FFAD33;
+  --orizon-accent-dark: #CC7700;
+
+  /* Quantum Violet */
+  --orizon-quantum: #6A00FF;
+  --orizon-quantum-light: #8533FF;
+
+  /* === BACKGROUNDS === */
+  --bg-dark: #0A0A0A;
+  --surface-dark: #1A1A1A;
+  --surface-hover-dark: #2A2A2A;
+  --black: #000000;
+
+  /* === TEXT COLORS === */
+  --text-primary-dark: #FFFFFF;
+  --text-secondary-dark: #C8C8C8;
+  --text-muted-dark: #808080;
+
+  /* === BORDERS === */
+  --border-dark: #2A2A2A;
+  --border-hover-dark: #3A3A3A;
+
+  /* === SEMANTIC === */
+  --success: #10B981;
+  --error: #EF4444;
+  --warning: #F59E0B;
+
+  /* === GRADIENTS === */
+  --gradient-primary: linear-gradient(135deg, #00FFFF 0%, #00D4FF 50%, #0088FF 100%);
+  --gradient-accent: linear-gradient(135deg, #FFE599 0%, #FFCC66 25%, #FF9933 75%, #FF6600 100%);
+  --gradient-surface: linear-gradient(135deg, #1A1A1A 0%, #0A0A0A 100%);
+
+  /* === GLOW EFFECTS === */
+  --glow-primary: 0 0 20px rgba(0, 212, 255, 0.3);
+  --glow-primary-lg: 0 0 40px rgba(0, 212, 255, 0.5);
+  --glow-primary-xl: 0 0 60px rgba(0, 212, 255, 0.7);
+  --glow-accent: 0 0 20px rgba(255, 149, 0, 0.3);
+  --glow-accent-lg: 0 0 40px rgba(255, 149, 0, 0.5);
+
+  /* === TYPOGRAPHY === */
+  --font-primary: 'Outfit', 'Satoshi', 'Inter Tight', sans-serif;
+  --font-secondary: 'Inter', 'IBM Plex Sans', sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+
+  /* Legacy support */
   --font-outfit: 'Outfit', sans-serif;
-  --font-mono: 'JetBrains Mono', monospace;
 }
 
 * {
@@ -14,11 +71,12 @@
 }
 
 html {
-  font-family: var(--font-outfit);
+  font-family: var(--font-secondary);
 }
 
 body {
-  background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%);
+  background: var(--black);
+  color: var(--text-primary-dark);
   min-height: 100vh;
 }
 
