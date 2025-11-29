@@ -36,7 +36,9 @@ export default function Home() {
   });
 
   // API states
+  const [provider, setProvider] = useState('claude');
   const [apiKey, setApiKey] = useState('');
+  const [lmStudioUrl, setLmStudioUrl] = useState('http://192.168.2.101:1234');
   const model = 'claude-sonnet-4-20250514';
 
   // Custom hooks
@@ -87,7 +89,7 @@ export default function Home() {
 
   const handleAnalyze = async () => {
     const content = getInputContent();
-    const initialTab = await analyzeCodebase(content, apiKey, config, model);
+    const initialTab = await analyzeCodebase(content, apiKey, config, model, provider, lmStudioUrl);
     // OutputSection handles its own tab state
   };
 
@@ -98,7 +100,7 @@ export default function Home() {
     clearResults();
   };
 
-  const canAnalyze = apiKey && (codeInput.trim() || uploadedFiles.length > 0);
+  const canAnalyze = (provider === 'lmstudio' || apiKey) && (codeInput.trim() || uploadedFiles.length > 0);
 
   return (
     <div className="min-h-screen p-4 md:p-8">
@@ -133,7 +135,15 @@ export default function Home() {
 
         <ConfigSection config={config} setConfig={setConfig} />
 
-        <ApiKeyInput apiKey={apiKey} setApiKey={setApiKey} model={model} />
+        <ApiKeyInput
+          provider={provider}
+          setProvider={setProvider}
+          apiKey={apiKey}
+          setApiKey={setApiKey}
+          lmStudioUrl={lmStudioUrl}
+          setLmStudioUrl={setLmStudioUrl}
+          model={model}
+        />
 
         <div className="flex gap-4 mb-6">
           <button
