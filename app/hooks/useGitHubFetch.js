@@ -3,6 +3,7 @@ import { useState, useEffect, useCallback } from 'react';
 export default function useGitHubFetch(setUploadedFiles, setInputTab, setError, setSuccess) {
   const [githubUrl, setGithubUrl] = useState('');
   const [githubBranch, setGithubBranch] = useState('main');
+  const [githubToken, setGithubToken] = useState('');
   const [loading, setLoading] = useState(false);
   const [availableBranches, setAvailableBranches] = useState([]);
   const [fetchingBranches, setFetchingBranches] = useState(false);
