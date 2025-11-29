@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 
 export default function useGitHubFetch(setUploadedFiles, setInputTab, setError, setSuccess) {
   const [githubUrl, setGithubUrl] = useState('');
@@ -13,7 +13,7 @@ export default function useGitHubFetch(setUploadedFiles, setInputTab, setError, 
     '.yaml', '.xml', '.sh', '.env'
   ];
 
-  const fetchBranches = async () => {
+  const fetchBranches = useCallback(async () => {
     const match = githubUrl.match(/github\.com\/([^\/]+)\/([^\/\?]+)/);
     if (!match) {
       return;
@@ -43,7 +43,7 @@ export default function useGitHubFetch(setUploadedFiles, setInputTab, setError, 
     } finally {
       setFetchingBranches(false);
     }
-  };
+  }, [githubUrl]);
 
   // Auto-fetch branches when URL changes
   useEffect(() => {

@@ -138,6 +138,8 @@ export default function Home() {
           loading={loading}
           estimatedTokens={estimatedTokens}
           isTruncated={isTruncated}
+          availableBranches={availableBranches}
+          fetchingBranches={fetchingBranches}
         />
 
         <ConfigSection config={config} setConfig={setConfig} />
