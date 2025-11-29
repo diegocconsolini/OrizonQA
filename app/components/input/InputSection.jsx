@@ -11,6 +11,8 @@ export default function InputSection({
   setGithubUrl,
   githubBranch,
   setGithubBranch,
+  githubToken,
+  setGithubToken,
   fetchGitHub,
   uploadedFiles,
   setUploadedFiles,
@@ -69,6 +71,18 @@ def helper():
                 className="w-full bg-slate-900/70 border border-slate-700/50 rounded-xl p-3 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-indigo-500/50 focus:ring-2 focus:ring-indigo-500/20 transition-all"
               />
             </div>
+            <div>
+              <label className="block text-sm text-slate-400 mb-2 font-medium">
+                GitHub Token <span className="text-slate-600">(optional, for private repos)</span>
+              </label>
+              <input
+                type="password"
+                value={githubToken}
+                onChange={(e) => setGithubToken(e.target.value)}
+                placeholder="ghp_..."
+                className="w-full bg-slate-900/70 border border-slate-700/50 rounded-xl p-3 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-indigo-500/50 focus:ring-2 focus:ring-indigo-500/20 transition-all"
+              />
+            </div>
             <div className="flex gap-3 items-end">
               <div className="flex-1">
                 <label className="block text-sm text-slate-400 mb-2 font-medium">
@@ -106,7 +120,7 @@ def helper():
             </div>
             <p className="text-xs text-slate-500 flex items-center gap-1.5">
               <AlertCircle size={12} />
-              Only public repositories are supported (max 50 files)
+              Use a GitHub Personal Access Token to fetch private repositories
             </p>
 
             {uploadedFiles.length > 0 && (

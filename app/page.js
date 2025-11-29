@@ -73,6 +73,8 @@ export default function Home() {
     setGithubUrl,
     githubBranch,
     setGithubBranch,
+    githubToken,
+    setGithubToken,
     loading: githubLoading,
     fetchGitHub,
     availableBranches,
@@ -128,6 +130,8 @@ export default function Home() {
           setGithubUrl={setGithubUrl}
           githubBranch={githubBranch}
           setGithubBranch={setGithubBranch}
+          githubToken={githubToken}
+          setGithubToken={setGithubToken}
           fetchGitHub={fetchGitHub}
           uploadedFiles={uploadedFiles}
           setUploadedFiles={setUploadedFiles}
