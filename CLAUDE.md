@@ -17,7 +17,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **Styling**: Tailwind CSS
 - **Icons**: Lucide React
 - **File Processing**: JSZip for handling .zip archives
-- **AI**: Claude API (via Anthropic Messages API)
+- **AI**: Claude API (via Anthropic Messages API) + LM Studio (local LLMs)
+- **Database**: Vercel Postgres (production) / PostgreSQL (local dev)
+- **Cache**: Vercel KV/Redis (for GitHub fetches and analysis results)
 
 ## Development Commands
 
@@ -25,8 +27,14 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 # Install dependencies
 npm install
 
+# Start local databases (PostgreSQL + Redis)
+docker-compose up -d
+
 # Run development server (opens at http://localhost:3000)
 npm run dev
+
+# Initialize database schema (first time only)
+# Visit: http://localhost:3000/api/db/init
 
 # Build for production
 npm run build
@@ -36,7 +44,12 @@ npm start
 
 # Lint code
 npm run lint
+
+# Stop local databases
+docker-compose down
 ```
+
+**Note**: Local development requires Docker for PostgreSQL and Redis. See `DATABASE.md` for full setup instructions.
 
 ## Architecture
 
