@@ -39,6 +39,7 @@ export default function Home() {
   const [provider, setProvider] = useState('claude');
   const [apiKey, setApiKey] = useState('');
   const [lmStudioUrl, setLmStudioUrl] = useState('http://192.168.2.101:1234');
+  const [selectedModel, setSelectedModel] = useState('');
   const model = 'claude-sonnet-4-20250514';
 
   // Custom hooks
@@ -89,7 +90,8 @@ export default function Home() {
 
   const handleAnalyze = async () => {
     const content = getInputContent();
-    const initialTab = await analyzeCodebase(content, apiKey, config, model, provider, lmStudioUrl);
+    const modelToUse = provider === 'lmstudio' && selectedModel ? selectedModel : model;
+    const initialTab = await analyzeCodebase(content, apiKey, config, modelToUse, provider, lmStudioUrl);
     // OutputSection handles its own tab state
   };
 
@@ -142,6 +144,8 @@ export default function Home() {
           setApiKey={setApiKey}
           lmStudioUrl={lmStudioUrl}
           setLmStudioUrl={setLmStudioUrl}
+          selectedModel={selectedModel}
+          setSelectedModel={setSelectedModel}
           model={model}
         />
 
