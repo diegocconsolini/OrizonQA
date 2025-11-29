@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **Codebase QA Analyzer** - A Next.js web application that uses Claude AI to analyze codebases and generate QA artifacts (user stories, test cases, and acceptance criteria). The app supports multiple input methods: direct code pasting, GitHub repository fetching, and file uploads (including .zip files).
 
-**Current Status:** Phase 1 complete (bug fixed, app working). Phase 2 in progress (component refactoring).
+**Current Status:** Phase 2 complete (component refactoring finished). Ready for Phase 3 (user value features).
 
 **Live App:** https://orizon-qa.vercel.app
 
@@ -42,27 +42,57 @@ npm run lint
 
 ### Application Structure
 
-The app uses Next.js 14's App Router pattern with a minimal structure:
+The app uses Next.js 14's App Router pattern with a modular component architecture:
 
 ```
 app/
 ├── api/
 │   └── analyze/
 │       └── route.js          # API endpoint for Claude AI interactions
+├── components/
+│   ├── config/               # Configuration components
+│   │   ├── ApiKeyInput.jsx
+│   │   └── ConfigSection.jsx
+│   ├── input/                # Input method components
+│   │   ├── FileTree.jsx
+│   │   └── InputSection.jsx
+│   ├── output/               # Output display components
+│   │   └── OutputSection.jsx
+│   └── shared/               # Reusable UI components
+│       ├── Alert.jsx
+│       ├── Header.jsx
+│       ├── HelpModal.jsx
+│       └── Tab.jsx
+├── hooks/                    # Custom React hooks
+│   ├── useAnalysis.js
+│   ├── useFileUpload.js
+│   └── useGitHubFetch.js
 ├── globals.css               # Tailwind base styles
 ├── layout.js                 # Root layout with metadata
-└── page.js                   # Main application UI (client component)
+└── page.js                   # Main page (183 lines, orchestrates components)
 ```
 
 ### Key Components
 
-**`app/page.js`** - Single-page client component containing:
-- Three input methods (tabs): paste code, fetch from GitHub, upload files
-- Analysis configuration options (user stories, test cases, acceptance criteria)
-- Output format selection (Markdown, JSON, Jira)
-- Test framework styling (Generic, Jest, Pytest, JUnit)
-- Results display with copy/download functionality
-- File tree visualization for uploaded files
+**`app/page.js`** - Main orchestrator component (183 lines) that:
+- Manages global state and coordinates between components
+- Uses custom hooks for business logic (analysis, file upload, GitHub fetch)
+- Renders modular components for different UI sections
+- Maintains clean separation of concerns
+
+**Components:**
+- `Header` & `HelpModal` - App branding and user guidance
+- `Alert` - Error and success notifications
+- `InputSection` - Three input methods (paste, GitHub, file upload)
+- `ConfigSection` - Analysis options and output format selection
+- `ApiKeyInput` - API key configuration
+- `OutputSection` - Results display with copy/download functionality
+- `Tab` & `FileTree` - Reusable UI elements
+
+**Custom Hooks:**
+- `useAnalysis` - Handles API calls and result management
+- `useFileUpload` - File processing and upload handling
+- `useGitHubFetch` - GitHub repository fetching logic
 
 **`app/api/analyze/route.js`** - Server-side API route that:
 - Accepts: `apiKey`, `prompt`, `model`, `maxTokens`
@@ -175,11 +205,15 @@ The project uses ES modules (`"type": "module"` in package.json) to enable moder
   - App deployed and functional
   - Templates from Codebase-Digest integrated
 
+- **Phase 2:** Component refactoring ✅
+  - 9 components extracted and organized
+  - 3 custom hooks created
+  - page.js reduced from 715 → 183 lines (74% reduction)
+  - Clean separation of concerns achieved
+  - All functionality working and tested
+
 ### In Progress 🚧
-- **Phase 2:** Component refactoring
-  - Directory structure created
-  - 3 components extracted (Tab, FileTree, Alert)
-  - Main page.js still monolithic (715 lines)
+- None currently
 
 ### Planned 📋
 - **Phase 3:** User value features (history, exports)
