@@ -20,7 +20,9 @@ export default function InputSection({
   handleFileSelect,
   loading,
   estimatedTokens,
-  isTruncated
+  isTruncated,
+  availableBranches,
+  fetchingBranches
 }) {
   return (
     <div className="bg-slate-800/40 backdrop-blur-sm rounded-2xl border border-slate-700/50 mb-6 overflow-hidden">

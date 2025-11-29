@@ -13,6 +13,48 @@ export default function useGitHubFetch(setUploadedFiles, setInputTab, setError, 
     '.yaml', '.xml', '.sh', '.env'
   ];
 
+  const fetchBranches = async () => {
+    const match = githubUrl.match(/github\.com\/([^\/]+)\/([^\/\?]+)/);
+    if (!match) {
+      return;
+    }
+
+    const [, owner, repo] = match;
+    const cleanRepo = repo.replace('.git', '');
+    setFetchingBranches(true);
+
+    try {
+      const response = await fetch(`https://api.github.com/repos/${owner}/${cleanRepo}/branches`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch branches');
+      }
+
+      const branches = await response.json();
+      setAvailableBranches(branches.map(b => b.name));
+
+      // Set default branch to main or master if available, otherwise first branch
+      if (branches.length > 0) {
+        const defaultBranch = branches.find(b => b.name === 'main' || b.name === 'master');
+        setGithubBranch(defaultBranch ? defaultBranch.name : branches[0].name);
+      }
+    } catch (err) {
+      console.error('Error fetching branches:', err);
+      setAvailableBranches([]);
+    } finally {
+      setFetchingBranches(false);
+    }
+  };
+
+  // Auto-fetch branches when URL changes
+  useEffect(() => {
+    const match = githubUrl.match(/github\.com\/([^\/]+)\/([^\/\?]+)/);
+    if (match) {
+      fetchBranches();
+    } else {
+      setAvailableBranches([]);
+    }
+  }, [githubUrl]);
+
   const fetchGitHub = async () => {
     const match = githubUrl.match(/github\.com\/([^\/]+)\/([^\/\?]+)/);
     if (!match) {
@@ -73,6 +115,8 @@ export default function useGitHubFetch(setUploadedFiles, setInputTab, setError, 
     githubBranch,
     setGithubBranch,
     loading,
-    fetchGitHub
+    fetchGitHub,
+    availableBranches,
+    fetchingBranches
   };
 }
