@@ -12,8 +12,9 @@ export default function useAnalysis() {
   });
   const [tokenUsage, setTokenUsage] = useState(null);
 
-  const analyzeCodebase = async (content, apiKey, config, model) => {
-    if (!apiKey) {
+  const analyzeCodebase = async (content, apiKey, config, model, provider = 'claude', lmStudioUrl = '') => {
+    // Validate API key only for Claude
+    if (provider === 'claude' && !apiKey) {
       setError('Please enter your Claude API key');
       return;
     }
@@ -35,7 +36,9 @@ export default function useAnalysis() {
         body: JSON.stringify({
           apiKey,
           content,
-          config: { ...config, model }
+          config: { ...config, model },
+          provider,
+          lmStudioUrl
         })
       });
 
