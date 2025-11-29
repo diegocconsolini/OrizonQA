@@ -78,8 +78,8 @@ export async function POST(request) {
           'anthropic-version': '2023-06-01'
         },
         body: JSON.stringify({
-          model: config.model || 'claude-sonnet-4-20250514',
-          max_tokens: 4096,
+          model: analysisConfig.model || 'claude-sonnet-4-20250514',
+          max_tokens: 16000,  // Increased for comprehensive QA artifacts
           messages: [{ role: 'user', content: prompt }]
         })
       });
