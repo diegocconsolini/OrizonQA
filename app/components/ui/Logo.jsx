@@ -3,14 +3,19 @@
  *
  * Uses the official Gargantua black hole logos with RIZON wordmark.
  * Based on brand guidelines from mocks/Orizon/rulesOrizon.md
+ * All logos have transparent backgrounds for flexible use.
  *
  * Variants:
  * - full: Complete wordmark with Gargantua (logomark IS the "O")
  * - icon: Just the Gargantua black hole
  *
  * Colors:
- * - blue: Event Horizon Blue (primary, default)
- * - orange: Accretion Orange (secondary variant)
+ * - blue: Event Horizon Blue (primary, default) - #00D4FF
+ * - purple: Quantum Violet (secondary variant) - #6A00FF
+ *
+ * Background:
+ * - dark: Optimized for dark backgrounds (default)
+ * - light: Optimized for light backgrounds
  *
  * Important: The wordmark is "RIZON" not "ORIZON" - the Gargantua logomark IS the "O"
  */
@@ -43,9 +48,11 @@ export default function Logo({
   if (variant === 'icon') {
     // Choose the appropriate icon based on color and background
     let iconPath;
-    if (color === 'orange') {
-      iconPath = '/logos/gargantua-orange-light.png';
+    if (color === 'purple') {
+      // Purple variant (converted from orange) - always use dark version for now
+      iconPath = '/logos/gargantua-purple-icon.png';
     } else {
+      // Blue variant (default)
       iconPath = background === 'dark'
         ? '/logos/gargantua-blue-dark.png'
         : '/logos/gargantua-blue-light.png';
@@ -69,10 +76,22 @@ export default function Logo({
     // Calculate width based on aspect ratio (approximately 4:1 for full logo)
     const widthPx = heightPx * 4;
 
+    // Choose the appropriate full logo based on color and background
+    let logoPath;
+    if (color === 'purple') {
+      // Purple variant - currently only have dark version
+      logoPath = '/logos/orizon-full-purple-dark.png';
+    } else {
+      // Blue variant (default)
+      logoPath = background === 'dark'
+        ? '/logos/orizon-full-blue-dark.png'
+        : '/logos/orizon-full-blue-light.png';
+    }
+
     return (
       <div className={`relative inline-block ${className}`} style={{ width: widthPx, height: heightPx }} {...props}>
         <Image
-          src="/logos/orizon-full-blue.png"
+          src={logoPath}
           alt="ORIZON"
           fill
           className="object-contain object-left"

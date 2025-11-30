@@ -443,8 +443,8 @@ export default function ShowcasePage() {
                   <p className="text-xs text-text-secondary-dark">Blue (Light BG)</p>
                 </div>
                 <div className="p-6 bg-white rounded-lg flex flex-col items-center gap-2">
-                  <Logo variant="icon" color="orange" size="xl" />
-                  <p className="text-xs text-text-secondary-dark">Orange Accretion</p>
+                  <Logo variant="icon" color="purple" size="xl" />
+                  <p className="text-xs text-text-secondary-dark">Purple Quantum</p>
                 </div>
               </div>
             </div>
