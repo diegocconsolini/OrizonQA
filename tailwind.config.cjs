@@ -33,6 +33,10 @@ module.exports = {
         'surface-dark': '#1A1A1A',
         'surface-hover-dark': '#2A2A2A',
         black: '#000000',
+        // Text colors
+        'text-primary-dark': '#E5E5E5',
+        'text-secondary-dark': '#B3B3B3',
+        'text-muted-dark': '#808080',
         // Semantic colors
         success: '#10B981',
         error: '#EF4444',
