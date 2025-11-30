@@ -37,9 +37,10 @@ export default function Logo({
     xs: 32,
     sm: 48,
     md: 64,
-    lg: 80,
-    xl: 128,
-    '2xl': 160,
+    lg: 96,
+    xl: 160,
+    '2xl': 200,
+    '3xl': 256,
   };
 
   const heightPx = sizes[size];
