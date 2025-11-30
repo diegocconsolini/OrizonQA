@@ -1,8 +1,16 @@
 import { NextResponse } from 'next/server';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '../auth/[...nextauth]/route.js';
 import { buildPrompt, parseResponse } from '../../../lib/promptBuilder.js';
+import { saveAnalysis } from '../../../lib/db.js';
+import crypto from 'crypto';
 
 export async function POST(request) {
   try {
+    // Get user session (if authenticated)
+    const session = await getServerSession(authOptions);
+    const userId = session?.user?.id || null;
+
     const { apiKey, content, config = {}, provider = 'claude', lmStudioUrl } = await request.json();
 
     // Validate API key for Claude, optional for LM Studio
@@ -26,6 +34,15 @@ export async function POST(request) {
       additionalContext: '',
       ...config
     };
+
+    // Determine input type
+    const inputType = config.inputType || 'paste';  // paste, github, file
+
+    // Create content hash for deduplication/caching
+    const contentHash = crypto
+      .createHash('sha256')
+      .update(content)
+      .digest('hex');
 
     // Build prompt from content and config using our prompt builder
     const prompt = buildPrompt(content, analysisConfig);
@@ -109,9 +126,34 @@ export async function POST(request) {
     // Parse response into sections
     const parsed = parseResponse(responseText, config.outputFormat);
 
+    // 🆕 SAVE ANALYSIS TO DATABASE
+    let analysisRecord = null;
+    try {
+      analysisRecord = await saveAnalysis({
+        inputType,
+        contentHash,
+        provider,
+        model: analysisConfig.model || (provider === 'claude' ? 'claude-sonnet-4-20250514' : 'local-model'),
+        config: analysisConfig,
+        results: parsed,
+        tokenUsage: usage,
+        githubUrl: config.githubUrl || null,
+        githubBranch: config.githubBranch || null,
+        userId  // Can be null for guest users
+      });
+
+      console.log(`✓ Analysis saved: ID ${analysisRecord.id}, User: ${userId || 'guest'}`);
+    } catch (dbError) {
+      // Log error but don't fail the request
+      console.error('Failed to save analysis to database:', dbError);
+      // Analysis still returns to user even if DB save fails
+    }
+
     const result = NextResponse.json({
       ...parsed,
-      usage
+      usage,
+      analysisId: analysisRecord?.id || null,  // Return analysis ID if saved
+      savedAt: analysisRecord?.created_at || null
     });
 
     // Add CORS headers
