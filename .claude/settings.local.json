@@ -18,7 +18,8 @@
       "Bash(test:*)",
       "Bash(npx eslint:*)",
       "Bash(npm run lint:*)",
-      "Bash(mkdir:*)"
+      "Bash(mkdir:*)",
+      "Bash(npm run build:*)"
     ],
     "deny": [],
     "ask": []
