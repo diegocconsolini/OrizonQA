@@ -1,7 +1,7 @@
 import NextAuth from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import bcrypt from 'bcryptjs';
-import { db } from '@/lib/db.js';
+import { query } from '@/lib/db.js';
 
 /**
  * Next-Auth Configuration for ORIZON
@@ -24,7 +24,7 @@ export const authOptions = {
         const { email, password } = credentials;
 
         // Find user by email
-        const result = await db.query(
+        const result = await query(
           'SELECT * FROM users WHERE email = $1',
           [email]
         );
@@ -51,7 +51,7 @@ export const authOptions = {
         }
 
         // Update last login timestamp
-        await db.query(
+        await query(
           'UPDATE users SET last_login = NOW() WHERE id = $1',
           [user.id]
         );
