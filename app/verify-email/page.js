@@ -184,9 +184,11 @@ function VerifyEmailContent() {
         <div className="bg-surface-dark rounded-2xl shadow-xl border border-white/10 p-8">
           <form onSubmit={(e) => {
             e.preventDefault();
-            if (email.trim()) {
+            const emailValue = email.trim();
+            // Only submit if we have a valid email
+            if (emailValue && emailValue.includes('@')) {
               // Update URL with email
-              router.push(`/verify-email?email=${encodeURIComponent(email.trim())}`);
+              router.push(`/verify-email?email=${encodeURIComponent(emailValue)}`);
             }
           }}>
             <input
@@ -195,6 +197,7 @@ function VerifyEmailContent() {
               onChange={(e) => setEmail(e.target.value)}
               placeholder="you@example.com"
               autoFocus
+              required
               className="w-full px-4 py-3 bg-bg-dark border-2 border-white/10 rounded-lg text-white placeholder-text-secondary-dark focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
             />
             <Button
@@ -202,7 +205,7 @@ function VerifyEmailContent() {
               variant="primary"
               size="lg"
               className="w-full mt-4"
-              disabled={!email.trim()}
+              disabled={!email.trim() || !email.includes('@')}
             >
               Continue
             </Button>
