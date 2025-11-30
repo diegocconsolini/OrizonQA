@@ -132,8 +132,10 @@ export default function VerifyEmailPage() {
           <div className="bg-surface-dark rounded-2xl shadow-xl border border-white/10 p-8">
             <form onSubmit={(e) => {
               e.preventDefault();
-              if (email.trim()) {
-                router.push(`/verify-email?email=${encodeURIComponent(email.trim())}`);
+              e.stopPropagation();
+              const trimmedEmail = email.trim();
+              if (trimmedEmail) {
+                router.push(`/verify-email?email=${encodeURIComponent(trimmedEmail)}`);
               }
             }}>
               <input
@@ -144,15 +146,13 @@ export default function VerifyEmailPage() {
                 autoFocus
                 className="w-full px-4 py-3 bg-bg-dark border-2 border-white/10 rounded-lg text-white placeholder-text-secondary-dark focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
               />
-              <Button
+              <button
                 type="submit"
-                variant="primary"
-                size="lg"
-                className="w-full mt-4"
                 disabled={!email.trim()}
+                className="font-secondary font-medium rounded-lg transition-all duration-200 ease-out disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-black inline-flex items-center justify-center gap-2 bg-primary hover:bg-primary-hover active:bg-primary-active text-black shadow-glow-primary hover:shadow-glow-primary-lg active:scale-[0.98] focus:ring-primary focus:ring-opacity-50 h-13 px-8 text-lg w-full mt-4"
               >
                 Continue
-              </Button>
+              </button>
             </form>
           </div>
         </div>
