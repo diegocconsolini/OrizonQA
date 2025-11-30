@@ -1,19 +1,12 @@
 /**
- * ORIZON UI Component Library
- *
- * Centralized exports for all ORIZON design system components.
- * Import components using: import { Button, Card, Input } from '@/components/ui'
+ * UI Components Index
+ * Exports all ORIZON UI components for easy importing
  */
 
-// Buttons
-export { default as Button } from './Button';
-
-// Form Inputs
-export { default as Input } from './Input';
-export { default as Textarea } from './Textarea';
-export { default as Select } from './Select';
-
-// Cards
+export { default as Button } from './Button.jsx';
+export { default as Input } from './Input.jsx';
+export { default as Textarea } from './Textarea.jsx';
+export { default as Select } from './Select.jsx';
 export {
   default as Card,
   CardHeader,
@@ -21,128 +14,62 @@ export {
   CardDescription,
   CardContent,
   CardFooter,
-  CardIcon,
-} from './Card';
-
-// Modals
+  CardIcon
+} from './Card.jsx';
 export {
   default as Modal,
-  ModalHeader,
-  ModalBody,
-  ModalFooter,
-} from './Modal';
-
-// Navigation
-export {
-  default as Sidebar,
-  SidebarHeader,
-  SidebarContent,
-  SidebarFooter,
-  SidebarSection,
-} from './Sidebar';
-
-export {
-  default as NavItem,
-  NavItemGroup,
-} from './NavItem';
-
-// Tags
+  ModalFooter
+} from './Modal.jsx';
 export {
   default as Tag,
-  TagGroup,
-} from './Tag';
-
-// Progress
+  TagGroup
+} from './Tag.jsx';
 export {
   default as Progress,
   CircularProgress,
-  Spinner,
-} from './Progress';
-
-// Empty States
+  Spinner
+} from './Progress.jsx';
 export {
   default as EmptyState,
   NoResults,
   NoData,
-  ErrorState,
-  ComingSoon,
-} from './EmptyState';
-
-// Logo
-export {
-  default as Logo,
-  LogoWithTagline,
-} from './Logo';
-
-// Tooltip
-export {
-  default as Tooltip,
-  TooltipTrigger,
-} from './Tooltip';
-
-// Toast
+  ErrorState
+} from './EmptyState.jsx';
+export { default as Logo, LogoWithTagline } from './Logo.jsx';
+export { default as Tooltip } from './Tooltip.jsx';
 export {
   default as Toast,
-  ToastContainer,
-  useToast,
-} from './Toast';
-
-// Dropdown
+  useToast
+} from './Toast.jsx';
 export {
   default as Dropdown,
   DropdownItem,
   DropdownDivider,
-  DropdownLabel,
-  DropdownButton,
-} from './Dropdown';
-
-// Toggle Switch
-export {
-  default as ToggleSwitch,
-  ToggleGroup,
-} from './ToggleSwitch';
-
-// Checkbox
+  DropdownButton
+} from './Dropdown.jsx';
+export { default as ToggleSwitch } from './ToggleSwitch.jsx';
 export {
   default as Checkbox,
-  CheckboxGroup,
-} from './Checkbox';
-
-// Radio
+  CheckboxGroup
+} from './Checkbox.jsx';
 export {
   default as Radio,
-  RadioGroup,
-} from './Radio';
-
-// Breadcrumbs
-export { default as Breadcrumbs } from './Breadcrumbs';
-
-// Pagination
-export {
-  default as Pagination,
-  SimplePagination,
-} from './Pagination';
-
-// Accordion
-export {
-  default as Accordion,
-  AccordionItem,
-} from './Accordion';
-
-// Tabs
+  RadioGroup
+} from './Radio.jsx';
+export { default as Breadcrumbs } from './Breadcrumbs.jsx';
+export { default as Pagination } from './Pagination.jsx';
+export { default as Accordion } from './Accordion.jsx';
 export {
   default as Tabs,
   TabList,
   TabButton,
   TabPanels,
-  TabPanel,
-} from './Tabs';
-
-// File Upload
-export { default as FileUpload } from './FileUpload';
-
-// Avatar
+  TabPanel
+} from './Tabs.jsx';
+export { default as FileUpload } from './FileUpload.jsx';
 export {
   default as Avatar,
-  AvatarGroup,
-} from './Avatar';
+  AvatarGroup
+} from './Avatar.jsx';
+export { default as Sidebar } from './Sidebar.jsx';
+export { default as NavItem } from './NavItem.jsx';
