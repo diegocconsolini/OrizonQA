@@ -98,9 +98,16 @@ app/
 │   ├── useAnalysis.js
 │   ├── useFileUpload.js
 │   └── useGitHubFetch.js
+├── dashboard/page.js         # Main app (protected, was root page)
+├── login/page.js             # Login page
+├── signup/page.js            # Signup page
+├── verify-email/page.js      # Email verification
+├── forgot-password/page.js   # Password reset request
+├── reset-password/page.js    # Password reset form
+├── settings/page.js          # User settings (protected)
 ├── globals.css               # Tailwind base styles
 ├── layout.js                 # Root layout with metadata
-└── page.js                   # Main page (183 lines, orchestrates components)
+└── page.js                   # Landing page (public)
 ```
 
 ### Key Components
@@ -152,11 +159,17 @@ app/
 
 ### API Key Handling
 
-The application **never stores** API keys:
-- Keys are only held in React state during the session
-- Sent directly to backend, which forwards to Anthropic
-- No persistence, logging, or server-side storage
-- User-provided keys are used for single requests only
+The application supports **two methods** for API keys:
+1. **Saved in Settings** (Recommended):
+   - Keys encrypted with AES-256-GCM before database storage
+   - Only decrypted when needed for analysis
+   - Auto-loaded in dashboard for convenience
+   - User can update/delete anytime
+2. **Per-Request Input**:
+   - Keys held only in React state during the session
+   - Sent directly to backend, which forwards to Anthropic
+   - No persistence, logging, or server-side storage
+   - User-provided keys are used for single requests only
 
 ## Important Patterns
 
@@ -243,13 +256,29 @@ The project uses ES modules (`"type": "module"` in package.json) to enable moder
   - Clean separation of concerns achieved
   - All functionality working and tested
 
+- **Phase 4:** Authentication system ✅
+  - User signup with email verification (6-digit code)
+  - Login with Next-Auth v4 (JWT sessions, 30-day expiration)
+  - Password reset flow (forgot/reset with tokens)
+  - User settings page with encrypted API key storage
+  - Protected routes with middleware
+  - Dashboard with auto-loaded API keys
+  - Audit logging for security events
+  - Landing page for unauthenticated users
+  - Database schema: users, sessions, analyses, audit_logs
+  - Production build passing (20 routes)
+
 ### In Progress 🚧
-- None currently
+- **Phase 4.5:** User-linked analysis features
+  - Link analyses to user accounts (database ready, not connected)
+  - Analysis history page
+  - User profile management
 
 ### Planned 📋
-- **Phase 3:** User value features (history, exports)
-- **Phase 4:** CLI development
-- **Phase 5:** Integrations (GitHub Actions, Jira)
-- **Phase 6:** User accounts & persistence
+- **Phase 5:** Advanced features (export to Jira, team accounts, billing)
+- **Phase 6:** CLI development (npx command)
+- **Phase 7:** Integrations (GitHub Actions, Jira Cloud app, CI/CD webhooks)
 
-See `NEXT_SESSION.md` for continuation guide.
+**Note**: Phase 3 (session-based features) was SKIPPED. Went directly from Phase 2 to Phase 4 for database-backed user features.
+
+See `PROJECT_STATUS.md` and `TODO.md` for detailed status and action items.
