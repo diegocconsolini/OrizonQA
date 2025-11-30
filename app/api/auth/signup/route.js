@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
-import { db } from '@/lib/db.js';
+import { query } from '@/lib/db.js';
 import { logAudit, getRequestContext } from '@/lib/auditLog.js';
 import { Resend } from 'resend';
 
@@ -125,7 +125,7 @@ export async function POST(request) {
 
     // Check if user already exists
     const existingUserQuery = 'SELECT id FROM users WHERE email = $1';
-    const existingUserResult = await db.query(existingUserQuery, [email]);
+    const existingUserResult = await query(existingUserQuery, [email]);
 
     if (existingUserResult.rows.length > 0) {
       await logAudit({
@@ -160,7 +160,7 @@ export async function POST(request) {
       RETURNING id
     `;
 
-    const insertResult = await db.query(insertQuery, [
+    const insertResult = await query(insertQuery, [
       email,
       fullName,
       passwordHash,
