@@ -1,0 +1,247 @@
+'use client';
+
+/**
+ * Dashboard Page (Main App)
+ *
+ * The main ORIZON application - requires authentication.
+ * Users are redirected here after login.
+ *
+ * Features:
+ * - Code input (paste, GitHub, file upload)
+ * - Analysis configuration
+ * - QA artifact generation
+ * - Results display
+ */
+
+import { useState, useCallback } from 'react';
+import dynamic from 'next/dynamic';
+import { useSession, signOut } from 'next-auth/react';
+import { Loader2, Sparkles, LogOut, User } from 'lucide-react';
+
+// Components
+import Header from '@/app/components/shared/Header';
+import HelpModal from '@/app/components/shared/HelpModal';
+import Alert from '@/app/components/shared/Alert';
+import InputSection from '@/app/components/input/InputSection';
+import ConfigSection from '@/app/components/config/ConfigSection';
+import OutputSection from '@/app/components/output/OutputSection';
+
+// Disable SSR for ApiKeyInput to prevent hydration mismatch from browser extensions
+const ApiKeyInput = dynamic(() => import('@/app/components/config/ApiKeyInput'), { ssr: false });
+
+// Hooks
+import useAnalysis from '@/app/hooks/useAnalysis';
+import useFileUpload from '@/app/hooks/useFileUpload';
+import useGitHubFetch from '@/app/hooks/useGitHubFetch';
+
+export default function Dashboard() {
+  const { data: session } = useSession();
+
+  // Input states
+  const [inputTab, setInputTab] = useState('paste');
+  const [codeInput, setCodeInput] = useState('');
+  const [showHelp, setShowHelp] = useState(false);
+
+  // Config states
+  const [config, setConfig] = useState({
+    userStories: true,
+    testCases: true,
+    acceptanceCriteria: true,
+    edgeCases: false,
+    securityTests: false,
+    outputFormat: 'markdown',
+    testFramework: 'generic',
+    additionalContext: ''
+  });
+
+  // API states
+  const [provider, setProvider] = useState('claude');
+  const [apiKey, setApiKey] = useState('');
+  const [lmStudioUrl, setLmStudioUrl] = useState('http://192.168.2.101:1234');
+  const [selectedModel, setSelectedModel] = useState('');
+  const model = 'claude-sonnet-4-20250514';
+
+  // Custom hooks
+  const {
+    loading: analysisLoading,
+    error,
+    success,
+    results,
+    tokenUsage,
+    analyzeCodebase,
+    clearResults,
+    setError,
+    setSuccess
+  } = useAnalysis();
+
+  const {
+    uploadedFiles,
+    setUploadedFiles,
+    isDragging,
+    setIsDragging,
+    handleDrop,
+    handleFileSelect,
+    clearFiles
+  } = useFileUpload(setError, setSuccess);
+
+  const {
+    githubUrl,
+    setGithubUrl,
+    githubBranch,
+    setGithubBranch,
+    githubToken,
+    setGithubToken,
+    loading: githubLoading,
+    fetchGitHub,
+    availableBranches,
+    fetchingBranches
+  } = useGitHubFetch(setUploadedFiles, setInputTab, setError, setSuccess);
+
+  const loading = analysisLoading || githubLoading;
+
+  // Calculate token estimate
+  const getInputContent = useCallback(() => {
+    if (inputTab === 'paste') return codeInput;
+    if (inputTab === 'upload' || uploadedFiles.length > 0) {
+      return uploadedFiles.map(f => `=== FILE: ${f.name} ===\n${f.content}`).join('\n\n');
+    }
+    return '';
+  }, [inputTab, codeInput, uploadedFiles]);
+
+  const estimatedTokens = Math.ceil(getInputContent().length / 4);
+  const isTruncated = getInputContent().length > 100000;
+
+  const handleAnalyze = async () => {
+    const content = getInputContent();
+    const modelToUse = provider === 'lmstudio' && selectedModel ? selectedModel : model;
+    const initialTab = await analyzeCodebase(content, apiKey, config, modelToUse, provider, lmStudioUrl);
+    // OutputSection handles its own tab state
+  };
+
+  const clearAll = () => {
+    setCodeInput('');
+    clearFiles();
+    setGithubUrl('');
+    clearResults();
+  };
+
+  const canAnalyze = (provider === 'lmstudio' || apiKey) && (codeInput.trim() || uploadedFiles.length > 0);
+
+  return (
+    <div className="min-h-screen bg-bg-dark">
+      {/* User Bar */}
+      <div className="bg-surface-dark/50 border-b border-white/5">
+        <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center">
+              <User className="w-4 h-4 text-primary" />
+            </div>
+            <span className="text-sm text-text-secondary-dark font-secondary">
+              {session?.user?.email || 'User'}
+            </span>
+          </div>
+          <button
+            onClick={() => signOut({ callbackUrl: '/login' })}
+            className="flex items-center gap-2 text-sm text-text-secondary-dark hover:text-white transition-colors"
+          >
+            <LogOut className="w-4 h-4" />
+            <span className="font-secondary">Sign Out</span>
+          </button>
+        </div>
+      </div>
+
+      <div className="p-4 md:p-8">
+        <div>
+          <Header onHelpClick={() => setShowHelp(!showHelp)} />
+
+          {showHelp && <HelpModal onClose={() => setShowHelp(false)} />}
+
+          {error && <Alert type="error" message={error} />}
+          {success && <Alert type="success" message={success} />}
+
+          <InputSection
+            inputTab={inputTab}
+            setInputTab={setInputTab}
+            codeInput={codeInput}
+            setCodeInput={setCodeInput}
+            githubUrl={githubUrl}
+            setGithubUrl={setGithubUrl}
+            githubBranch={githubBranch}
+            setGithubBranch={setGithubBranch}
+            githubToken={githubToken}
+            setGithubToken={setGithubToken}
+            fetchGitHub={fetchGitHub}
+            uploadedFiles={uploadedFiles}
+            setUploadedFiles={setUploadedFiles}
+            isDragging={isDragging}
+            setIsDragging={setIsDragging}
+            handleDrop={handleDrop}
+            handleFileSelect={handleFileSelect}
+            loading={loading}
+            estimatedTokens={estimatedTokens}
+            isTruncated={isTruncated}
+            availableBranches={availableBranches}
+            fetchingBranches={fetchingBranches}
+          />
+
+          <ConfigSection config={config} setConfig={setConfig} />
+
+          <ApiKeyInput
+            provider={provider}
+            setProvider={setProvider}
+            apiKey={apiKey}
+            setApiKey={setApiKey}
+            lmStudioUrl={lmStudioUrl}
+            setLmStudioUrl={setLmStudioUrl}
+            selectedModel={selectedModel}
+            setSelectedModel={setSelectedModel}
+            model={model}
+          />
+
+          <div className="flex gap-4 mb-6">
+            <button
+              onClick={handleAnalyze}
+              disabled={!canAnalyze || loading}
+              className={`flex-1 py-4 rounded-xl font-semibold text-white shadow-lg transition-all flex items-center justify-center gap-3 ${
+                canAnalyze && !loading
+                  ? 'bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 shadow-indigo-500/25 hover:shadow-indigo-500/40'
+                  : 'bg-slate-700 cursor-not-allowed shadow-none'
+              } ${loading ? 'loading-glow' : ''}`}
+            >
+              {loading ? (
+                <>
+                  <Loader2 className="animate-spin" size={20} />
+                  <span>Analyzing your codebase...</span>
+                </>
+              ) : (
+                <>
+                  <Sparkles size={20} />
+                  <span>Analyze Codebase</span>
+                </>
+              )}
+            </button>
+            <button
+              onClick={clearAll}
+              className="px-6 py-4 bg-slate-800/70 hover:bg-slate-700/70 rounded-xl font-medium text-slate-300 hover:text-white transition-all border border-slate-700/50"
+            >
+              Clear All
+            </button>
+          </div>
+
+          {tokenUsage && (
+            <div className="text-sm text-slate-400 text-center mb-6 p-3 bg-slate-800/30 rounded-xl">
+              <span className="text-indigo-400 font-medium">{tokenUsage.input.toLocaleString()}</span> input tokens •
+              <span className="text-purple-400 font-medium ml-1">{tokenUsage.output.toLocaleString()}</span> output tokens
+            </div>
+          )}
+
+          <OutputSection results={results} />
+
+          <div className="text-center mt-8 text-xs text-slate-500">
+            Built with Claude AI • Your API key is never stored
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

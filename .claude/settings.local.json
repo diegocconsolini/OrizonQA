@@ -17,7 +17,8 @@
       "Bash(openssl rand:*)",
       "Bash(test:*)",
       "Bash(npx eslint:*)",
-      "Bash(npm run lint:*)"
+      "Bash(npm run lint:*)",
+      "Bash(mkdir:*)"
     ],
     "deny": [],
     "ask": []
