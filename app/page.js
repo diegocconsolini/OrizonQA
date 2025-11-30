@@ -1,208 +1,373 @@
+/**
+ * Landing Page
+ *
+ * Public marketing page for ORIZON - shown to unauthenticated users.
+ * Authenticated users are redirected to /dashboard via middleware.
+ *
+ * Sections:
+ * - Hero with animated gradient
+ * - Features showcase
+ * - How it works
+ * - Testimonials/Stats
+ * - CTA section
+ *
+ * Design: ORIZON cosmic dark theme with blue (#00D4FF) and purple (#6A00FF)
+ */
+
 'use client';
 
-import { useState, useCallback } from 'react';
-import dynamic from 'next/dynamic';
-import { Loader2, Sparkles } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import Link from 'next/link';
+import Logo from '@/app/components/ui/Logo.jsx';
+import Button from '@/app/components/ui/Button.jsx';
+import {
+  Sparkles,
+  FileCode2,
+  TestTube2,
+  ClipboardCheck,
+  ArrowRight,
+  Github,
+  Zap,
+  Shield,
+  Clock,
+  Code2,
+  Upload,
+  BarChart3,
+  CheckCircle2
+} from 'lucide-react';
 
-// Components
-import Header from './components/shared/Header';
-import HelpModal from './components/shared/HelpModal';
-import Alert from './components/shared/Alert';
-import InputSection from './components/input/InputSection';
-import ConfigSection from './components/config/ConfigSection';
-import OutputSection from './components/output/OutputSection';
+export default function LandingPage() {
+  const [mounted, setMounted] = useState(false);
 
-// Disable SSR for ApiKeyInput to prevent hydration mismatch from browser extensions
-const ApiKeyInput = dynamic(() => import('./components/config/ApiKeyInput'), { ssr: false });
-
-// Hooks
-import useAnalysis from './hooks/useAnalysis';
-import useFileUpload from './hooks/useFileUpload';
-import useGitHubFetch from './hooks/useGitHubFetch';
-
-export default function Home() {
-  // Input states
-  const [inputTab, setInputTab] = useState('paste');
-  const [codeInput, setCodeInput] = useState('');
-  const [showHelp, setShowHelp] = useState(false);
-
-  // Config states
-  const [config, setConfig] = useState({
-    userStories: true,
-    testCases: true,
-    acceptanceCriteria: true,
-    edgeCases: false,
-    securityTests: false,
-    outputFormat: 'markdown',
-    testFramework: 'generic',
-    additionalContext: ''
-  });
-
-  // API states
-  const [provider, setProvider] = useState('claude');
-  const [apiKey, setApiKey] = useState('');
-  const [lmStudioUrl, setLmStudioUrl] = useState('http://192.168.2.101:1234');
-  const [selectedModel, setSelectedModel] = useState('');
-  const model = 'claude-sonnet-4-20250514';
-
-  // Custom hooks
-  const {
-    loading: analysisLoading,
-    error,
-    success,
-    results,
-    tokenUsage,
-    analyzeCodebase,
-    clearResults,
-    setError,
-    setSuccess
-  } = useAnalysis();
-
-  const {
-    uploadedFiles,
-    setUploadedFiles,
-    isDragging,
-    setIsDragging,
-    handleDrop,
-    handleFileSelect,
-    clearFiles
-  } = useFileUpload(setError, setSuccess);
-
-  const {
-    githubUrl,
-    setGithubUrl,
-    githubBranch,
-    setGithubBranch,
-    githubToken,
-    setGithubToken,
-    loading: githubLoading,
-    fetchGitHub,
-    availableBranches,
-    fetchingBranches
-  } = useGitHubFetch(setUploadedFiles, setInputTab, setError, setSuccess);
-
-  const loading = analysisLoading || githubLoading;
-
-  // Calculate token estimate
-  const getInputContent = useCallback(() => {
-    if (inputTab === 'paste') return codeInput;
-    if (inputTab === 'upload' || uploadedFiles.length > 0) {
-      return uploadedFiles.map(f => `=== FILE: ${f.name} ===\n${f.content}`).join('\n\n');
-    }
-    return '';
-  }, [inputTab, codeInput, uploadedFiles]);
-
-  const estimatedTokens = Math.ceil(getInputContent().length / 4);
-  const isTruncated = getInputContent().length > 100000;
-
-  const handleAnalyze = async () => {
-    const content = getInputContent();
-    const modelToUse = provider === 'lmstudio' && selectedModel ? selectedModel : model;
-    const initialTab = await analyzeCodebase(content, apiKey, config, modelToUse, provider, lmStudioUrl);
-    // OutputSection handles its own tab state
-  };
-
-  const clearAll = () => {
-    setCodeInput('');
-    clearFiles();
-    setGithubUrl('');
-    clearResults();
-  };
-
-  const canAnalyze = (provider === 'lmstudio' || apiKey) && (codeInput.trim() || uploadedFiles.length > 0);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   return (
-    <div className="min-h-screen p-4 md:p-8">
-      <div>
-        <Header onHelpClick={() => setShowHelp(!showHelp)} />
+    <div className="min-h-screen bg-bg-dark overflow-hidden">
+      {/* Navigation */}
+      <nav className="fixed top-0 left-0 right-0 z-50 bg-bg-dark/80 backdrop-blur-xl border-b border-white/5">
+        <div className="max-w-7xl mx-auto px-6 py-4">
+          <div className="flex items-center justify-between">
+            <Logo variant="full" color="blue" size="sm" background="dark" />
 
-        {showHelp && <HelpModal onClose={() => setShowHelp(false)} />}
-
-        {error && <Alert type="error" message={error} />}
-        {success && <Alert type="success" message={success} />}
-
-        <InputSection
-          inputTab={inputTab}
-          setInputTab={setInputTab}
-          codeInput={codeInput}
-          setCodeInput={setCodeInput}
-          githubUrl={githubUrl}
-          setGithubUrl={setGithubUrl}
-          githubBranch={githubBranch}
-          setGithubBranch={setGithubBranch}
-          githubToken={githubToken}
-          setGithubToken={setGithubToken}
-          fetchGitHub={fetchGitHub}
-          uploadedFiles={uploadedFiles}
-          setUploadedFiles={setUploadedFiles}
-          isDragging={isDragging}
-          setIsDragging={setIsDragging}
-          handleDrop={handleDrop}
-          handleFileSelect={handleFileSelect}
-          loading={loading}
-          estimatedTokens={estimatedTokens}
-          isTruncated={isTruncated}
-          availableBranches={availableBranches}
-          fetchingBranches={fetchingBranches}
-        />
-
-        <ConfigSection config={config} setConfig={setConfig} />
-
-        <ApiKeyInput
-          provider={provider}
-          setProvider={setProvider}
-          apiKey={apiKey}
-          setApiKey={setApiKey}
-          lmStudioUrl={lmStudioUrl}
-          setLmStudioUrl={setLmStudioUrl}
-          selectedModel={selectedModel}
-          setSelectedModel={setSelectedModel}
-          model={model}
-        />
-
-        <div className="flex gap-4 mb-6">
-          <button
-            onClick={handleAnalyze}
-            disabled={!canAnalyze || loading}
-            className={`flex-1 py-4 rounded-xl font-semibold text-white shadow-lg transition-all flex items-center justify-center gap-3 ${
-              canAnalyze && !loading
-                ? 'bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 shadow-indigo-500/25 hover:shadow-indigo-500/40'
-                : 'bg-slate-700 cursor-not-allowed shadow-none'
-            } ${loading ? 'loading-glow' : ''}`}
-          >
-            {loading ? (
-              <>
-                <Loader2 className="animate-spin" size={20} />
-                <span>Analyzing your codebase...</span>
-              </>
-            ) : (
-              <>
-                <Sparkles size={20} />
-                <span>Analyze Codebase</span>
-              </>
-            )}
-          </button>
-          <button
-            onClick={clearAll}
-            className="px-6 py-4 bg-slate-800/70 hover:bg-slate-700/70 rounded-xl font-medium text-slate-300 hover:text-white transition-all border border-slate-700/50"
-          >
-            Clear All
-          </button>
-        </div>
-
-        {tokenUsage && (
-          <div className="text-sm text-slate-400 text-center mb-6 p-3 bg-slate-800/30 rounded-xl">
-            <span className="text-indigo-400 font-medium">{tokenUsage.input.toLocaleString()}</span> input tokens •
-            <span className="text-purple-400 font-medium ml-1">{tokenUsage.output.toLocaleString()}</span> output tokens
+            <div className="flex items-center gap-4">
+              <Link
+                href="/login"
+                className="text-text-secondary-dark hover:text-white transition-colors font-secondary"
+              >
+                Sign In
+              </Link>
+              <Link href="/signup">
+                <Button variant="primary" size="sm">
+                  Get Started
+                  <ArrowRight className="w-4 h-4 ml-2" />
+                </Button>
+              </Link>
+            </div>
           </div>
-        )}
-
-        <OutputSection results={results} />
-
-        <div className="text-center mt-8 text-xs text-slate-500">
-          Built with Claude AI • Your API key is never stored
         </div>
-      </div>
+      </nav>
+
+      {/* Hero Section */}
+      <section className="relative pt-32 pb-24 px-6">
+        {/* Animated gradient background */}
+        <div className="absolute inset-0 overflow-hidden">
+          <div
+            className={`absolute top-1/4 left-1/4 w-[600px] h-[600px] bg-primary/20 rounded-full blur-[120px] transition-opacity duration-1000 ${
+              mounted ? 'opacity-100' : 'opacity-0'
+            }`}
+          />
+          <div
+            className={`absolute bottom-1/4 right-1/4 w-[500px] h-[500px] bg-secondary/20 rounded-full blur-[100px] transition-opacity duration-1000 delay-300 ${
+              mounted ? 'opacity-100' : 'opacity-0'
+            }`}
+          />
+        </div>
+
+        <div className="relative max-w-5xl mx-auto text-center">
+          {/* Badge */}
+          <div
+            className={`inline-flex items-center gap-2 px-4 py-2 bg-primary/10 border border-primary/20 rounded-full mb-8 transition-all duration-700 ${
+              mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
+            }`}
+          >
+            <Sparkles className="w-4 h-4 text-primary" />
+            <span className="text-sm text-primary font-medium font-secondary">
+              AI-Powered QA Analysis
+            </span>
+          </div>
+
+          {/* Headline */}
+          <h1
+            className={`text-5xl md:text-7xl font-bold text-white mb-6 font-primary tracking-tight transition-all duration-700 delay-100 ${
+              mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
+            }`}
+          >
+            Generate QA Artifacts
+            <br />
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-cyan-400 to-secondary">
+              In Seconds
+            </span>
+          </h1>
+
+          {/* Subheadline */}
+          <p
+            className={`text-xl text-text-secondary-dark max-w-2xl mx-auto mb-10 font-secondary leading-relaxed transition-all duration-700 delay-200 ${
+              mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
+            }`}
+          >
+            Transform your codebase into comprehensive user stories, test cases,
+            and acceptance criteria using Claude AI. Paste code, fetch from GitHub,
+            or upload files.
+          </p>
+
+          {/* CTA Buttons */}
+          <div
+            className={`flex flex-col sm:flex-row items-center justify-center gap-4 transition-all duration-700 delay-300 ${
+              mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
+            }`}
+          >
+            <Link href="/signup">
+              <Button variant="primary" size="lg" className="px-8">
+                Start Free
+                <ArrowRight className="w-5 h-5 ml-2" />
+              </Button>
+            </Link>
+            <Link href="/login">
+              <Button variant="ghost" size="lg" className="px-8">
+                <Github className="w-5 h-5 mr-2" />
+                Sign In
+              </Button>
+            </Link>
+          </div>
+
+          {/* Trust indicators */}
+          <div
+            className={`flex items-center justify-center gap-8 mt-12 transition-all duration-700 delay-500 ${
+              mounted ? 'opacity-100' : 'opacity-0'
+            }`}
+          >
+            <div className="flex items-center gap-2 text-text-secondary-dark">
+              <Shield className="w-4 h-4 text-green-400" />
+              <span className="text-sm font-secondary">No data stored</span>
+            </div>
+            <div className="flex items-center gap-2 text-text-secondary-dark">
+              <Zap className="w-4 h-4 text-yellow-400" />
+              <span className="text-sm font-secondary">Instant analysis</span>
+            </div>
+            <div className="flex items-center gap-2 text-text-secondary-dark">
+              <Clock className="w-4 h-4 text-primary" />
+              <span className="text-sm font-secondary">10x faster</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Features Section */}
+      <section className="py-24 px-6 relative">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl md:text-4xl font-bold text-white mb-4 font-primary">
+              Everything You Need for QA
+            </h2>
+            <p className="text-text-secondary-dark max-w-2xl mx-auto font-secondary">
+              Comprehensive QA artifact generation powered by Claude AI
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-8">
+            {/* Feature 1 */}
+            <div className="bg-surface-dark/50 border border-white/5 rounded-2xl p-8 hover:border-primary/30 transition-all duration-300 group">
+              <div className="w-14 h-14 bg-primary/10 rounded-xl flex items-center justify-center mb-6 group-hover:bg-primary/20 transition-colors">
+                <FileCode2 className="w-7 h-7 text-primary" />
+              </div>
+              <h3 className="text-xl font-semibold text-white mb-3 font-primary">
+                User Stories
+              </h3>
+              <p className="text-text-secondary-dark font-secondary leading-relaxed">
+                Generate comprehensive user stories with personas, acceptance criteria,
+                and priority levels from your code.
+              </p>
+            </div>
+
+            {/* Feature 2 */}
+            <div className="bg-surface-dark/50 border border-white/5 rounded-2xl p-8 hover:border-secondary/30 transition-all duration-300 group">
+              <div className="w-14 h-14 bg-secondary/10 rounded-xl flex items-center justify-center mb-6 group-hover:bg-secondary/20 transition-colors">
+                <TestTube2 className="w-7 h-7 text-secondary" />
+              </div>
+              <h3 className="text-xl font-semibold text-white mb-3 font-primary">
+                Test Cases
+              </h3>
+              <p className="text-text-secondary-dark font-secondary leading-relaxed">
+                Auto-generate unit tests, integration tests, and E2E scenarios
+                for Jest, Pytest, JUnit, and more.
+              </p>
+            </div>
+
+            {/* Feature 3 */}
+            <div className="bg-surface-dark/50 border border-white/5 rounded-2xl p-8 hover:border-green-400/30 transition-all duration-300 group">
+              <div className="w-14 h-14 bg-green-400/10 rounded-xl flex items-center justify-center mb-6 group-hover:bg-green-400/20 transition-colors">
+                <ClipboardCheck className="w-7 h-7 text-green-400" />
+              </div>
+              <h3 className="text-xl font-semibold text-white mb-3 font-primary">
+                Acceptance Criteria
+              </h3>
+              <p className="text-text-secondary-dark font-secondary leading-relaxed">
+                Define clear acceptance criteria with Given-When-Then format,
+                edge cases, and validation rules.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* How It Works Section */}
+      <section className="py-24 px-6 bg-surface-dark/30">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl md:text-4xl font-bold text-white mb-4 font-primary">
+              How It Works
+            </h2>
+            <p className="text-text-secondary-dark max-w-2xl mx-auto font-secondary">
+              Three simple steps to transform your code into QA artifacts
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-12">
+            {/* Step 1 */}
+            <div className="text-center">
+              <div className="w-16 h-16 bg-primary/10 border border-primary/30 rounded-full flex items-center justify-center mx-auto mb-6">
+                <Code2 className="w-8 h-8 text-primary" />
+              </div>
+              <div className="text-primary font-bold text-sm mb-2 font-secondary">STEP 1</div>
+              <h3 className="text-xl font-semibold text-white mb-3 font-primary">
+                Input Your Code
+              </h3>
+              <p className="text-text-secondary-dark font-secondary">
+                Paste code directly, fetch from a GitHub repository, or upload files
+                including .zip archives.
+              </p>
+            </div>
+
+            {/* Step 2 */}
+            <div className="text-center">
+              <div className="w-16 h-16 bg-secondary/10 border border-secondary/30 rounded-full flex items-center justify-center mx-auto mb-6">
+                <Upload className="w-8 h-8 text-secondary" />
+              </div>
+              <div className="text-secondary font-bold text-sm mb-2 font-secondary">STEP 2</div>
+              <h3 className="text-xl font-semibold text-white mb-3 font-primary">
+                Configure Analysis
+              </h3>
+              <p className="text-text-secondary-dark font-secondary">
+                Select which artifacts to generate, choose your test framework,
+                and customize output format.
+              </p>
+            </div>
+
+            {/* Step 3 */}
+            <div className="text-center">
+              <div className="w-16 h-16 bg-green-400/10 border border-green-400/30 rounded-full flex items-center justify-center mx-auto mb-6">
+                <BarChart3 className="w-8 h-8 text-green-400" />
+              </div>
+              <div className="text-green-400 font-bold text-sm mb-2 font-secondary">STEP 3</div>
+              <h3 className="text-xl font-semibold text-white mb-3 font-primary">
+                Get Results
+              </h3>
+              <p className="text-text-secondary-dark font-secondary">
+                Receive comprehensive QA artifacts in seconds. Copy, download,
+                or export to Jira.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Stats Section */}
+      <section className="py-24 px-6">
+        <div className="max-w-4xl mx-auto">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+            <div>
+              <div className="text-4xl md:text-5xl font-bold text-primary mb-2 font-primary">10x</div>
+              <div className="text-text-secondary-dark font-secondary">Faster QA</div>
+            </div>
+            <div>
+              <div className="text-4xl md:text-5xl font-bold text-secondary mb-2 font-primary">50+</div>
+              <div className="text-text-secondary-dark font-secondary">File Types</div>
+            </div>
+            <div>
+              <div className="text-4xl md:text-5xl font-bold text-green-400 mb-2 font-primary">100%</div>
+              <div className="text-text-secondary-dark font-secondary">Privacy</div>
+            </div>
+            <div>
+              <div className="text-4xl md:text-5xl font-bold text-orange-400 mb-2 font-primary">24/7</div>
+              <div className="text-text-secondary-dark font-secondary">Available</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Final CTA Section */}
+      <section className="py-24 px-6 relative">
+        <div className="absolute inset-0 bg-gradient-to-t from-primary/5 to-transparent" />
+
+        <div className="relative max-w-3xl mx-auto text-center">
+          <h2 className="text-3xl md:text-4xl font-bold text-white mb-6 font-primary">
+            Ready to Transform Your QA Process?
+          </h2>
+          <p className="text-xl text-text-secondary-dark mb-10 font-secondary">
+            Join developers who are saving hours on QA documentation.
+          </p>
+
+          <Link href="/signup">
+            <Button variant="primary" size="lg" className="px-10">
+              Get Started Free
+              <ArrowRight className="w-5 h-5 ml-2" />
+            </Button>
+          </Link>
+
+          <div className="flex items-center justify-center gap-6 mt-8">
+            <div className="flex items-center gap-2 text-text-secondary-dark">
+              <CheckCircle2 className="w-4 h-4 text-green-400" />
+              <span className="text-sm font-secondary">No credit card required</span>
+            </div>
+            <div className="flex items-center gap-2 text-text-secondary-dark">
+              <CheckCircle2 className="w-4 h-4 text-green-400" />
+              <span className="text-sm font-secondary">Use your own API key</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="border-t border-white/5 py-12 px-6">
+        <div className="max-w-6xl mx-auto">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+            <Logo variant="full" color="blue" size="sm" background="dark" />
+
+            <div className="flex items-center gap-8 text-sm text-text-secondary-dark font-secondary">
+              <Link href="/login" className="hover:text-white transition-colors">
+                Sign In
+              </Link>
+              <Link href="/signup" className="hover:text-white transition-colors">
+                Sign Up
+              </Link>
+              <a
+                href="https://github.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hover:text-white transition-colors"
+              >
+                GitHub
+              </a>
+            </div>
+
+            <div className="text-sm text-text-secondary-dark font-secondary">
+              &copy; {new Date().getFullYear()} ORIZON. All rights reserved.
+            </div>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }
