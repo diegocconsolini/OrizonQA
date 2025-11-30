@@ -83,10 +83,10 @@ export default function Logo({
       // Purple variant - currently only have dark version
       logoPath = '/logos/orizon-full-purple-dark.png';
     } else {
-      // Blue variant (default)
+      // Blue variant (default) - use official transparent logos
       logoPath = background === 'dark'
-        ? '/logos/orizon-full-blue-dark.png'
-        : '/logos/orizon-full-blue-light.png';
+        ? '/logos/orizon-full-blue-black.png'  // For dark backgrounds
+        : '/logos/orizon-full-blue-white.png';  // For light backgrounds
     }
 
     return (
