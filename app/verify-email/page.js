@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import VerificationCodeInput from '@/app/components/auth/VerificationCodeInput.jsx';
 import Button from '@/app/components/ui/Button.jsx';
@@ -10,6 +10,7 @@ import { Mail, Check, RefreshCw } from 'lucide-react';
 export default function VerifyEmailPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const formRef = useRef(null);
 
   const [email, setEmail] = useState('');
   const [code, setCode] = useState('');
@@ -27,6 +28,24 @@ export default function VerifyEmailPage() {
       setEmail(decodeURIComponent(emailParam));
     }
   }, [searchParams]);
+
+  // Attach form submit handler manually after hydration
+  useEffect(() => {
+    const form = formRef.current;
+    if (!form) return;
+
+    const handleSubmit = (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      const trimmedEmail = email.trim();
+      if (trimmedEmail) {
+        router.push(`/verify-email?email=${encodeURIComponent(trimmedEmail)}`);
+      }
+    };
+
+    form.addEventListener('submit', handleSubmit);
+    return () => form.removeEventListener('submit', handleSubmit);
+  }, [email, router]);
 
   // Countdown timer
   useEffect(() => {
@@ -130,14 +149,7 @@ export default function VerifyEmailPage() {
           </div>
 
           <div className="bg-surface-dark rounded-2xl shadow-xl border border-white/10 p-8">
-            <form onSubmit={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              const trimmedEmail = email.trim();
-              if (trimmedEmail) {
-                router.push(`/verify-email?email=${encodeURIComponent(trimmedEmail)}`);
-              }
-            }}>
+            <form ref={formRef}>
               <input
                 type="email"
                 value={email}
