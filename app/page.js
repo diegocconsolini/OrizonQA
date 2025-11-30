@@ -34,7 +34,22 @@ export default function LandingPage() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-bg-dark">
+    <div className="min-h-screen bg-bg-dark relative">
+      {/* VIDEO BACKGROUND */}
+      <div className="fixed inset-0 z-0 overflow-hidden">
+        <video
+          autoPlay
+          loop
+          muted
+          playsInline
+          className="absolute inset-0 w-full h-full object-cover opacity-30"
+        >
+          <source src="/videos/event-horizon.mp4" type="video/mp4" />
+        </video>
+        {/* Dark overlay */}
+        <div className="absolute inset-0 bg-bg-dark/60" />
+      </div>
+
       {/* NAVBAR */}
       <nav className="fixed top-0 left-0 right-0 z-50 bg-bg-dark/90 backdrop-blur-xl border-b border-white/5">
         <div className="container mx-auto px-6">
@@ -59,13 +74,7 @@ export default function LandingPage() {
       </nav>
 
       {/* HERO SECTION */}
-      <section className="relative pt-32 pb-20 px-6 overflow-hidden">
-        {/* Background gradients */}
-        <div className="absolute inset-0">
-          <div className={`absolute top-1/4 left-1/4 w-96 h-96 bg-primary/20 rounded-full blur-3xl transition-opacity duration-1000 ${mounted ? 'opacity-100' : 'opacity-0'}`} />
-          <div className={`absolute bottom-1/4 right-1/4 w-96 h-96 bg-secondary/20 rounded-full blur-3xl transition-opacity duration-1000 delay-300 ${mounted ? 'opacity-100' : 'opacity-0'}`} />
-        </div>
-
+      <section className="relative pt-32 pb-20 px-6 overflow-hidden z-10">
         <div className="relative max-w-5xl mx-auto text-center">
           {/* Badge */}
           <div className={`inline-flex items-center gap-2 px-4 py-2 bg-primary/10 border border-primary/20 rounded-full mb-8 transition-all duration-700 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
@@ -122,7 +131,7 @@ export default function LandingPage() {
       </section>
 
       {/* FEATURES */}
-      <section className="py-24 px-6">
+      <section className="py-24 px-6 relative z-10">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-4xl font-bold text-white mb-4">Everything You Need for QA</h2>
@@ -166,7 +175,7 @@ export default function LandingPage() {
       </section>
 
       {/* HOW IT WORKS */}
-      <section className="py-24 px-6 bg-surface-dark/30">
+      <section className="py-24 px-6 bg-surface-dark/30 relative z-10">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-4xl font-bold text-white mb-4">How It Works</h2>
@@ -213,7 +222,7 @@ export default function LandingPage() {
       </section>
 
       {/* STATS */}
-      <section className="py-24 px-6">
+      <section className="py-24 px-6 relative z-10">
         <div className="max-w-4xl mx-auto">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
             <div>
@@ -237,7 +246,7 @@ export default function LandingPage() {
       </section>
 
       {/* FINAL CTA */}
-      <section className="py-24 px-6 relative">
+      <section className="py-24 px-6 relative z-10">
         <div className="absolute inset-0 bg-gradient-to-t from-primary/5 to-transparent" />
 
         <div className="relative max-w-3xl mx-auto text-center">
@@ -269,7 +278,7 @@ export default function LandingPage() {
       </section>
 
       {/* FOOTER */}
-      <footer className="border-t border-white/5 py-12 px-6">
+      <footer className="border-t border-white/5 py-12 px-6 relative z-10">
         <div className="max-w-6xl mx-auto">
           <div className="flex flex-col md:flex-row items-center justify-between gap-6">
             <Logo variant="full" color="blue" size="3xl" background="dark" />
