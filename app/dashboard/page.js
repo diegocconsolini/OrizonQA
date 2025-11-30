@@ -13,10 +13,10 @@
  * - Results display
  */
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import dynamic from 'next/dynamic';
 import { useSession, signOut } from 'next-auth/react';
-import { Loader2, Sparkles, LogOut, User } from 'lucide-react';
+import { Loader2, Sparkles, LogOut, User, Settings } from 'lucide-react';
 
 // Components
 import Header from '@/app/components/shared/Header';
@@ -35,7 +35,8 @@ import useFileUpload from '@/app/hooks/useFileUpload';
 import useGitHubFetch from '@/app/hooks/useGitHubFetch';
 
 export default function Dashboard() {
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
+  const [settingsLoaded, setSettingsLoaded] = useState(false);
 
   // Input states
   const [inputTab, setInputTab] = useState('paste');
@@ -127,6 +128,33 @@ export default function Dashboard() {
 
   const canAnalyze = (provider === 'lmstudio' || apiKey) && (codeInput.trim() || uploadedFiles.length > 0);
 
+  // Load user settings on mount
+  useEffect(() => {
+    async function loadUserSettings() {
+      if (status === 'loading' || !session || settingsLoaded) return;
+
+      try {
+        const response = await fetch('/api/user/settings');
+        if (response.ok) {
+          const data = await response.json();
+
+          if (data.claudeApiKey) {
+            setApiKey(data.claudeApiKey);
+          }
+          if (data.lmStudioUrl) {
+            setLmStudioUrl(data.lmStudioUrl);
+          }
+        }
+      } catch (error) {
+        console.error('Error loading user settings:', error);
+      } finally {
+        setSettingsLoaded(true);
+      }
+    }
+
+    loadUserSettings();
+  }, [session, status, settingsLoaded, setApiKey, setLmStudioUrl]);
+
   return (
     <div className="min-h-screen bg-bg-dark">
       {/* User Bar */}
@@ -140,13 +168,22 @@ export default function Dashboard() {
               {session?.user?.email || 'User'}
             </span>
           </div>
-          <button
-            onClick={() => signOut({ callbackUrl: '/login' })}
-            className="flex items-center gap-2 text-sm text-text-secondary-dark hover:text-white transition-colors"
-          >
-            <LogOut className="w-4 h-4" />
-            <span className="font-secondary">Sign Out</span>
-          </button>
+          <div className="flex items-center gap-4">
+            <a
+              href="/settings"
+              className="flex items-center gap-2 text-sm text-text-secondary-dark hover:text-white transition-colors"
+            >
+              <Settings className="w-4 h-4" />
+              <span className="font-secondary">Settings</span>
+            </a>
+            <button
+              onClick={() => signOut({ callbackUrl: '/login' })}
+              className="flex items-center gap-2 text-sm text-text-secondary-dark hover:text-white transition-colors"
+            >
+              <LogOut className="w-4 h-4" />
+              <span className="font-secondary">Sign Out</span>
+            </button>
+          </div>
         </div>
       </div>
 

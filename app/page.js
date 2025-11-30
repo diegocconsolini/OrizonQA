@@ -49,7 +49,7 @@ export default function LandingPage() {
       <nav className="fixed top-0 left-0 right-0 z-50 bg-bg-dark/80 backdrop-blur-xl border-b border-white/5">
         <div className="max-w-7xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
-            <Logo variant="full" color="blue" size="sm" background="dark" />
+            <Logo variant="full" color="blue" size="lg" background="dark" />
 
             <div className="flex items-center gap-4">
               <Link
@@ -343,7 +343,7 @@ export default function LandingPage() {
       <footer className="border-t border-white/5 py-12 px-6">
         <div className="max-w-6xl mx-auto">
           <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-            <Logo variant="full" color="blue" size="sm" background="dark" />
+            <Logo variant="full" color="blue" size="lg" background="dark" />
 
             <div className="flex items-center gap-8 text-sm text-text-secondary-dark font-secondary">
               <Link href="/login" className="hover:text-white transition-colors">
