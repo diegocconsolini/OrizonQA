@@ -1,5 +1,5 @@
 /**
- * Next.js Middleware for Route Protection
+ * Next.js Middleware for Route Protection (NextAuth v5 + Next.js 16)
  *
  * Handles authentication and authorization for the ORIZON app.
  *
@@ -20,7 +20,7 @@
  * - /api/* - API routes (handled separately)
  *
  * Features:
- * - JWT session validation via Next-Auth
+ * - JWT session validation via NextAuth v5 (Edge-compatible)
  * - Redirect unauthenticated users to /login
  * - Redirect authenticated users from auth pages to /dashboard
  * - Preserve original URL for post-login redirect
@@ -43,31 +43,10 @@ const authRoutes = [
   '/signup',
 ];
 
-// Public routes (no auth required, no redirect)
-const publicRoutes = [
-  '/',
-  '/verify-email',
-  '/forgot-password',
-  '/reset-password',
-  '/showcase',
-];
-
-export async function middleware(request) {
-  const { pathname } = request.nextUrl;
-
-  // Skip middleware for API routes, static files, and Next.js internals
-  if (
-    pathname.startsWith('/api/') ||
-    pathname.startsWith('/_next/') ||
-    pathname.startsWith('/static/') ||
-    pathname.includes('.') // Files with extensions (images, fonts, etc.)
-  ) {
-    return NextResponse.next();
-  }
-
-  // Get the session using NextAuth v5 auth() function
-  const session = await auth();
-  const isAuthenticated = !!session;
+export default auth((req) => {
+  const { nextUrl } = req;
+  const pathname = nextUrl.pathname;
+  const isAuthenticated = !!req.auth;
 
   // Check if current path is a protected route
   const isProtectedRoute = protectedRoutes.some(route =>
@@ -81,27 +60,25 @@ export async function middleware(request) {
 
   // Protected routes: Redirect to login if not authenticated
   if (isProtectedRoute && !isAuthenticated) {
-    const loginUrl = new URL('/login', request.url);
-
+    const loginUrl = new URL('/login', nextUrl.origin);
     // Preserve the original URL for redirect after login
     loginUrl.searchParams.set('callbackUrl', pathname);
-
     return NextResponse.redirect(loginUrl);
   }
 
   // Auth routes: Redirect to dashboard if already authenticated
   if (isAuthRoute && isAuthenticated) {
-    return NextResponse.redirect(new URL('/dashboard', request.url));
+    return NextResponse.redirect(new URL('/dashboard', nextUrl.origin));
   }
 
   // Landing page: Redirect authenticated users to dashboard
   if (pathname === '/' && isAuthenticated) {
-    return NextResponse.redirect(new URL('/dashboard', request.url));
+    return NextResponse.redirect(new URL('/dashboard', nextUrl.origin));
   }
 
   // Allow all other requests
   return NextResponse.next();
-}
+});
 
 // Configure which routes the middleware runs on
 export const config = {
