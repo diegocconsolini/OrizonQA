@@ -1,5 +1,97 @@
 import NextAuth from 'next-auth';
-import { authOptions } from '@/lib/auth';
+import CredentialsProvider from 'next-auth/providers/credentials';
+
+export const authOptions = {
+  providers: [
+    CredentialsProvider({
+      name: 'Credentials',
+      credentials: {
+        email: { label: "Email", type: "email" },
+        password: { label: "Password", type: "password" }
+      },
+      async authorize(credentials) {
+        if (!credentials?.email || !credentials?.password) {
+          return null;
+        }
+
+        try {
+          // Dynamic imports to avoid build-time execution
+          const { query } = await import('@/lib/db');
+          const bcrypt = (await import('bcryptjs')).default;
+
+          const { email, password } = credentials;
+
+          // Find user by email
+          const result = await query(
+            'SELECT * FROM users WHERE email = $1',
+            [email.toLowerCase()]
+          );
+
+          const user = result.rows?.[0];
+
+          if (!user) {
+            return null;
+          }
+
+          if (!user.email_verified) {
+            throw new Error('Please verify your email first');
+          }
+
+          if (!user.is_active) {
+            throw new Error('Account is inactive. Contact support.');
+          }
+
+          // Verify password
+          const valid = await bcrypt.compare(password, user.password_hash);
+
+          if (!valid) {
+            return null;
+          }
+
+          // Update last login timestamp
+          await query(
+            'UPDATE users SET last_login = NOW() WHERE id = $1',
+            [user.id]
+          );
+
+          // Return user object (will be encoded in JWT)
+          return {
+            id: String(user.id),
+            email: user.email,
+            name: user.full_name,
+          };
+        } catch (error) {
+          console.error('Auth error:', error);
+          throw error;
+        }
+      }
+    })
+  ],
+  pages: {
+    signIn: '/login',
+    signUp: '/signup',
+    error: '/login',
+  },
+  callbacks: {
+    async jwt({ token, user }) {
+      if (user) {
+        token.id = user.id;
+      }
+      return token;
+    },
+    async session({ session, token }) {
+      if (token && session.user) {
+        session.user.id = token.id;
+      }
+      return session;
+    }
+  },
+  session: {
+    strategy: 'jwt',
+    maxAge: 30 * 24 * 60 * 60, // 30 days
+  },
+  secret: process.env.NEXTAUTH_SECRET,
+};
 
 const handler = NextAuth(authOptions);
 
