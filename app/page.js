@@ -39,11 +39,9 @@ export default function LandingPage() {
       <div className="fixed inset-0 z-0 overflow-hidden">
         <video
           autoPlay
-          loop
           muted
           playsInline
-          className="absolute top-0 left-0 w-full object-cover opacity-30"
-          style={{ height: '80vh' }}
+          className="absolute inset-0 w-full h-full object-cover opacity-30"
         >
           <source src="/videos/event-horizon.mp4" type="video/mp4" />
         </video>
@@ -52,7 +50,9 @@ export default function LandingPage() {
       </div>
 
       {/* NAVBAR */}
-      <nav className="fixed top-0 left-0 right-0 z-50 bg-bg-dark/90 backdrop-blur-xl border-b border-white/5">
+      <nav className="fixed top-0 left-0 right-0 z-50 backdrop-blur-xl border-b border-white/5" style={{
+        background: 'linear-gradient(to bottom, rgba(10, 10, 15, 0.2) 0%, rgba(10, 10, 15, 0) 100%)'
+      }}>
         <div className="container mx-auto px-6">
           <div className="flex items-center justify-between h-20">
             {/* Logo */}
