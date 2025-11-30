@@ -1,6 +1,5 @@
 import NextAuth from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
-import bcrypt from 'bcryptjs';
 import { query } from '@/lib/db.js';
 
 /**
@@ -28,6 +27,9 @@ const authOptions = {
         const { email, password } = credentials;
 
         try {
+          // Dynamically import bcryptjs to avoid build-time issues
+          const bcrypt = await import('bcryptjs');
+
           // Find user by email
           const result = await query(
             'SELECT * FROM users WHERE email = $1',
