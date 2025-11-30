@@ -99,6 +99,37 @@
 
 ---
 
+## 🆕 NEW FEATURE: UX-Focused QA Artifacts
+
+### UX Testing & Accessibility Artifacts
+**Estimated Time**: 4-6 hours
+**Status**: PLANNED
+**Feature Doc**: `docs/FEATURE_UX_QA_ARTIFACTS.md`
+
+Extend ORIZON to generate UX-focused QA artifacts while staying within the testing domain:
+- **UX Acceptance Criteria** (usability requirements, response times, interaction patterns)
+- **Accessibility Test Cases** (WCAG compliance, screen reader, keyboard nav)
+- **User Flow Test Scenarios** (journey-based testing, end-to-end paths)
+
+#### Implementation Tasks:
+- [ ] Create 3 new prompt templates (ux_acceptance_criteria.md, accessibility_test_cases.md, user_flow_scenarios.md)
+- [ ] Update `lib/promptBuilder.js` to support new artifact types
+- [ ] Add checkboxes to ConfigSection.jsx for new options
+- [ ] Add new tabs to OutputSection.jsx (UX Criteria, Accessibility, User Flows)
+- [ ] Update landing page copy to mention UX/accessibility testing
+- [ ] Update CLAUDE.md and README.md with new capabilities
+
+**Why Add This**:
+- ✅ Stays within QA/testing domain (not full UI/UX design tool)
+- ✅ Addresses real QA needs (accessibility compliance, usability testing)
+- ✅ Complements existing artifacts
+- ✅ Uses existing Claude AI capabilities
+- ✅ No major architectural changes
+
+**See Full Plan**: Read `docs/FEATURE_UX_QA_ARTIFACTS.md` for complete implementation details, examples, and success metrics.
+
+---
+
 ## 🟡 MEDIUM PRIORITY (Do Soon)
 
 ### 4. Dashboard Improvements
