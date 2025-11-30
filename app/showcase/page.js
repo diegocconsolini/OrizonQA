@@ -31,6 +31,30 @@ import {
   NoResults,
   NoData,
   ErrorState,
+  Logo,
+  Tooltip,
+  Toast,
+  useToast,
+  Dropdown,
+  DropdownItem,
+  DropdownDivider,
+  DropdownButton,
+  ToggleSwitch,
+  Checkbox,
+  CheckboxGroup,
+  Radio,
+  RadioGroup,
+  Breadcrumbs,
+  Pagination,
+  Accordion,
+  Tabs,
+  TabList,
+  TabButton,
+  TabPanels,
+  TabPanel,
+  FileUpload,
+  Avatar,
+  AvatarGroup,
 } from '../components/ui';
 
 import {
@@ -43,11 +67,26 @@ import {
   Plus,
   Search,
   X,
+  ChevronDown,
+  Edit,
+  Trash,
+  Copy,
+  Download,
+  Upload,
+  Bell,
+  Mail,
+  Calendar,
 } from 'lucide-react';
 
 export default function ShowcasePage() {
   const [modalOpen, setModalOpen] = useState(false);
   const [progress, setProgress] = useState(65);
+  const [toggleChecked, setToggleChecked] = useState(false);
+  const [checkboxChecked, setCheckboxChecked] = useState(false);
+  const [radioValue, setRadioValue] = useState('option1');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [activeTab, setActiveTab] = useState('tab1');
+  const [uploadedFiles, setUploadedFiles] = useState([]);
 
   return (
     <div className="min-h-screen bg-black">
