@@ -160,8 +160,9 @@ export default function SignupForm() {
         throw new Error(data.error || 'Signup failed');
       }
 
-      // Redirect to email verification page
-      router.push('/verify-email');
+      // Redirect to email verification page with email parameter
+      const emailParam = encodeURIComponent(formData.email.trim().toLowerCase());
+      router.push(`/verify-email?email=${emailParam}`);
     } catch (err) {
       setError(err.message || 'An error occurred during signup. Please try again.');
     } finally {
