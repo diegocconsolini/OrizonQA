@@ -319,5 +319,45 @@ PORT=3033 npm run dev
 
 ---
 
+## Verification Checklist
+
+After fixing critical issues, verify the system is working:
+
+```bash
+# 1. Check Docker services are running on correct ports
+docker ps | grep -E '(postgres|redis)'
+# Should show:
+# - orizonqa-postgres on 0.0.0.0:5432->5432/tcp
+# - orizonqa-redis on 0.0.0.0:6380->6379/tcp (or 6379)
+
+# 2. Verify database connection from .env.local
+docker exec -i orizonqa-postgres psql -U postgres -d orizonqa -c "SELECT 1;"
+# Should return: 1
+
+# 3. Check user account status
+docker exec -i orizonqa-postgres psql -U postgres -d orizonqa -c \
+  "SELECT email, email_verified, is_active, last_login FROM users WHERE email = 'your@email.com';"
+# Should show: email_verified = t, is_active = t
+
+# 4. Test development server is running
+curl -s http://localhost:3033/api/auth/providers | head -5
+# Should return JSON with credentials provider
+
+# 5. Test login flow manually
+# - Navigate to http://localhost:3033/login
+# - Enter email and password
+# - Should redirect to /dashboard after successful login
+```
+
+**Authentication Flow Status:**
+- ✅ User registration working
+- ✅ Email sending working (Resend with diegocon.nl)
+- ⚠️ Email verification auto-submit bug (postponed - manual activation workaround)
+- ✅ Login working after database port fix
+- ✅ Session management working
+- ✅ Protected route access working
+
+---
+
 *Last Updated: 2025-11-30*
 *Author: Diego Consolini (with Claude Code assistance)*
