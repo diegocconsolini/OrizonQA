@@ -26,9 +26,12 @@ import { Mail, Check, RefreshCw, Loader2 } from 'lucide-react';
 function VerifyEmailContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const emailFromUrl = searchParams.get('email');
 
-  const [email, setEmail] = useState(emailFromUrl || '');
+  // Get email from URL and decode it
+  const emailFromUrl = searchParams.get('email');
+  const decodedEmail = emailFromUrl ? decodeURIComponent(emailFromUrl) : '';
+
+  const [email, setEmail] = useState(decodedEmail);
   const [code, setCode] = useState('');
   const [loading, setLoading] = useState(false);
   const [resending, setResending] = useState(false);
