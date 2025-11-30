@@ -359,5 +359,48 @@ curl -s http://localhost:3033/api/auth/providers | head -5
 
 ---
 
+## Issue #4: Analysis Persistence After NextAuth v5 Upgrade
+
+**Symptoms:**
+- Analysis persistence code exists but uses NextAuth v4 pattern
+- `/api/analyze/route.js` imports undefined `authOptions`
+- Database missing `user_id` column despite code expecting it
+
+**Root Cause:**
+1. NextAuth v4 → v5 upgrade changed auth import pattern
+2. Database schema not updated with `user_id` column
+3. `lib/db.js` has correct code, but database migration never ran
+
+**Solution:**
+1. Update `/app/api/analyze/route.js` to use NextAuth v5:
+   ```javascript
+   // Before (v4 - broken)
+   import { getServerSession } from 'next-auth';
+   import { authOptions } from '../auth/[...nextauth]/route.js';
+   const session = await getServerSession(authOptions);
+
+   // After (v5 - correct)
+   import { auth } from '@/auth';
+   const session = await auth();
+   ```
+
+2. Add missing `user_id` column to database:
+   ```sql
+   ALTER TABLE analyses
+   ADD COLUMN IF NOT EXISTS user_id INTEGER
+   REFERENCES users(id) ON DELETE CASCADE;
+   ```
+
+**Verification:**
+```bash
+# Check column exists
+docker exec -i orizonqa-postgres psql -U postgres -d orizonqa -c "\d analyses"
+
+# Test analysis with logged-in user
+# Should see: "✓ Analysis saved: ID X, User: Y" in console
+```
+
+---
+
 *Last Updated: 2025-11-30*
 *Author: Diego Consolini (with Claude Code assistance)*
