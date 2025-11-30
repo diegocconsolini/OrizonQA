@@ -1,6 +1,20 @@
-import NextAuth from 'next-auth';
-import { authOptions } from '@/lib/authOptions';
+import * as NextAuthModule from 'next-auth';
+import { getAuthOptionsWithProvider } from '@/lib/authOptions';
 
-const handler = NextAuth(authOptions);
+// Handle both ESM and CJS default export
+const NextAuth = NextAuthModule.default || NextAuthModule;
 
-export { handler as GET, handler as POST };
+// Create handler dynamically to avoid build-time issues
+async function createHandler(req, context) {
+  const authOptions = await getAuthOptionsWithProvider();
+  const handler = NextAuth(authOptions);
+  return handler(req, context);
+}
+
+export async function GET(req, context) {
+  return createHandler(req, context);
+}
+
+export async function POST(req, context) {
+  return createHandler(req, context);
+}
