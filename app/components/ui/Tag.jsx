@@ -35,29 +35,29 @@ export default function Tag({
   // Base styles
   const baseStyles = 'inline-flex items-center gap-1.5 font-secondary font-medium rounded-md transition-all duration-200 ease-out';
 
-  // Variant styles
+  // Variant styles - borderless Interstellar style
   const variants = {
     primary: outlined
-      ? 'bg-primary/10 border border-primary/30 text-primary'
+      ? 'bg-primary/10 text-primary'
       : 'bg-primary text-black',
     accent: outlined
-      ? 'bg-accent/10 border border-accent/30 text-accent'
+      ? 'bg-accent/10 text-accent'
       : 'bg-accent text-black',
     quantum: outlined
-      ? 'bg-quantum/10 border border-quantum/30 text-quantum'
+      ? 'bg-quantum/10 text-quantum'
       : 'bg-quantum text-white',
     success: outlined
-      ? 'bg-success/10 border border-success/30 text-success'
+      ? 'bg-success/10 text-success'
       : 'bg-success text-white',
     error: outlined
-      ? 'bg-error/10 border border-error/30 text-error'
+      ? 'bg-error/10 text-error'
       : 'bg-error text-white',
     warning: outlined
-      ? 'bg-warning/10 border border-warning/30 text-warning'
+      ? 'bg-warning/10 text-warning'
       : 'bg-warning text-black',
     neutral: outlined
-      ? 'bg-white/10 border border-white/20 text-white'
-      : 'bg-surface-hover-dark text-white border border-transparent',
+      ? 'bg-white/10 text-white'
+      : 'bg-surface-hover-dark text-white',
   };
 
   // Size styles

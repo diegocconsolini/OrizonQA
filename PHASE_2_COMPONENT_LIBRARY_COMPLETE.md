@@ -24,8 +24,8 @@ Complete implementation of the ORIZON design system component library based on t
 ### 1. **Button Component** (`app/components/ui/Button.jsx`)
 
 **Variants:**
-- Primary: Event Horizon Blue gradient with cosmic glow
-- Secondary: Accretion Orange gradient with glow
+- Primary: Event Horizon Blue solid with cosmic glow
+- Secondary: Quantum Violet (purple) solid with purple glow
 - Ghost: Transparent with blue border
 - Icon: Square button (40×40px) for icons only
 

@@ -28,12 +28,12 @@ export default function Card({
   // Base card styles
   const baseStyles = 'rounded-xl p-6 transition-all duration-200 ease-out';
 
-  // Variant styles
+  // Variant styles - borderless Interstellar style
   const variants = {
-    cosmic: 'bg-surface-dark border border-border-dark shadow-soft hover:shadow-glow-primary/50',
-    feature: 'bg-surface-dark border border-border-dark shadow-soft',
-    interactive: 'bg-surface-dark border border-primary/20 shadow-glow-primary hover:shadow-glow-primary-lg hover:scale-[1.02] cursor-pointer',
-    gradient: 'bg-gradient-surface border border-border-dark shadow-medium',
+    cosmic: 'bg-surface-dark shadow-soft hover:shadow-glow-primary/50',
+    feature: 'bg-surface-dark shadow-soft',
+    interactive: 'bg-surface-dark shadow-glow-primary hover:shadow-glow-primary-lg hover:scale-[1.02] cursor-pointer',
+    gradient: 'bg-gradient-surface shadow-medium',
   };
 
   // Hoverable enhancement (if variant is not already interactive)
@@ -115,14 +115,14 @@ export function CardFooter({ children, className = '', ...props }) {
  */
 export function CardIcon({ children, variant = 'primary', className = '', ...props }) {
   const variants = {
-    primary: 'bg-primary/10 border-primary/30 text-primary shadow-glow-primary/30',
-    accent: 'bg-accent/10 border-accent/30 text-accent shadow-glow-accent/30',
-    quantum: 'bg-quantum/10 border-quantum/30 text-quantum',
+    primary: 'bg-primary/10 text-primary shadow-glow-primary/30',
+    accent: 'bg-accent/10 text-accent shadow-glow-accent/30',
+    quantum: 'bg-quantum/10 text-quantum shadow-[0_0_20px_rgba(106,0,255,0.3)]',
   };
 
   return (
     <div
-      className={`w-12 h-12 rounded-lg flex items-center justify-center border ${variants[variant]} ${className}`}
+      className={`w-12 h-12 rounded-lg flex items-center justify-center ${variants[variant]} ${className}`}
       {...props}
     >
       {children}

@@ -34,10 +34,10 @@ export default function Button({
 
   // Variant styles
   const variants = {
-    primary: 'bg-primary hover:bg-primary-hover active:bg-primary-active text-black shadow-glow-primary hover:shadow-glow-primary-lg active:scale-95 focus:ring-primary',
-    secondary: 'bg-quantum hover:bg-quantum-light text-white shadow-[0_0_20px_rgba(106,0,255,0.3)] hover:shadow-[0_0_40px_rgba(106,0,255,0.5)] active:scale-95 focus:ring-quantum',
-    ghost: 'bg-transparent border border-primary text-primary hover:bg-primary/10 hover:shadow-glow-primary active:bg-primary/20 focus:ring-primary',
-    icon: 'bg-surface-dark text-primary border border-surface-hover-dark hover:bg-surface-hover-dark hover:shadow-glow-primary active:scale-95 focus:ring-primary',
+    primary: 'bg-primary hover:bg-primary-hover active:bg-primary-active text-black shadow-glow-primary hover:shadow-glow-primary-lg active:scale-[0.98] focus:ring-primary focus:ring-opacity-50',
+    secondary: 'bg-quantum hover:bg-quantum-light text-white shadow-[0_0_20px_rgba(106,0,255,0.3)] hover:shadow-[0_0_40px_rgba(106,0,255,0.5)] active:scale-[0.98] focus:ring-quantum focus:ring-opacity-50',
+    ghost: 'bg-transparent text-primary hover:bg-primary/10 hover:shadow-glow-primary active:bg-primary/15 focus:ring-primary focus:ring-opacity-30',
+    icon: 'bg-surface-dark text-primary hover:bg-surface-hover-dark hover:shadow-glow-primary active:scale-[0.98] focus:ring-primary focus:ring-opacity-30',
   };
 
   // Size styles

@@ -27,10 +27,10 @@ export default function Textarea({
   // Base textarea styles
   const baseStyles = 'w-full px-4 py-3 bg-surface-dark border rounded-lg text-base text-white placeholder:text-text-muted-dark transition-all duration-200 ease-out disabled:opacity-50 disabled:cursor-not-allowed';
 
-  // Border styles (normal, focused, error)
+  // Border styles (normal, focused, error) - borderless Interstellar style
   const borderStyles = error
-    ? 'border-error focus:border-error focus:ring-2 focus:ring-error/50'
-    : 'border-border-dark focus:border-primary focus:ring-2 focus:ring-primary/50';
+    ? 'border-0 focus:ring-2 focus:ring-error/30 shadow-[0_0_0_1px_rgba(239,68,68,0.2)]'
+    : 'border-0 focus:ring-2 focus:ring-primary/30 shadow-[0_0_0_1px_rgba(0,212,255,0.1)]';
 
   // Font styles
   const fontStyles = monospace ? 'font-mono' : 'font-secondary';

@@ -94,7 +94,7 @@ export default function Modal({
       {/* Modal Container */}
       <div
         ref={modalRef}
-        className={`relative w-full ${sizes[size]} bg-surface-dark border border-border-dark rounded-2xl shadow-xl overflow-hidden animate-scaleIn ${className}`}
+        className={`relative w-full ${sizes[size]} bg-surface-dark rounded-2xl shadow-xl overflow-hidden animate-scaleIn ${className}`}
         role="dialog"
         aria-modal="true"
         {...props}
