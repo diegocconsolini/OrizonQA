@@ -26,8 +26,12 @@
  * - Preserve original URL for post-login redirect
  */
 
-import { auth } from '@/auth';
+import NextAuth from 'next-auth';
+import { authConfig } from '@/auth.config';
 import { NextResponse } from 'next/server';
+
+// Create edge-compatible auth instance (no database/crypto)
+const { auth } = NextAuth(authConfig);
 
 // Routes that require authentication
 const protectedRoutes = [

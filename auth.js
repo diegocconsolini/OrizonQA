@@ -1,8 +1,13 @@
 /**
- * NextAuth v5 Configuration
+ * NextAuth v5 Full Configuration (Node.js Runtime)
  *
- * This file configures authentication for the ORIZON app using NextAuth v5.
- * It uses the Credentials provider for email/password authentication.
+ * This file extends the base edge-compatible config (auth.config.js)
+ * with database and crypto operations for use in Server Components
+ * and API Routes.
+ *
+ * The split configuration pattern allows:
+ * - Edge runtime middleware to use auth.config.js (no database/crypto)
+ * - Server components to use this file (with database/crypto)
  *
  * Key Features:
  * - Email/password authentication with database verification
@@ -20,10 +25,12 @@
 
 import NextAuth from 'next-auth';
 import Credentials from 'next-auth/providers/credentials';
+import { authConfig } from '@/auth.config';
 import { query } from '@/lib/db';
 import bcrypt from 'bcryptjs';
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
+  ...authConfig,
   providers: [
     Credentials({
       name: 'Credentials',
@@ -87,30 +94,4 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       }
     })
   ],
-  pages: {
-    signIn: '/login',
-    signUp: '/signup',
-    error: '/login',
-  },
-  callbacks: {
-    async jwt({ token, user }) {
-      // Add user ID to token on initial sign in
-      if (user) {
-        token.id = user.id;
-      }
-      return token;
-    },
-    async session({ session, token }) {
-      // Add user ID to session from token
-      if (token && session.user) {
-        session.user.id = token.id;
-      }
-      return session;
-    }
-  },
-  session: {
-    strategy: 'jwt',
-    maxAge: 30 * 24 * 60 * 60, // 30 days
-  },
-  secret: process.env.NEXTAUTH_SECRET,
 });
