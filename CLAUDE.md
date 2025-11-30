@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **Codebase QA Analyzer** - A Next.js web application that uses Claude AI to analyze codebases and generate QA artifacts (user stories, test cases, and acceptance criteria). The app supports multiple input methods: direct code pasting, GitHub repository fetching, and file uploads (including .zip files).
 
-**Current Status:** Phase 2 complete (component refactoring finished). Ready for Phase 3 (user value features).
+**Current Status:** Phase 4 complete (authentication system). Ready for Phase 4.5 (user-linked analysis history).
 
 **Live App:** https://orizon-qa.vercel.app
 
@@ -18,8 +18,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **Icons**: Lucide React
 - **File Processing**: JSZip for handling .zip archives
 - **AI**: Claude API (via Anthropic Messages API) + LM Studio (local LLMs)
-- **Database**: Vercel Postgres (production) / PostgreSQL (local dev)
+- **Database**: PostgreSQL (Vercel Postgres in production)
 - **Cache**: Vercel KV/Redis (for GitHub fetches and analysis results)
+- **Authentication**: Next-Auth v4 (JWT sessions)
+- **Email**: Resend (verification codes, password resets)
+- **Encryption**: AES-256-GCM (for API key storage)
 
 ## Development Commands
 
@@ -60,9 +63,24 @@ The app uses Next.js 14's App Router pattern with a modular component architectu
 ```
 app/
 ├── api/
-│   └── analyze/
-│       └── route.js          # API endpoint for Claude AI interactions
+│   ├── analyze/route.js         # API endpoint for Claude AI interactions
+│   ├── auth/                    # Authentication endpoints
+│   │   ├── [...nextauth]/route.js
+│   │   ├── signup/route.js
+│   │   ├── verify-email/route.js
+│   │   ├── resend-code/route.js
+│   │   ├── forgot-password/route.js
+│   │   └── reset-password/route.js
+│   ├── db/init/route.js         # Database initialization
+│   └── user/settings/route.js   # User settings API
 ├── components/
+│   ├── auth/                    # Authentication forms
+│   │   ├── SignupForm.jsx
+│   │   ├── LoginForm.jsx
+│   │   ├── VerificationCodeInput.jsx
+│   │   ├── ForgotPasswordForm.jsx
+│   │   └── ResetPasswordForm.jsx
+│   ├── ui/                      # UI component library (30+ components)
 │   ├── config/               # Configuration components
 │   │   ├── ApiKeyInput.jsx
 │   │   └── ConfigSection.jsx
