@@ -13,7 +13,8 @@
       "Bash(sudo apt-get update:*)",
       "Bash(sudo apt-get install:*)",
       "Bash(PORT=3033 npm run dev:*)",
-      "Bash(kill:*)"
+      "Bash(kill:*)",
+      "Bash(openssl rand:*)"
     ],
     "deny": [],
     "ask": []
