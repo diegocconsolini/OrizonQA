@@ -16,22 +16,28 @@
 
 'use client';
 
-import { Suspense, useState, useEffect } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import VerificationCodeInput from '@/app/components/auth/VerificationCodeInput.jsx';
 import Button from '@/app/components/ui/Button.jsx';
 import Logo from '@/app/components/ui/Logo.jsx';
 import { Mail, Check, RefreshCw, Loader2 } from 'lucide-react';
 
-function VerifyEmailContent() {
+export default function VerifyEmailPage({ searchParams }) {
+  // Get email from URL searchParams (server-side)
+  const emailFromUrl = searchParams?.email || '';
+  const initialEmail = emailFromUrl ? decodeURIComponent(emailFromUrl) : '';
+
+  return (
+    <div className="min-h-screen bg-bg-dark flex items-center justify-center px-6 py-12">
+      <VerifyEmailContent initialEmail={initialEmail} />
+    </div>
+  );
+}
+
+function VerifyEmailContent({ initialEmail }) {
   const router = useRouter();
-  const searchParams = useSearchParams();
-
-  // Get email from URL and decode it
-  const emailFromUrl = searchParams.get('email');
-  const decodedEmail = emailFromUrl ? decodeURIComponent(emailFromUrl) : '';
-
-  const [email, setEmail] = useState(decodedEmail);
+  const [email, setEmail] = useState(initialEmail);
   const [code, setCode] = useState('');
   const [loading, setLoading] = useState(false);
   const [resending, setResending] = useState(false);
@@ -146,13 +152,6 @@ function VerifyEmailContent() {
       setTimeLeft(600); // 10 minutes
       setResendCooldown(60); // 1 minute cooldown
 
-      // Show success message briefly
-      const successMsg = error;
-      setError('');
-      setTimeout(() => {
-        setError('');
-      }, 3000);
-
     } catch (err) {
       setError(err.message || 'Failed to resend code. Please try again.');
     } finally {
@@ -165,6 +164,17 @@ function VerifyEmailContent() {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
     return `${mins}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  // Handle email form submission
+  const handleEmailSubmit = (e) => {
+    e.preventDefault();
+    const emailValue = email.trim();
+
+    // Only submit if we have a valid email with @ symbol
+    if (emailValue && emailValue.includes('@')) {
+      router.push(`/verify-email?email=${encodeURIComponent(emailValue)}`);
+    }
   };
 
   // If no email provided, show email input
@@ -182,15 +192,7 @@ function VerifyEmailContent() {
         </div>
 
         <div className="bg-surface-dark rounded-2xl shadow-xl border border-white/10 p-8">
-          <form onSubmit={(e) => {
-            e.preventDefault();
-            const emailValue = email.trim();
-            // Only submit if we have a valid email
-            if (emailValue && emailValue.includes('@')) {
-              // Update URL with email
-              router.push(`/verify-email?email=${encodeURIComponent(emailValue)}`);
-            }
-          }}>
+          <form onSubmit={handleEmailSubmit}>
             <input
               type="email"
               value={email}
@@ -328,26 +330,6 @@ function VerifyEmailContent() {
           </p>
         </div>
       )}
-    </div>
-  );
-}
-
-function LoadingState() {
-  return (
-    <div className="w-full max-w-md text-center">
-      <Logo variant="full" color="blue" size="lg" background="dark" className="mx-auto mb-6" />
-      <Loader2 className="w-8 h-8 text-primary animate-spin mx-auto" />
-      <p className="text-text-secondary-dark mt-4 font-secondary">Loading...</p>
-    </div>
-  );
-}
-
-export default function VerifyEmailPage() {
-  return (
-    <div className="min-h-screen bg-bg-dark flex items-center justify-center px-6 py-12">
-      <Suspense fallback={<LoadingState />}>
-        <VerifyEmailContent />
-      </Suspense>
     </div>
   );
 }
