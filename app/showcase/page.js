@@ -418,24 +418,44 @@ export default function ShowcasePage() {
         {/* Logo Section */}
         <section>
           <h2 className="text-2xl font-primary font-semibold text-white mb-6">
-            Logo
+            Logo (Official Gargantua Marks)
           </h2>
           <div className="space-y-8">
             <div>
-              <h3 className="text-lg font-medium text-white mb-3">Variants</h3>
-              <div className="flex flex-wrap gap-8 items-center">
-                <Logo variant="full" color="blue" size="md" />
-                <Logo variant="full" color="purple" size="md" />
-                <Logo variant="icon" color="blue" size="md" />
-                <Logo variant="wordmark" color="blue" size="md" />
+              <h3 className="text-lg font-medium text-white mb-3">Full Logo with Wordmark</h3>
+              <div className="p-6 bg-surface-dark rounded-lg">
+                <Logo variant="full" color="blue" size="lg" />
+              </div>
+              <p className="text-sm text-text-muted-dark mt-2">
+                Note: Wordmark is "RIZON" - the Gargantua logomark IS the "O"
+              </p>
+            </div>
+
+            <div>
+              <h3 className="text-lg font-medium text-white mb-3">Icon Variants</h3>
+              <div className="grid grid-cols-3 gap-4">
+                <div className="p-6 bg-black rounded-lg flex flex-col items-center gap-2">
+                  <Logo variant="icon" color="blue" size="xl" background="dark" />
+                  <p className="text-xs text-text-secondary-dark">Blue (Dark BG)</p>
+                </div>
+                <div className="p-6 bg-white rounded-lg flex flex-col items-center gap-2">
+                  <Logo variant="icon" color="blue" size="xl" background="light" />
+                  <p className="text-xs text-text-secondary-dark">Blue (Light BG)</p>
+                </div>
+                <div className="p-6 bg-white rounded-lg flex flex-col items-center gap-2">
+                  <Logo variant="icon" color="orange" size="xl" />
+                  <p className="text-xs text-text-secondary-dark">Orange Accretion</p>
+                </div>
               </div>
             </div>
+
             <div>
               <h3 className="text-lg font-medium text-white mb-3">Sizes</h3>
-              <div className="flex flex-wrap gap-8 items-end">
+              <div className="flex flex-wrap gap-8 items-end p-6 bg-surface-dark rounded-lg">
                 <Logo variant="full" color="blue" size="sm" />
                 <Logo variant="full" color="blue" size="md" />
                 <Logo variant="full" color="blue" size="lg" />
+                <Logo variant="full" color="blue" size="xl" />
               </div>
             </div>
           </div>
