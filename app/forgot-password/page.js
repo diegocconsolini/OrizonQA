@@ -23,7 +23,7 @@ export default function ForgotPasswordPage() {
       <div className="w-full max-w-md">
         {/* Logo and Header */}
         <div className="text-center mb-8">
-          <Logo variant="full" color="blue" size="md" background="dark" className="mx-auto mb-6" />
+          <Logo variant="full" color="blue" size="lg" background="dark" className="mx-auto mb-6" />
 
           <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
             <KeyRound className="w-8 h-8 text-primary" />

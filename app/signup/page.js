@@ -106,7 +106,7 @@ export default function SignupPage() {
         <div className="w-full max-w-md">
           {/* Mobile Logo */}
           <div className="lg:hidden mb-8 text-center">
-            <Logo variant="full" color="blue" size="md" background="dark" className="mx-auto" />
+            <Logo variant="full" color="blue" size="xl" background="dark" className="mx-auto" />
           </div>
 
           {/* Form Card */}

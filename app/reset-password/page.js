@@ -39,7 +39,7 @@ function ResetPasswordContent() {
       <div className="w-full max-w-md">
         {/* Logo and Header */}
         <div className="text-center mb-8">
-          <Logo variant="full" color="blue" size="md" background="dark" className="mx-auto mb-6" />
+          <Logo variant="full" color="blue" size="lg" background="dark" className="mx-auto mb-6" />
 
           <div className="w-16 h-16 bg-red-500/10 rounded-full flex items-center justify-center mx-auto mb-4">
             <AlertCircle className="w-8 h-8 text-red-400" />
@@ -86,7 +86,7 @@ function ResetPasswordContent() {
     <div className="w-full max-w-md">
       {/* Logo and Header */}
       <div className="text-center mb-8">
-        <Logo variant="full" color="blue" size="md" background="dark" className="mx-auto mb-6" />
+        <Logo variant="full" color="blue" size="lg" background="dark" className="mx-auto mb-6" />
 
         <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
           <KeyRound className="w-8 h-8 text-primary" />
@@ -121,7 +121,7 @@ function ResetPasswordContent() {
 function LoadingState() {
   return (
     <div className="w-full max-w-md text-center">
-      <Logo variant="full" color="blue" size="md" background="dark" className="mx-auto mb-6" />
+      <Logo variant="full" color="blue" size="lg" background="dark" className="mx-auto mb-6" />
       <Loader2 className="w-8 h-8 text-primary animate-spin mx-auto" />
       <p className="text-text-secondary-dark mt-4 font-secondary">Loading...</p>
     </div>

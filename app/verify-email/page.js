@@ -169,7 +169,7 @@ function VerifyEmailContent() {
     return (
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <Logo variant="full" color="blue" size="md" background="dark" className="mx-auto mb-6" />
+          <Logo variant="full" color="blue" size="lg" background="dark" className="mx-auto mb-6" />
           <h1 className="text-2xl font-bold text-white mb-2 font-primary">
             Verify Your Email
           </h1>
@@ -209,7 +209,7 @@ function VerifyEmailContent() {
     <div className="w-full max-w-md">
       {/* Logo and Header */}
       <div className="text-center mb-8">
-        <Logo variant="full" color="blue" size="md" background="dark" className="mx-auto mb-6" />
+        <Logo variant="full" color="blue" size="lg" background="dark" className="mx-auto mb-6" />
 
         {success ? (
           <>
@@ -325,7 +325,7 @@ function VerifyEmailContent() {
 function LoadingState() {
   return (
     <div className="w-full max-w-md text-center">
-      <Logo variant="full" color="blue" size="md" background="dark" className="mx-auto mb-6" />
+      <Logo variant="full" color="blue" size="lg" background="dark" className="mx-auto mb-6" />
       <Loader2 className="w-8 h-8 text-primary animate-spin mx-auto" />
       <p className="text-text-secondary-dark mt-4 font-secondary">Loading...</p>
     </div>

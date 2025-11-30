@@ -58,7 +58,7 @@ export default function LoginPage() {
         <div className="relative z-10 flex flex-col justify-center px-16 w-full">
           {/* Logo */}
           <div className="mb-12">
-            <Logo variant="full" color="blue" size="lg" background="dark" />
+            <Logo variant="full" color="blue" size="xl" background="dark" />
           </div>
 
           {/* Headline */}
@@ -106,7 +106,7 @@ export default function LoginPage() {
         <div className="w-full max-w-md">
           {/* Mobile Logo */}
           <div className="lg:hidden mb-8 text-center">
-            <Logo variant="full" color="blue" size="md" background="dark" className="mx-auto" />
+            <Logo variant="full" color="blue" size="lg" background="dark" className="mx-auto" />
           </div>
 
           {/* Form Card */}

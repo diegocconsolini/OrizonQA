@@ -47,9 +47,9 @@ export default function LandingPage() {
     <div className="min-h-screen bg-bg-dark overflow-hidden">
       {/* Navigation */}
       <nav className="fixed top-0 left-0 right-0 z-50 bg-bg-dark/80 backdrop-blur-xl border-b border-white/5">
-        <div className="max-w-7xl mx-auto px-6 py-4">
+        <div className="max-w-7xl mx-auto px-6 py-3">
           <div className="flex items-center justify-between">
-            <Logo variant="full" color="blue" size="2xl" background="dark" />
+            <Logo variant="full" color="blue" size="lg" background="dark" />
 
             <div className="flex items-center gap-4">
               <Link
@@ -70,7 +70,7 @@ export default function LandingPage() {
       </nav>
 
       {/* Hero Section */}
-      <section className="relative pt-32 pb-24 px-6">
+      <section className="relative pt-40 pb-24 px-6">
         {/* Animated gradient background */}
         <div className="absolute inset-0 overflow-hidden">
           <div
