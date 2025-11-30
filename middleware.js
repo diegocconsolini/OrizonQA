@@ -26,7 +26,7 @@
  * - Preserve original URL for post-login redirect
  */
 
-import { getToken } from 'next-auth/jwt';
+import { auth } from '@/auth';
 import { NextResponse } from 'next/server';
 
 // Routes that require authentication
@@ -65,13 +65,9 @@ export async function middleware(request) {
     return NextResponse.next();
   }
 
-  // Get the session token
-  const token = await getToken({
-    req: request,
-    secret: process.env.NEXTAUTH_SECRET,
-  });
-
-  const isAuthenticated = !!token;
+  // Get the session using NextAuth v5 auth() function
+  const session = await auth();
+  const isAuthenticated = !!session;
 
   // Check if current path is a protected route
   const isProtectedRoute = protectedRoutes.some(route =>
