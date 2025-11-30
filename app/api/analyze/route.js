@@ -1,14 +1,13 @@
 import { NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '../auth/[...nextauth]/route.js';
+import { auth } from '@/auth';
 import { buildPrompt, parseResponse } from '../../../lib/promptBuilder.js';
 import { saveAnalysis } from '../../../lib/db.js';
 import crypto from 'crypto';
 
 export async function POST(request) {
   try {
-    // Get user session (if authenticated)
-    const session = await getServerSession(authOptions);
+    // Get user session (if authenticated) - NextAuth v5
+    const session = await auth();
     const userId = session?.user?.id || null;
 
     const { apiKey, content, config = {}, provider = 'claude', lmStudioUrl } = await request.json();
