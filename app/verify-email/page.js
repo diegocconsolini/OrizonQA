@@ -130,14 +130,18 @@ export default function VerifyEmailPage() {
           </div>
 
           <div className="bg-surface-dark rounded-2xl shadow-xl border border-white/10 p-8">
-            <form onSubmit={handleEmailFormSubmit}>
+            <form onSubmit={(e) => {
+              e.preventDefault();
+              if (email.trim()) {
+                router.push(`/verify-email?email=${encodeURIComponent(email.trim())}`);
+              }
+            }}>
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="you@example.com"
                 autoFocus
-                required
                 className="w-full px-4 py-3 bg-bg-dark border-2 border-white/10 rounded-lg text-white placeholder-text-secondary-dark focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
               />
               <Button
@@ -145,7 +149,7 @@ export default function VerifyEmailPage() {
                 variant="primary"
                 size="lg"
                 className="w-full mt-4"
-                disabled={!email.trim() || !email.includes('@')}
+                disabled={!email.trim()}
               >
                 Continue
               </Button>
