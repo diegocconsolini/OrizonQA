@@ -20,7 +20,8 @@
       "Bash(npm run lint:*)",
       "Bash(mkdir:*)",
       "Bash(npm run build:*)",
-      "Bash(curl:*)"
+      "Bash(curl:*)",
+      "Bash(docker exec:*)"
     ],
     "deny": [],
     "ask": []
