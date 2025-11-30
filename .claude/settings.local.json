@@ -16,7 +16,8 @@
       "Bash(kill:*)",
       "Bash(openssl rand:*)",
       "Bash(test:*)",
-      "Bash(npx eslint:*)"
+      "Bash(npx eslint:*)",
+      "Bash(npm run lint:*)"
     ],
     "deny": [],
     "ask": []
