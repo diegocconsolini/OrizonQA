@@ -45,16 +45,20 @@ export default function LandingPage() {
 
   return (
     <div className="min-h-screen bg-bg-dark overflow-hidden">
-      {/* Navigation */}
+      {/* Navigation - Rebuilt from scratch */}
       <nav className="fixed top-0 left-0 right-0 z-50 bg-bg-dark/80 backdrop-blur-xl border-b border-white/5">
-        <div className="max-w-7xl mx-auto px-6 py-3">
-          <div className="flex items-center justify-between">
-            <Logo variant="full" color="blue" size="2xl" background="dark" />
+        <div className="max-w-7xl mx-auto px-8 py-2">
+          <div className="flex items-center justify-between gap-8">
+            {/* Logo - 2x bigger */}
+            <div className="flex-shrink-0">
+              <Logo variant="full" color="blue" size="2xl" background="dark" />
+            </div>
 
+            {/* Right side actions */}
             <div className="flex items-center gap-4">
               <Link
                 href="/login"
-                className="text-text-secondary-dark hover:text-white transition-colors font-secondary"
+                className="text-text-secondary-dark hover:text-white transition-colors font-secondary text-sm"
               >
                 Sign In
               </Link>
