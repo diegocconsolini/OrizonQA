@@ -179,27 +179,31 @@ function VerifyEmailContent() {
         </div>
 
         <div className="bg-surface-dark rounded-2xl shadow-xl border border-white/10 p-8">
-          <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="you@example.com"
-            className="w-full px-4 py-3 bg-bg-dark border-2 border-white/10 rounded-lg text-white placeholder-text-secondary-dark focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
-          />
-          <Button
-            onClick={() => {
-              if (email) {
-                // Update URL with email
-                router.push(`/verify-email?email=${encodeURIComponent(email)}`);
-              }
-            }}
-            variant="primary"
-            size="lg"
-            className="w-full mt-4"
-            disabled={!email}
-          >
-            Continue
-          </Button>
+          <form onSubmit={(e) => {
+            e.preventDefault();
+            if (email.trim()) {
+              // Update URL with email
+              router.push(`/verify-email?email=${encodeURIComponent(email.trim())}`);
+            }
+          }}>
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="you@example.com"
+              autoFocus
+              className="w-full px-4 py-3 bg-bg-dark border-2 border-white/10 rounded-lg text-white placeholder-text-secondary-dark focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
+            />
+            <Button
+              type="submit"
+              variant="primary"
+              size="lg"
+              className="w-full mt-4"
+              disabled={!email.trim()}
+            >
+              Continue
+            </Button>
+          </form>
         </div>
       </div>
     );
