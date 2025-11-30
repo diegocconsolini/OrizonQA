@@ -415,6 +415,355 @@ export default function ShowcasePage() {
           </div>
         </section>
 
+        {/* Logo Section */}
+        <section>
+          <h2 className="text-2xl font-primary font-semibold text-white mb-6">
+            Logo
+          </h2>
+          <div className="space-y-8">
+            <div>
+              <h3 className="text-lg font-medium text-white mb-3">Variants</h3>
+              <div className="flex flex-wrap gap-8 items-center">
+                <Logo variant="full" color="blue" size="md" />
+                <Logo variant="full" color="purple" size="md" />
+                <Logo variant="icon" color="blue" size="md" />
+                <Logo variant="wordmark" color="blue" size="md" />
+              </div>
+            </div>
+            <div>
+              <h3 className="text-lg font-medium text-white mb-3">Sizes</h3>
+              <div className="flex flex-wrap gap-8 items-end">
+                <Logo variant="full" color="blue" size="sm" />
+                <Logo variant="full" color="blue" size="md" />
+                <Logo variant="full" color="blue" size="lg" />
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Tooltip Section */}
+        <section>
+          <h2 className="text-2xl font-primary font-semibold text-white mb-6">
+            Tooltips
+          </h2>
+          <div className="flex flex-wrap gap-4">
+            <Tooltip content="Tooltip on top" position="top">
+              <Button variant="ghost">Hover me (top)</Button>
+            </Tooltip>
+            <Tooltip content="Tooltip on bottom" position="bottom">
+              <Button variant="ghost">Hover me (bottom)</Button>
+            </Tooltip>
+            <Tooltip content="Tooltip on left" position="left">
+              <Button variant="ghost">Hover me (left)</Button>
+            </Tooltip>
+            <Tooltip content="Tooltip on right" position="right">
+              <Button variant="ghost">Hover me (right)</Button>
+            </Tooltip>
+          </div>
+        </section>
+
+        {/* Dropdown Section */}
+        <section>
+          <h2 className="text-2xl font-primary font-semibold text-white mb-6">
+            Dropdown
+          </h2>
+          <div className="flex flex-wrap gap-4">
+            <Dropdown trigger={<DropdownButton>Actions</DropdownButton>}>
+              <DropdownItem icon={<Edit className="w-4 h-4" />} onClick={() => {}}>
+                Edit
+              </DropdownItem>
+              <DropdownItem icon={<Copy className="w-4 h-4" />} onClick={() => {}}>
+                Duplicate
+              </DropdownItem>
+              <DropdownDivider />
+              <DropdownItem icon={<Trash className="w-4 h-4" />} variant="danger" onClick={() => {}}>
+                Delete
+              </DropdownItem>
+            </Dropdown>
+
+            <Dropdown trigger={<Button variant="secondary" icon={<ChevronDown className="w-4 h-4" />}>Options</Button>}>
+              <DropdownItem icon={<Download className="w-4 h-4" />}>Download</DropdownItem>
+              <DropdownItem icon={<Upload className="w-4 h-4" />}>Upload</DropdownItem>
+              <DropdownItem icon={<Settings className="w-4 h-4" />}>Settings</DropdownItem>
+            </Dropdown>
+          </div>
+        </section>
+
+        {/* Toggle Switch Section */}
+        <section>
+          <h2 className="text-2xl font-primary font-semibold text-white mb-6">
+            Toggle Switch
+          </h2>
+          <div className="space-y-6">
+            <div>
+              <h3 className="text-lg font-medium text-white mb-3">With Labels</h3>
+              <div className="space-y-3">
+                <ToggleSwitch
+                  checked={toggleChecked}
+                  onChange={setToggleChecked}
+                  label="Enable notifications"
+                  labelPosition="right"
+                />
+                <ToggleSwitch
+                  checked={false}
+                  onChange={() => {}}
+                  label="Dark mode"
+                  labelPosition="right"
+                  color="secondary"
+                />
+                <ToggleSwitch
+                  checked={true}
+                  onChange={() => {}}
+                  label="Auto-save"
+                  labelPosition="right"
+                  disabled
+                />
+              </div>
+            </div>
+            <div>
+              <h3 className="text-lg font-medium text-white mb-3">Sizes</h3>
+              <div className="flex gap-4 items-center">
+                <ToggleSwitch size="sm" checked={true} onChange={() => {}} />
+                <ToggleSwitch size="md" checked={true} onChange={() => {}} />
+                <ToggleSwitch size="lg" checked={true} onChange={() => {}} />
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Checkbox Section */}
+        <section>
+          <h2 className="text-2xl font-primary font-semibold text-white mb-6">
+            Checkboxes
+          </h2>
+          <div className="space-y-6">
+            <div>
+              <h3 className="text-lg font-medium text-white mb-3">States</h3>
+              <CheckboxGroup>
+                <Checkbox
+                  checked={checkboxChecked}
+                  onChange={setCheckboxChecked}
+                  label="Accept terms and conditions"
+                />
+                <Checkbox
+                  checked={true}
+                  onChange={() => {}}
+                  label="Checked checkbox"
+                />
+                <Checkbox
+                  checked={false}
+                  indeterminate={true}
+                  onChange={() => {}}
+                  label="Indeterminate state"
+                />
+                <Checkbox
+                  checked={false}
+                  onChange={() => {}}
+                  label="Disabled checkbox"
+                  disabled
+                />
+              </CheckboxGroup>
+            </div>
+            <div>
+              <h3 className="text-lg font-medium text-white mb-3">Sizes</h3>
+              <div className="flex gap-4 items-center">
+                <Checkbox size="sm" checked={true} onChange={() => {}} label="Small" />
+                <Checkbox size="md" checked={true} onChange={() => {}} label="Medium" />
+                <Checkbox size="lg" checked={true} onChange={() => {}} label="Large" />
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Radio Section */}
+        <section>
+          <h2 className="text-2xl font-primary font-semibold text-white mb-6">
+            Radio Buttons
+          </h2>
+          <div className="space-y-6">
+            <div>
+              <h3 className="text-lg font-medium text-white mb-3">Radio Group</h3>
+              <RadioGroup value={radioValue} onChange={setRadioValue} name="example">
+                <Radio value="option1" label="Option 1" name="example" checked={radioValue === 'option1'} onChange={() => setRadioValue('option1')} />
+                <Radio value="option2" label="Option 2" name="example" checked={radioValue === 'option2'} onChange={() => setRadioValue('option2')} />
+                <Radio value="option3" label="Option 3" name="example" checked={radioValue === 'option3'} onChange={() => setRadioValue('option3')} />
+              </RadioGroup>
+            </div>
+            <div>
+              <h3 className="text-lg font-medium text-white mb-3">Sizes</h3>
+              <div className="flex gap-4 items-center">
+                <Radio size="sm" checked={true} onChange={() => {}} label="Small" />
+                <Radio size="md" checked={true} onChange={() => {}} label="Medium" />
+                <Radio size="lg" checked={true} onChange={() => {}} label="Large" />
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Breadcrumbs Section */}
+        <section>
+          <h2 className="text-2xl font-primary font-semibold text-white mb-6">
+            Breadcrumbs
+          </h2>
+          <div className="space-y-4">
+            <Breadcrumbs
+              items={[
+                { label: 'Dashboard', href: '#' },
+                { label: 'Projects', href: '#' },
+                { label: 'Current Project' }
+              ]}
+            />
+            <Breadcrumbs
+              showHome
+              items={[
+                { label: 'Settings', href: '#' },
+                { label: 'Profile', href: '#' },
+                { label: 'Security' }
+              ]}
+            />
+          </div>
+        </section>
+
+        {/* Pagination Section */}
+        <section>
+          <h2 className="text-2xl font-primary font-semibold text-white mb-6">
+            Pagination
+          </h2>
+          <div className="space-y-6">
+            <div>
+              <h3 className="text-lg font-medium text-white mb-3">Full Pagination</h3>
+              <Pagination
+                currentPage={currentPage}
+                totalPages={10}
+                onPageChange={setCurrentPage}
+                showFirstLast
+                maxVisible={5}
+              />
+            </div>
+          </div>
+        </section>
+
+        {/* Accordion Section */}
+        <section>
+          <h2 className="text-2xl font-primary font-semibold text-white mb-6">
+            Accordion
+          </h2>
+          <Accordion
+            items={[
+              {
+                title: 'What is ORIZON?',
+                content: 'ORIZON is a cosmic-themed QA analysis platform built with Next.js and powered by AI.',
+                icon: <Star className="w-5 h-5 text-primary" />
+              },
+              {
+                title: 'How does it work?',
+                content: 'It uses advanced AI to analyze your codebase and generate comprehensive QA artifacts including user stories, test cases, and acceptance criteria.',
+              },
+              {
+                title: 'What technologies are used?',
+                content: 'ORIZON is built with Next.js 14, Tailwind CSS, and integrates with Claude AI for intelligent code analysis.',
+              }
+            ]}
+            allowMultiple
+            defaultOpen={[0]}
+          />
+        </section>
+
+        {/* Tabs Section */}
+        <section>
+          <h2 className="text-2xl font-primary font-semibold text-white mb-6">
+            Tabs
+          </h2>
+          <Tabs defaultValue="overview">
+            <TabList variant="default">
+              <TabButton value="overview" icon={<Home className="w-4 h-4" />}>Overview</TabButton>
+              <TabButton value="analytics" badge="12">Analytics</TabButton>
+              <TabButton value="settings" icon={<Settings className="w-4 h-4" />}>Settings</TabButton>
+            </TabList>
+
+            <TabPanels>
+              <TabPanel value="overview">
+                <Card variant="cosmic" className="mt-4">
+                  <CardContent>
+                    <p className="text-text-secondary-dark">
+                      This is the overview tab content. Tabs support icons, badges, and multiple variants.
+                    </p>
+                  </CardContent>
+                </Card>
+              </TabPanel>
+              <TabPanel value="analytics">
+                <Card variant="cosmic" className="mt-4">
+                  <CardContent>
+                    <p className="text-text-secondary-dark">
+                      Analytics content goes here. The badge shows 12 new items.
+                    </p>
+                  </CardContent>
+                </Card>
+              </TabPanel>
+              <TabPanel value="settings">
+                <Card variant="cosmic" className="mt-4">
+                  <CardContent>
+                    <p className="text-text-secondary-dark">
+                      Settings and configuration options would appear here.
+                    </p>
+                  </CardContent>
+                </Card>
+              </TabPanel>
+            </TabPanels>
+          </Tabs>
+        </section>
+
+        {/* File Upload Section */}
+        <section>
+          <h2 className="text-2xl font-primary font-semibold text-white mb-6">
+            File Upload
+          </h2>
+          <FileUpload
+            onFilesSelected={setUploadedFiles}
+            accept="image/*,.pdf,.doc,.docx"
+            maxSize={5242880}
+            multiple
+            showPreview
+          />
+        </section>
+
+        {/* Avatar Section */}
+        <section>
+          <h2 className="text-2xl font-primary font-semibold text-white mb-6">
+            Avatars
+          </h2>
+          <div className="space-y-6">
+            <div>
+              <h3 className="text-lg font-medium text-white mb-3">With Initials</h3>
+              <div className="flex gap-4 items-center">
+                <Avatar initials="JD" size="sm" />
+                <Avatar initials="AB" size="md" />
+                <Avatar initials="XY" size="lg" />
+                <Avatar initials="CD" size="xl" />
+              </div>
+            </div>
+            <div>
+              <h3 className="text-lg font-medium text-white mb-3">With Status</h3>
+              <div className="flex gap-4 items-center">
+                <Avatar initials="JD" status="online" />
+                <Avatar initials="AB" status="busy" />
+                <Avatar initials="XY" status="away" />
+                <Avatar initials="CD" status="offline" />
+              </div>
+            </div>
+            <div>
+              <h3 className="text-lg font-medium text-white mb-3">Avatar Group</h3>
+              <AvatarGroup max={3} size="md">
+                <Avatar initials="JD" />
+                <Avatar initials="AB" />
+                <Avatar initials="XY" />
+                <Avatar initials="CD" />
+                <Avatar initials="EF" />
+              </AvatarGroup>
+            </div>
+          </div>
+        </section>
+
         {/* Modal Section */}
         <section>
           <h2 className="text-2xl font-primary font-semibold text-white mb-6">
