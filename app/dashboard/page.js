@@ -68,6 +68,9 @@ export default function Dashboard() {
   const [apiKey, setApiKey] = useState('');
   const [lmStudioUrl, setLmStudioUrl] = useState('http://192.168.2.101:1234');
   const [selectedModel, setSelectedModel] = useState('');
+  const [usingSavedKey, setUsingSavedKey] = useState(false);
+  const [savedKeyAvailable, setSavedKeyAvailable] = useState(false);
+  const [savedApiKey, setSavedApiKey] = useState('');
   const model = 'claude-sonnet-4-20250514';
 
   // Custom hooks
@@ -144,7 +147,12 @@ export default function Dashboard() {
         const response = await fetch('/api/user/settings');
         if (response.ok) {
           const data = await response.json();
-          if (data.claudeApiKey) setApiKey(data.claudeApiKey);
+          if (data.claudeApiKey) {
+            setSavedApiKey(data.claudeApiKey);
+            setApiKey(data.claudeApiKey);
+            setUsingSavedKey(true);
+            setSavedKeyAvailable(true);
+          }
           if (data.lmStudioUrl) setLmStudioUrl(data.lmStudioUrl);
         }
       } catch (error) {
@@ -156,6 +164,13 @@ export default function Dashboard() {
 
     loadUserSettings();
   }, [session, status, settingsLoaded]);
+
+  // Handle switching back to saved key
+  useEffect(() => {
+    if (usingSavedKey && savedApiKey) {
+      setApiKey(savedApiKey);
+    }
+  }, [usingSavedKey, savedApiKey]);
 
   return (
     <AppLayout>
@@ -217,6 +232,9 @@ export default function Dashboard() {
                   selectedModel={selectedModel}
                   setSelectedModel={setSelectedModel}
                   model={model}
+                  usingSavedKey={usingSavedKey}
+                  setUsingSavedKey={setUsingSavedKey}
+                  savedKeyAvailable={savedKeyAvailable}
                 />
               </TabPanel>
 

@@ -1,4 +1,4 @@
-import { AlertCircle, Server, RefreshCw, CheckCircle, XCircle, Loader2 } from 'lucide-react';
+import { AlertCircle, Server, RefreshCw, CheckCircle, XCircle, Loader2, Key, Lock } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import useLMStudio from '../../hooks/useLMStudio';
 
@@ -11,7 +11,10 @@ export default function ApiKeyInput({
   setLmStudioUrl,
   selectedModel,
   setSelectedModel,
-  model
+  model,
+  usingSavedKey = false,
+  setUsingSavedKey,
+  savedKeyAvailable = false
 }) {
   const [mounted, setMounted] = useState(false);
   const {
@@ -83,25 +86,63 @@ export default function ApiKeyInput({
 
       {/* Claude API Key */}
       {provider === 'claude' && (
-        <div className="flex flex-col md:flex-row gap-4">
-          <div className="flex-1">
-            <label className="block text-sm text-slate-400 mb-2 font-medium">Claude API Key</label>
-            <input
-              type="password"
-              value={apiKey}
-              onChange={(e) => setApiKey(e.target.value)}
-              placeholder="sk-ant-..."
-              className="w-full bg-slate-900/70 border border-slate-700/50 rounded-xl p-3 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-indigo-500/50 focus:ring-2 focus:ring-indigo-500/20 transition-all"
-            />
-          </div>
-          <div className="md:w-52">
-            <label className="block text-sm text-slate-400 mb-2 font-medium">Model</label>
-            <input
-              type="text"
-              value={model}
-              disabled
-              className="w-full bg-slate-900/50 border border-slate-700/30 rounded-xl p-3 text-sm text-slate-500"
-            />
+        <div className="space-y-4">
+          {/* Saved Key Indicator & Toggle */}
+          {savedKeyAvailable && (
+            <div className="flex items-center justify-between p-3 bg-emerald-500/10 border border-emerald-500/30 rounded-xl">
+              <div className="flex items-center gap-2">
+                <Lock className="text-emerald-400" size={16} />
+                <span className="text-sm text-emerald-200 font-medium">
+                  {usingSavedKey ? 'Using saved API key from Settings' : 'Saved API key available'}
+                </span>
+              </div>
+              <button
+                onClick={() => {
+                  if (usingSavedKey) {
+                    // Switch to custom key mode
+                    setUsingSavedKey(false);
+                    setApiKey('');
+                  } else {
+                    // Switch back to saved key (reload from settings)
+                    setUsingSavedKey(true);
+                    // Key will be reloaded from Dashboard's useEffect
+                  }
+                }}
+                className="px-3 py-1.5 bg-slate-700/70 hover:bg-slate-600/70 rounded-lg text-xs font-medium text-slate-200 transition-all"
+              >
+                {usingSavedKey ? 'Use Custom Key' : 'Use Saved Key'}
+              </button>
+            </div>
+          )}
+
+          <div className="flex flex-col md:flex-row gap-4">
+            <div className="flex-1">
+              <label className="block text-sm text-slate-400 mb-2 font-medium">
+                Claude API Key
+                {usingSavedKey && savedKeyAvailable && (
+                  <span className="ml-2 text-xs text-emerald-400">● Auto-loaded</span>
+                )}
+              </label>
+              <input
+                type="password"
+                value={apiKey}
+                onChange={(e) => setApiKey(e.target.value)}
+                placeholder={usingSavedKey ? "••••••••••••••••" : "sk-ant-..."}
+                disabled={usingSavedKey && savedKeyAvailable}
+                className={`w-full bg-slate-900/70 border border-slate-700/50 rounded-xl p-3 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-indigo-500/50 focus:ring-2 focus:ring-indigo-500/20 transition-all ${
+                  usingSavedKey && savedKeyAvailable ? 'opacity-60 cursor-not-allowed' : ''
+                }`}
+              />
+            </div>
+            <div className="md:w-52">
+              <label className="block text-sm text-slate-400 mb-2 font-medium">Model</label>
+              <input
+                type="text"
+                value={model}
+                disabled
+                className="w-full bg-slate-900/50 border border-slate-700/30 rounded-xl p-3 text-sm text-slate-500"
+              />
+            </div>
           </div>
         </div>
       )}
@@ -216,7 +257,11 @@ export default function ApiKeyInput({
       <p className="text-xs text-slate-500 mt-3 flex items-center gap-1.5">
         <AlertCircle size={12} />
         {provider === 'claude'
-          ? 'Your API key is sent directly to Anthropic\'s API and is not stored anywhere.'
+          ? usingSavedKey && savedKeyAvailable
+            ? 'Using your encrypted API key from Settings. You can override with a custom key anytime.'
+            : savedKeyAvailable
+            ? 'Using a custom API key for this session. Switch back to use your saved key.'
+            : 'Your API key is sent directly to Anthropic\'s API. Save it in Settings for convenience.'
           : 'Connects to your local LM Studio instance. No data leaves your network.'
         }
       </p>
