@@ -11,16 +11,54 @@
 
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import LoginForm from '@/app/components/auth/LoginForm.jsx';
 import Logo from '@/app/components/ui/Logo.jsx';
-import { Check, Sparkles, GitBranch, FileCode } from 'lucide-react';
+import { Check, Sparkles, GitBranch, FileCode, Zap, Shield } from 'lucide-react';
 
 export default function LoginPage() {
   const router = useRouter();
   const { data: session, status } = useSession();
+  const [currentFeature, setCurrentFeature] = useState(0);
+
+  // Rotating features for brand panel
+  const features = [
+    {
+      icon: <Sparkles className="w-6 h-6" />,
+      text: "AI-powered QA analysis",
+      description: "Generate comprehensive test cases and user stories"
+    },
+    {
+      icon: <GitBranch className="w-6 h-6" />,
+      text: "GitHub integration",
+      description: "Analyze repositories directly from GitHub"
+    },
+    {
+      icon: <FileCode className="w-6 h-6" />,
+      text: "Multiple output formats",
+      description: "Export to Markdown, JSON, or Jira-ready format"
+    },
+    {
+      icon: <Zap className="w-6 h-6" />,
+      text: "Lightning-fast analysis",
+      description: "Get results in seconds, not hours"
+    },
+    {
+      icon: <Shield className="w-6 h-6" />,
+      text: "Secure & private",
+      description: "Your code is never stored, only processed"
+    }
+  ];
+
+  // Rotate features every 4 seconds
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentFeature((prev) => (prev + 1) % features.length);
+    }, 4000);
+    return () => clearInterval(interval);
+  }, [features.length]);
 
   // Redirect authenticated users to dashboard
   useEffect(() => {
