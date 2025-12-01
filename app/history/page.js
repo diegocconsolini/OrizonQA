@@ -244,6 +244,7 @@ export default function HistoryPage() {
               <Card
                 key={analysis.id}
                 className="p-5 hover:bg-white/5 cursor-pointer transition-all group"
+                onClick={() => router.push(`/history/${analysis.id}`)}
               >
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex-1 min-w-0">
