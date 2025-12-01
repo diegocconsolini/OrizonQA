@@ -1,32 +1,43 @@
 'use client';
 
 /**
- * Dashboard Page (Main App)
+ * Dashboard Page (Main App) - REDESIGNED
  *
  * The main ORIZON application - requires authentication.
- * Users are redirected here after login.
+ * Enhanced with history sidebar, stats, and improved UX.
  *
  * Features:
+ * - Recent analyses sidebar with quick access
+ * - Tabbed workflow for better organization
+ * - Usage statistics display
  * - Code input (paste, GitHub, file upload)
  * - Analysis configuration
  * - QA artifact generation
- * - Results display
+ * - Results display with export options
  */
 
 import { useState, useCallback, useEffect } from 'react';
 import dynamic from 'next/dynamic';
 import { useSession, signOut } from 'next-auth/react';
-import { Loader2, Sparkles, LogOut, User, Settings } from 'lucide-react';
+import {
+  Loader2, Sparkles, LogOut, User, Settings,
+  History, Zap, Activity, Clock, ChevronRight,
+  X, Menu
+} from 'lucide-react';
 
-// Components
-import Header from '@/app/components/shared/Header';
-import HelpModal from '@/app/components/shared/HelpModal';
+// UI Components
+import {
+  Card, CardHeader, CardTitle, CardContent, CardDescription,
+  Button, Tag, EmptyState, Logo, Avatar, Tabs, TabList, TabButton, TabPanels, TabPanel
+} from '@/app/components/ui';
+
+// Existing Components
 import Alert from '@/app/components/shared/Alert';
 import InputSection from '@/app/components/input/InputSection';
 import ConfigSection from '@/app/components/config/ConfigSection';
 import OutputSection from '@/app/components/output/OutputSection';
 
-// Disable SSR for ApiKeyInput to prevent hydration mismatch from browser extensions
+// Disable SSR for ApiKeyInput to prevent hydration mismatch
 const ApiKeyInput = dynamic(() => import('@/app/components/config/ApiKeyInput'), { ssr: false });
 
 // Hooks
@@ -37,11 +48,14 @@ import useGitHubFetch from '@/app/hooks/useGitHubFetch';
 export default function Dashboard() {
   const { data: session, status } = useSession();
   const [settingsLoaded, setSettingsLoaded] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [recentAnalyses, setRecentAnalyses] = useState([]);
+  const [analysisStats, setAnalysisStats] = useState(null);
+  const [loadingHistory, setLoadingHistory] = useState(true);
 
   // Input states
   const [inputTab, setInputTab] = useState('paste');
   const [codeInput, setCodeInput] = useState('');
-  const [showHelp, setShowHelp] = useState(false);
 
   // Config states
   const [config, setConfig] = useState({
@@ -115,8 +129,9 @@ export default function Dashboard() {
   const handleAnalyze = async () => {
     const content = getInputContent();
     const modelToUse = provider === 'lmstudio' && selectedModel ? selectedModel : model;
-    const initialTab = await analyzeCodebase(content, apiKey, config, modelToUse, provider, lmStudioUrl);
-    // OutputSection handles its own tab state
+    await analyzeCodebase(content, apiKey, config, modelToUse, provider, lmStudioUrl);
+    // Refresh history after new analysis
+    loadRecentAnalyses();
   };
 
   const clearAll = () => {
@@ -128,7 +143,7 @@ export default function Dashboard() {
 
   const canAnalyze = (provider === 'lmstudio' || apiKey) && (codeInput.trim() || uploadedFiles.length > 0);
 
-  // Load user settings on mount
+  // Load user settings
   useEffect(() => {
     async function loadUserSettings() {
       if (status === 'loading' || !session || settingsLoaded) return;
@@ -137,13 +152,8 @@ export default function Dashboard() {
         const response = await fetch('/api/user/settings');
         if (response.ok) {
           const data = await response.json();
-
-          if (data.claudeApiKey) {
-            setApiKey(data.claudeApiKey);
-          }
-          if (data.lmStudioUrl) {
-            setLmStudioUrl(data.lmStudioUrl);
-          }
+          if (data.claudeApiKey) setApiKey(data.claudeApiKey);
+          if (data.lmStudioUrl) setLmStudioUrl(data.lmStudioUrl);
         }
       } catch (error) {
         console.error('Error loading user settings:', error);
@@ -153,132 +163,338 @@ export default function Dashboard() {
     }
 
     loadUserSettings();
-  }, [session, status, settingsLoaded, setApiKey, setLmStudioUrl]);
+  }, [session, status, settingsLoaded]);
+
+  // Load recent analyses
+  const loadRecentAnalyses = useCallback(async () => {
+    if (!session?.user?.id) return;
+
+    try {
+      setLoadingHistory(true);
+      const response = await fetch('/api/user/analyses?limit=5');
+      if (response.ok) {
+        const data = await response.json();
+        setRecentAnalyses(data.analyses || []);
+        setAnalysisStats(data.stats || null);
+      }
+    } catch (error) {
+      console.error('Error loading recent analyses:', error);
+    } finally {
+      setLoadingHistory(false);
+    }
+  }, [session]);
+
+  useEffect(() => {
+    loadRecentAnalyses();
+  }, [loadRecentAnalyses]);
+
+  // Format time ago
+  const timeAgo = (date) => {
+    const seconds = Math.floor((new Date() - new Date(date)) / 1000);
+    if (seconds < 60) return 'just now';
+    if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
+    if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`;
+    return `${Math.floor(seconds / 86400)}d ago`;
+  };
 
   return (
     <div className="min-h-screen bg-bg-dark">
-      {/* User Bar */}
-      <div className="bg-surface-dark/50 border-b border-white/5">
-        <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center">
-              <User className="w-4 h-4 text-primary" />
-            </div>
-            <span className="text-sm text-text-secondary-dark font-secondary">
-              {session?.user?.email || 'User'}
-            </span>
-          </div>
+      {/* Top Navigation Bar */}
+      <div className="bg-surface-dark border-b border-white/10 sticky top-0 z-50">
+        <div className="max-w-[1800px] mx-auto px-4 md:px-6 py-3 flex items-center justify-between">
           <div className="flex items-center gap-4">
+            <button
+              onClick={() => setSidebarOpen(!sidebarOpen)}
+              className="lg:hidden p-2 hover:bg-white/10 rounded-lg transition-colors"
+            >
+              <Menu className="w-5 h-5 text-white" />
+            </button>
+            <Logo variant="full" color="blue" size="sm" />
+          </div>
+
+          <div className="flex items-center gap-4">
+            <Avatar
+              name={session?.user?.name || session?.user?.email || 'User'}
+              size="sm"
+            />
+            <span className="hidden md:block text-sm text-text-secondary-dark font-secondary">
+              {session?.user?.email}
+            </span>
             <a
               href="/settings"
-              className="flex items-center gap-2 text-sm text-text-secondary-dark hover:text-white transition-colors"
+              className="flex items-center gap-2 px-3 py-2 text-sm text-text-secondary-dark hover:text-white hover:bg-white/10 rounded-lg transition-all"
             >
               <Settings className="w-4 h-4" />
-              <span className="font-secondary">Settings</span>
+              <span className="hidden sm:inline font-secondary">Settings</span>
             </a>
             <button
               onClick={() => signOut({ callbackUrl: '/login' })}
-              className="flex items-center gap-2 text-sm text-text-secondary-dark hover:text-white transition-colors"
+              className="flex items-center gap-2 px-3 py-2 text-sm text-text-secondary-dark hover:text-white hover:bg-white/10 rounded-lg transition-all"
             >
               <LogOut className="w-4 h-4" />
-              <span className="font-secondary">Sign Out</span>
+              <span className="hidden sm:inline font-secondary">Sign Out</span>
             </button>
           </div>
         </div>
       </div>
 
-      <div className="p-4 md:p-8">
-        <div>
-          <Header onHelpClick={() => setShowHelp(!showHelp)} />
+      <div className="flex max-w-[1800px] mx-auto">
+        {/* History Sidebar */}
+        <aside
+          className={`${
+            sidebarOpen ? 'translate-x-0' : '-translate-x-full'
+          } lg:translate-x-0 fixed lg:sticky top-[57px] left-0 w-80 h-[calc(100vh-57px)] bg-surface-dark border-r border-white/10 overflow-y-auto transition-transform duration-300 z-40`}
+        >
+          {/* Stats Section */}
+          <div className="p-4 border-b border-white/10">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-semibold font-primary text-white">Overview</h2>
+              <button
+                onClick={() => setSidebarOpen(false)}
+                className="lg:hidden p-1 hover:bg-white/10 rounded transition-colors"
+              >
+                <X className="w-5 h-5 text-text-secondary-dark" />
+              </button>
+            </div>
 
-          {showHelp && <HelpModal onClose={() => setShowHelp(false)} />}
+            {analysisStats ? (
+              <div className="grid grid-cols-2 gap-3">
+                <Card className="p-3 bg-primary/5 border-primary/20">
+                  <div className="flex items-center gap-2 mb-1">
+                    <Zap className="w-4 h-4 text-primary" />
+                    <p className="text-xs text-text-secondary-dark font-secondary">Analyses</p>
+                  </div>
+                  <p className="text-2xl font-bold text-white font-primary">
+                    {analysisStats.total || 0}
+                  </p>
+                </Card>
 
+                <Card className="p-3 bg-accent/5 border-accent/20">
+                  <div className="flex items-center gap-2 mb-1">
+                    <Activity className="w-4 h-4 text-accent" />
+                    <p className="text-xs text-text-secondary-dark font-secondary">Tokens</p>
+                  </div>
+                  <p className="text-xl font-bold text-white font-primary">
+                    {((analysisStats.totalTokens || 0) / 1000).toFixed(1)}K
+                  </p>
+                </Card>
+              </div>
+            ) : (
+              <div className="h-24 flex items-center justify-center">
+                <Loader2 className="w-6 h-6 text-text-secondary-dark animate-spin" />
+              </div>
+            )}
+          </div>
+
+          {/* Recent Analyses */}
+          <div className="p-4">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-sm font-semibold text-white font-primary">Recent</h3>
+              <a
+                href="/history"
+                className="text-xs text-primary hover:text-primary-hover transition-colors font-secondary"
+              >
+                View All
+              </a>
+            </div>
+
+            {loadingHistory ? (
+              <div className="space-y-3">
+                {[1, 2, 3].map(i => (
+                  <div key={i} className="h-20 bg-white/5 rounded-lg animate-pulse" />
+                ))}
+              </div>
+            ) : recentAnalyses.length > 0 ? (
+              <div className="space-y-2">
+                {recentAnalyses.map((analysis) => (
+                  <Card
+                    key={analysis.id}
+                    className="p-3 hover:bg-white/5 cursor-pointer transition-all group"
+                  >
+                    <div className="flex items-start justify-between mb-2">
+                      <div className="flex items-center gap-2">
+                        <Tag
+                          size="sm"
+                          className={analysis.provider === 'claude' ? 'bg-primary/10 text-primary' : 'bg-accent/10 text-accent'}
+                        >
+                          {analysis.provider === 'claude' ? '⚡' : '🤖'} {analysis.provider}
+                        </Tag>
+                      </div>
+                      <span className="text-xs text-text-secondary-dark font-secondary">
+                        {timeAgo(analysis.created_at)}
+                      </span>
+                    </div>
+
+                    <p className="text-sm text-white font-secondary mb-1 truncate">
+                      {analysis.input_type === 'github' && analysis.github_url
+                        ? analysis.github_url.split('/').slice(-2).join('/')
+                        : analysis.input_type === 'file'
+                        ? 'File Upload'
+                        : 'Code Paste'}
+                    </p>
+
+                    {analysis.token_usage && (
+                      <p className="text-xs text-text-secondary-dark font-secondary">
+                        {(analysis.token_usage.input_tokens || 0).toLocaleString()} tokens
+                      </p>
+                    )}
+
+                    <ChevronRight className="w-4 h-4 text-text-secondary-dark opacity-0 group-hover:opacity-100 transition-opacity absolute top-3 right-3" />
+                  </Card>
+                ))}
+              </div>
+            ) : (
+              <EmptyState
+                icon={History}
+                title="No analyses yet"
+                description="Your recent analyses will appear here"
+                size="sm"
+              />
+            )}
+          </div>
+        </aside>
+
+        {/* Main Content */}
+        <main className="flex-1 p-4 md:p-6 lg:p-8">
           {error && <Alert type="error" message={error} />}
           {success && <Alert type="success" message={success} />}
 
-          <InputSection
-            inputTab={inputTab}
-            setInputTab={setInputTab}
-            codeInput={codeInput}
-            setCodeInput={setCodeInput}
-            githubUrl={githubUrl}
-            setGithubUrl={setGithubUrl}
-            githubBranch={githubBranch}
-            setGithubBranch={setGithubBranch}
-            githubToken={githubToken}
-            setGithubToken={setGithubToken}
-            fetchGitHub={fetchGitHub}
-            uploadedFiles={uploadedFiles}
-            setUploadedFiles={setUploadedFiles}
-            isDragging={isDragging}
-            setIsDragging={setIsDragging}
-            handleDrop={handleDrop}
-            handleFileSelect={handleFileSelect}
-            loading={loading}
-            estimatedTokens={estimatedTokens}
-            isTruncated={isTruncated}
-            availableBranches={availableBranches}
-            fetchingBranches={fetchingBranches}
-          />
+          {/* Main Tabs */}
+          <Tabs defaultIndex={0} className="mb-6">
+            <TabList>
+              <TabButton>Input</TabButton>
+              <TabButton>Configure</TabButton>
+              <TabButton>Results</TabButton>
+            </TabList>
 
-          <ConfigSection config={config} setConfig={setConfig} />
+            <TabPanels>
+              {/* Input Tab */}
+              <TabPanel>
+                <InputSection
+                  inputTab={inputTab}
+                  setInputTab={setInputTab}
+                  codeInput={codeInput}
+                  setCodeInput={setCodeInput}
+                  githubUrl={githubUrl}
+                  setGithubUrl={setGithubUrl}
+                  githubBranch={githubBranch}
+                  setGithubBranch={setGithubBranch}
+                  githubToken={githubToken}
+                  setGithubToken={setGithubToken}
+                  fetchGitHub={fetchGitHub}
+                  uploadedFiles={uploadedFiles}
+                  setUploadedFiles={setUploadedFiles}
+                  isDragging={isDragging}
+                  setIsDragging={setIsDragging}
+                  handleDrop={handleDrop}
+                  handleFileSelect={handleFileSelect}
+                  loading={loading}
+                  estimatedTokens={estimatedTokens}
+                  isTruncated={isTruncated}
+                  availableBranches={availableBranches}
+                  fetchingBranches={fetchingBranches}
+                />
+              </TabPanel>
 
-          <ApiKeyInput
-            provider={provider}
-            setProvider={setProvider}
-            apiKey={apiKey}
-            setApiKey={setApiKey}
-            lmStudioUrl={lmStudioUrl}
-            setLmStudioUrl={setLmStudioUrl}
-            selectedModel={selectedModel}
-            setSelectedModel={setSelectedModel}
-            model={model}
-          />
+              {/* Configure Tab */}
+              <TabPanel>
+                <ConfigSection config={config} setConfig={setConfig} />
 
+                <ApiKeyInput
+                  provider={provider}
+                  setProvider={setProvider}
+                  apiKey={apiKey}
+                  setApiKey={setApiKey}
+                  lmStudioUrl={lmStudioUrl}
+                  setLmStudioUrl={setLmStudioUrl}
+                  selectedModel={selectedModel}
+                  setSelectedModel={setSelectedModel}
+                  model={model}
+                />
+              </TabPanel>
+
+              {/* Results Tab */}
+              <TabPanel>
+                {results ? (
+                  <OutputSection results={results} />
+                ) : (
+                  <EmptyState
+                    icon={Sparkles}
+                    title="No results yet"
+                    description="Configure your analysis and click 'Analyze Code' to generate QA artifacts"
+                  />
+                )}
+              </TabPanel>
+            </TabPanels>
+          </Tabs>
+
+          {/* Action Buttons */}
           <div className="flex gap-4 mb-6">
-            <button
+            <Button
+              variant="primary"
+              size="lg"
               onClick={handleAnalyze}
               disabled={!canAnalyze || loading}
-              className={`flex-1 py-4 rounded-xl font-semibold text-white shadow-lg transition-all flex items-center justify-center gap-3 ${
-                canAnalyze && !loading
-                  ? 'bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 shadow-indigo-500/25 hover:shadow-indigo-500/40'
-                  : 'bg-slate-700 cursor-not-allowed shadow-none'
-              } ${loading ? 'loading-glow' : ''}`}
+              className="flex-1"
             >
               {loading ? (
                 <>
                   <Loader2 className="animate-spin" size={20} />
-                  <span>Analyzing your codebase...</span>
+                  <span>Analyzing...</span>
                 </>
               ) : (
                 <>
                   <Sparkles size={20} />
-                  <span>Analyze Codebase</span>
+                  <span>Analyze Code</span>
                 </>
               )}
-            </button>
-            <button
+            </Button>
+
+            <Button
+              variant="secondary"
+              size="lg"
               onClick={clearAll}
-              className="px-6 py-4 bg-slate-800/70 hover:bg-slate-700/70 rounded-xl font-medium text-slate-300 hover:text-white transition-all border border-slate-700/50"
+              disabled={loading}
             >
               Clear All
-            </button>
+            </Button>
           </div>
 
+          {/* Token Usage Display */}
           {tokenUsage && (
-            <div className="text-sm text-slate-400 text-center mb-6 p-3 bg-slate-800/30 rounded-xl">
-              <span className="text-indigo-400 font-medium">{tokenUsage.input.toLocaleString()}</span> input tokens •
-              <span className="text-purple-400 font-medium ml-1">{tokenUsage.output.toLocaleString()}</span> output tokens
-            </div>
+            <Card className="p-4 bg-surface-dark/50">
+              <div className="flex items-center justify-center gap-6 text-sm font-secondary">
+                <div className="flex items-center gap-2">
+                  <span className="text-text-secondary-dark">Input:</span>
+                  <span className="text-primary font-semibold">
+                    {tokenUsage.input_tokens?.toLocaleString() || '0'}
+                  </span>
+                </div>
+                <div className="w-px h-4 bg-white/10" />
+                <div className="flex items-center gap-2">
+                  <span className="text-text-secondary-dark">Output:</span>
+                  <span className="text-accent font-semibold">
+                    {tokenUsage.output_tokens?.toLocaleString() || '0'}
+                  </span>
+                </div>
+              </div>
+            </Card>
           )}
 
-          <OutputSection results={results} />
-
-          <div className="text-center mt-8 text-xs text-slate-500">
+          {/* Footer */}
+          <div className="text-center mt-8 text-xs text-text-secondary-dark font-secondary">
             Built with Claude AI • Your API key is never stored
           </div>
-        </div>
+        </main>
       </div>
+
+      {/* Mobile Sidebar Overlay */}
+      {sidebarOpen && (
+        <div
+          className="lg:hidden fixed inset-0 bg-black/50 z-30"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
     </div>
   );
 }
