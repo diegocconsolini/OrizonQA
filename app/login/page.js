@@ -67,11 +67,42 @@ export default function LoginPage() {
     }
   }, [status, router]);
 
-  // Show loading state while checking auth
+  // Show loading state while checking auth with skeleton
   if (status === 'loading') {
     return (
-      <div className="min-h-screen bg-bg-dark flex items-center justify-center">
-        <div className="text-primary text-lg">Loading...</div>
+      <div className="min-h-screen bg-bg-dark flex">
+        {/* Left Side Skeleton */}
+        <div className="hidden lg:flex lg:w-[45%] relative overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-br from-quantum via-bg-dark to-primary/20" />
+          <div className="absolute top-20 left-20 w-64 h-64 bg-primary/10 rounded-full blur-3xl animate-pulse" />
+          <div className="absolute bottom-20 right-20 w-96 h-96 bg-quantum/10 rounded-full blur-3xl animate-pulse" />
+
+          <div className="relative z-10 flex flex-col justify-center px-16 w-full space-y-8 animate-pulse">
+            <div className="h-12 w-48 bg-white/10 rounded" />
+            <div className="h-10 w-64 bg-white/5 rounded" />
+            <div className="h-6 w-80 bg-white/5 rounded" />
+            <div className="space-y-4 mt-8">
+              <div className="h-20 w-full bg-white/5 rounded" />
+              <div className="h-20 w-full bg-white/5 rounded" />
+              <div className="h-20 w-full bg-white/5 rounded" />
+            </div>
+          </div>
+        </div>
+
+        {/* Right Side Skeleton */}
+        <div className="w-full lg:w-[55%] flex items-center justify-center px-6 sm:px-12 lg:px-16 py-12">
+          <div className="w-full max-w-md">
+            <div className="bg-surface-dark rounded-2xl shadow-xl border border-white/10 p-8 sm:p-10 space-y-6 animate-pulse">
+              <div className="h-8 w-64 bg-white/10 rounded" />
+              <div className="h-4 w-48 bg-white/5 rounded" />
+              <div className="space-y-4 mt-8">
+                <div className="h-12 w-full bg-white/5 rounded" />
+                <div className="h-12 w-full bg-white/5 rounded" />
+                <div className="h-12 w-full bg-primary/20 rounded" />
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     );
   }
@@ -85,12 +116,13 @@ export default function LoginPage() {
     <div className="min-h-screen bg-bg-dark flex">
       {/* Left Side - Brand Content */}
       <div className="hidden lg:flex lg:w-[45%] relative overflow-hidden">
-        {/* Background Gradient */}
-        <div className="absolute inset-0 bg-gradient-to-br from-quantum via-bg-dark to-primary/20" />
+        {/* Background Gradient with Animation */}
+        <div className="absolute inset-0 bg-gradient-to-br from-quantum via-bg-dark to-primary/20 animate-gradient" />
 
-        {/* Cosmic Elements */}
-        <div className="absolute top-20 left-20 w-64 h-64 bg-primary/10 rounded-full blur-3xl" />
-        <div className="absolute bottom-20 right-20 w-96 h-96 bg-quantum/10 rounded-full blur-3xl" />
+        {/* Animated Cosmic Elements */}
+        <div className="absolute top-20 left-20 w-64 h-64 bg-primary/10 rounded-full blur-3xl animate-float" />
+        <div className="absolute bottom-20 right-20 w-96 h-96 bg-quantum/10 rounded-full blur-3xl animate-float-delayed" />
+        <div className="absolute top-1/2 left-1/3 w-48 h-48 bg-accent/5 rounded-full blur-2xl animate-pulse-slow" />
 
         {/* Content */}
         <div className="relative z-10 flex flex-col justify-center px-16 w-full">
@@ -108,23 +140,43 @@ export default function LoginPage() {
             Continue your AI-powered QA journey
           </p>
 
-          {/* Feature Highlights */}
+          {/* Feature Highlights - Animated Rotation */}
           <div className="space-y-5">
-            <FeatureItem
-              icon={<Sparkles className="w-6 h-6" />}
-              text="AI-powered QA analysis"
-              description="Generate comprehensive test cases and user stories"
-            />
-            <FeatureItem
-              icon={<GitBranch className="w-6 h-6" />}
-              text="GitHub integration"
-              description="Analyze repositories directly from GitHub"
-            />
-            <FeatureItem
-              icon={<FileCode className="w-6 h-6" />}
-              text="Multiple output formats"
-              description="Export to Markdown, JSON, or Jira-ready format"
-            />
+            {features.map((feature, index) => (
+              <div
+                key={index}
+                className={`transition-all duration-700 ${
+                  index === currentFeature
+                    ? 'opacity-100 translate-x-0 scale-100'
+                    : index < currentFeature
+                    ? 'opacity-0 -translate-x-4 scale-95 absolute'
+                    : 'opacity-0 translate-x-4 scale-95 absolute'
+                }`}
+              >
+                <FeatureItem
+                  icon={feature.icon}
+                  text={feature.text}
+                  description={feature.description}
+                  highlighted={index === currentFeature}
+                />
+              </div>
+            ))}
+          </div>
+
+          {/* Feature Progress Indicators */}
+          <div className="mt-8 flex gap-2 justify-center">
+            {features.map((_, index) => (
+              <button
+                key={index}
+                onClick={() => setCurrentFeature(index)}
+                className={`h-1.5 rounded-full transition-all duration-300 ${
+                  index === currentFeature
+                    ? 'w-12 bg-primary'
+                    : 'w-6 bg-white/20 hover:bg-white/30'
+                }`}
+                aria-label={`Show feature ${index + 1}`}
+              />
+            ))}
           </div>
 
           {/* Decorative Quote */}
@@ -220,20 +272,32 @@ export default function LoginPage() {
 
 /**
  * Feature Item Component
- * Used in the brand content section
+ * Used in the brand content section with animation support
  */
-function FeatureItem({ icon, text, description }) {
+function FeatureItem({ icon, text, description, highlighted = false }) {
   return (
-    <div className="flex items-start gap-4 group">
-      <div className="flex-shrink-0 w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center group-hover:bg-primary/20 transition-colors">
-        <div className="text-primary">
+    <div className={`flex items-start gap-4 group transition-all duration-500 ${
+      highlighted ? 'scale-105' : ''
+    }`}>
+      <div className={`flex-shrink-0 w-12 h-12 rounded-lg flex items-center justify-center transition-all duration-500 ${
+        highlighted
+          ? 'bg-primary/20 shadow-lg shadow-primary/20 animate-pulse-slow'
+          : 'bg-primary/10 group-hover:bg-primary/20'
+      }`}>
+        <div className={`transition-all duration-500 ${
+          highlighted ? 'text-primary scale-110' : 'text-primary'
+        }`}>
           {icon}
         </div>
       </div>
       <div className="flex-1">
         <div className="flex items-center gap-2">
-          <Check className="w-5 h-5 text-green-400 flex-shrink-0" />
-          <span className="text-white font-semibold font-primary">{text}</span>
+          <Check className={`w-5 h-5 text-green-400 flex-shrink-0 transition-all duration-500 ${
+            highlighted ? 'scale-110' : ''
+          }`} />
+          <span className={`text-white font-semibold font-primary transition-all duration-500 ${
+            highlighted ? 'text-primary' : ''
+          }`}>{text}</span>
         </div>
         <p className="text-text-secondary-dark text-sm mt-1 font-secondary">
           {description}

@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Button from '../ui/Button.jsx';
 import Input from '../ui/Input.jsx';
-import { User, Mail, Lock, Check, X } from 'lucide-react';
+import { User, Mail, Lock, Check, X, ArrowRight, ArrowLeft } from 'lucide-react';
 
 /**
  * SignupForm Component
@@ -24,6 +24,10 @@ import { User, Mail, Lock, Check, X } from 'lucide-react';
 export default function SignupForm() {
   const router = useRouter();
 
+  // Multi-step wizard state
+  const [currentStep, setCurrentStep] = useState(1);
+  const totalSteps = 3;
+
   // Form state
   const [formData, setFormData] = useState({
     fullName: '',
@@ -36,6 +40,13 @@ export default function SignupForm() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [fieldErrors, setFieldErrors] = useState({});
+
+  // Step definitions
+  const steps = [
+    { number: 1, title: 'Account', description: 'Email and password' },
+    { number: 2, title: 'Profile', description: 'Your information' },
+    { number: 3, title: 'Review', description: 'Confirm details' }
+  ];
 
   // Password strength calculation
   const calculatePasswordStrength = (password) => {
