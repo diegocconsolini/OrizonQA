@@ -20,8 +20,9 @@ import {
  * GET /api/projects/[id]/requirements/[reqId]
  * Get requirement details with linked test cases
  */
-export async function GET(request, { params }) {
+export async function GET(request, context) {
   try {
+    const params = await context.params;
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
@@ -94,8 +95,9 @@ export async function GET(request, { params }) {
  *   external_url: string (optional)
  * }
  */
-export async function PUT(request, { params }) {
+export async function PUT(request, context) {
   try {
+    const params = await context.params;
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
@@ -191,8 +193,9 @@ export async function PUT(request, { params }) {
  * DELETE /api/projects/[id]/requirements/[reqId]
  * Delete requirement
  */
-export async function DELETE(request, { params }) {
+export async function DELETE(request, context) {
   try {
+    const params = await context.params;
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(

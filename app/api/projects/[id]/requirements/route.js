@@ -17,8 +17,9 @@ import {
  * GET /api/projects/[id]/requirements
  * List requirements with optional filters
  */
-export async function GET(request, { params }) {
+export async function GET(request, context) {
   try {
+    const params = await context.params;
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
@@ -86,8 +87,9 @@ export async function GET(request, { params }) {
  *   external_url: string (optional)
  * }
  */
-export async function POST(request, { params }) {
+export async function POST(request, context) {
   try {
+    const params = await context.params;
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
