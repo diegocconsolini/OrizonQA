@@ -38,7 +38,7 @@ export default function NewProjectPage() {
 
         {/* Content */}
         <div className="px-6 py-8">
-          <div className="max-w-4xl mx-auto">
+          <div className="max-w-4xl mx-auto">{/* Keep centered for forms */}
             <div className="bg-slate-800 border border-slate-700 rounded-lg p-6">
               <ProjectForm onCancel={() => router.push('/projects')} />
             </div>
