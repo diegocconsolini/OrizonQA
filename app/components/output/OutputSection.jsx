@@ -1,10 +1,12 @@
 import { useState } from 'react';
-import { Copy, Download, Check } from 'lucide-react';
+import { Copy, Download, Check, Upload } from 'lucide-react';
 import Tab from '../shared/Tab';
+import ImportTestsModal from '../modals/ImportTestsModal';
 
 export default function OutputSection({ results }) {
   const [outputTab, setOutputTab] = useState('stories');
   const [copied, setCopied] = useState(false);
+  const [showImportModal, setShowImportModal] = useState(false);
 
   const copyToClipboard = (text) => {
     navigator.clipboard.writeText(text);
@@ -61,27 +63,45 @@ export default function OutputSection({ results }) {
         </div>
       </div>
 
-      <div className="flex justify-end gap-3 p-4 pt-0">
+      <div className="flex justify-between items-center gap-3 p-4 pt-0">
         <button
-          onClick={() => copyToClipboard(getCurrentOutput())}
-          disabled={!getCurrentOutput()}
-          className="flex items-center gap-2 px-4 py-2.5 bg-slate-700/70 hover:bg-slate-600/70 disabled:opacity-50 disabled:cursor-not-allowed rounded-xl text-sm font-medium text-slate-200 transition-all"
+          onClick={() => setShowImportModal(true)}
+          disabled={!results.testCases && !results.userStories}
+          className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-cyan-500 to-violet-500 hover:from-cyan-600 hover:to-violet-600 disabled:opacity-50 disabled:cursor-not-allowed rounded-xl text-sm font-medium text-white transition-all"
         >
-          {copied ? <Check size={16} className="text-emerald-400" /> : <Copy size={16} />}
-          {copied ? 'Copied!' : 'Copy'}
+          <Upload size={16} />
+          Save to Project
         </button>
-        <button
-          onClick={() => downloadFile(
-            getCurrentOutput(),
-            `qa-${outputTab}-${Date.now()}.${outputTab === 'raw' ? 'json' : 'md'}`
-          )}
-          disabled={!getCurrentOutput()}
-          className="flex items-center gap-2 px-4 py-2.5 bg-slate-700/70 hover:bg-slate-600/70 disabled:opacity-50 disabled:cursor-not-allowed rounded-xl text-sm font-medium text-slate-200 transition-all"
-        >
-          <Download size={16} />
-          Download
-        </button>
+
+        <div className="flex gap-3">
+          <button
+            onClick={() => copyToClipboard(getCurrentOutput())}
+            disabled={!getCurrentOutput()}
+            className="flex items-center gap-2 px-4 py-2.5 bg-slate-700/70 hover:bg-slate-600/70 disabled:opacity-50 disabled:cursor-not-allowed rounded-xl text-sm font-medium text-slate-200 transition-all"
+          >
+            {copied ? <Check size={16} className="text-emerald-400" /> : <Copy size={16} />}
+            {copied ? 'Copied!' : 'Copy'}
+          </button>
+          <button
+            onClick={() => downloadFile(
+              getCurrentOutput(),
+              `qa-${outputTab}-${Date.now()}.${outputTab === 'raw' ? 'json' : 'md'}`
+            )}
+            disabled={!getCurrentOutput()}
+            className="flex items-center gap-2 px-4 py-2.5 bg-slate-700/70 hover:bg-slate-600/70 disabled:opacity-50 disabled:cursor-not-allowed rounded-xl text-sm font-medium text-slate-200 transition-all"
+          >
+            <Download size={16} />
+            Download
+          </button>
+        </div>
       </div>
+
+      <ImportTestsModal
+        isOpen={showImportModal}
+        onClose={() => setShowImportModal(false)}
+        testCasesText={results.testCases}
+        userStoriesText={results.userStories}
+      />
     </div>
   );
 }
