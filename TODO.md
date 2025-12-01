@@ -1,194 +1,190 @@
 # ORIZON QA - TODO List & Action Items
 
-**Last Updated**: 2025-11-30
-**Current Status**: Phase 4 Complete, Ready for Phase 4.5
+**Last Updated**: 2025-12-01
+**Current Status**: Sidebar Navigation & History Page Complete
 
 ---
 
-## 🔥 HIGH PRIORITY (Do First)
+## ✅ RECENTLY COMPLETED (2025-12-01)
+
+### Sidebar Navigation System
+- ✅ Created proper left sidebar navigation (matches design mockups)
+- ✅ Added navigation items: Dashboard, History, Settings
+- ✅ Implemented collapsible sidebar (264px ↔ 80px)
+- ✅ Mobile responsive with overlay drawer
+- ✅ Connected Quick Stats to real user data (analyses count, tokens used)
+- ✅ User profile section with sign out
+- ✅ Active navigation state highlighting
+
+### Dashboard Reorganization
+- ✅ Removed confusing history sidebar from Dashboard
+- ✅ Simplified Dashboard to focus on analysis workflow
+- ✅ Clean, intuitive layout with single navigation sidebar
+
+### History Page (New!)
+- ✅ Created `/app/history/page.js` - dedicated page for all analyses
+- ✅ Stats overview cards (total analyses, tokens, last analysis)
+- ✅ Search functionality
+- ✅ Filter by provider (Claude, LM Studio)
+- ✅ Filter by input type (paste, GitHub, file upload)
+- ✅ Clean list view with analysis details
+- ✅ Empty states with actions
+
+**Files Created**:
+- `app/components/layout/Sidebar.jsx`
+- `app/components/layout/AppLayout.jsx`
+- `app/history/page.js`
+
+**Files Modified**:
+- `app/dashboard/page.js` (simplified, removed history sidebar)
+- `app/settings/page.js` (integrated with AppLayout)
+- `app/components/ui/Tabs.jsx` (fixed export pattern)
+
+---
+
+## 🔥 HIGH PRIORITY (Do Next)
 
 ### 1. Link Analyses to User Accounts ⚠️ CRITICAL
 **Estimated Time**: 1-2 hours
 **Status**: NOT STARTED
-**Blocking**: Analysis history, full user experience
+**Blocking**: Full user experience, analysis persistence
 
-**Why Critical**: Database has `user_id` column in `analyses` table but it's not being used. Users' analyses are not being saved or linked to their accounts.
+**Why Critical**: Database has `user_id` column in `analyses` table but it's not being used. Users' analyses are not being saved or linked to their accounts. The History page exists but won't show any user-specific data until this is implemented.
 
 #### Tasks:
-- [ ] Modify `/api/analyze` route to:
+- [ ] Modify `/api/analyze/route.js`:
   - Accept user session from Next-Auth
   - Extract user_id from session
   - Pass user_id to `saveAnalysis()` function
-- [ ] Update `lib/db.js` `saveAnalysis()` to:
+- [ ] Update `lib/db.js` `saveAnalysis()`:
   - Accept user_id parameter
   - Insert user_id into analyses table
-- [ ] Update dashboard analysis flow:
+- [ ] Update `app/hooks/useAnalysis.js`:
   - Pass session to analysis API call
   - Verify user_id is being saved
 - [ ] Test:
   - Run analysis while logged in
   - Check database: `SELECT * FROM analyses WHERE user_id IS NOT NULL;`
   - Verify user_id matches logged-in user
+  - Verify History page shows analyses
+  - Verify Sidebar Quick Stats update
 
 **Files to Modify**:
 - `app/api/analyze/route.js`
 - `lib/db.js` (update saveAnalysis function)
-- `app/hooks/useAnalysis.js` (if needed)
+- `app/hooks/useAnalysis.js`
 
 ---
 
-### 2. Create Analysis History Page
+### 2. Analysis Detail View
 **Estimated Time**: 2-3 hours
 **Status**: NOT STARTED
 **Depends On**: #1 (Link Analyses to Users)
 
+Currently, History page shows list of analyses but clicking them does nothing. Need to implement detail view.
+
 #### Tasks:
-- [ ] Create `/app/history/page.js`:
-  - Protected route (requires auth)
-  - Fetch user's analyses from API
-  - Display in list/card format
-  - Show: date, input type, provider, token usage
-  - Click to view full results
-- [ ] Create `/api/user/analyses` route:
-  - GET endpoint
-  - Fetch analyses for logged-in user
-  - Return list with pagination (10-20 per page)
-  - Include filters (date range, input type)
-- [ ] Add to navigation:
-  - Link in dashboard navbar
-  - Badge with analysis count
-- [ ] Features:
-  - [ ] View past results (modal or detail page)
-  - [ ] Delete individual analysis
-  - [ ] Re-run analysis with same config
-  - [ ] Download results
-  - [ ] Search/filter by date, type, model
+- [ ] Create `/app/history/[id]/page.js`:
+  - Protected route
+  - Fetch single analysis from API
+  - Display full results (user stories, tests, criteria)
+  - Download button
+  - Delete button
+  - "Run Again" button (copy config to Dashboard)
+- [ ] Create `/api/user/analyses/[id]/route.js`:
+  - GET: Fetch single analysis with full results
+  - DELETE: Delete analysis (with confirmation)
+- [ ] Make history cards clickable:
+  - Link to detail page
+  - Show chevron icon on hover
 
 **Files to Create**:
-- `app/history/page.js`
-- `app/api/user/analyses/route.js`
+- `app/history/[id]/page.js`
+- `app/api/user/analyses/[id]/route.js`
 
 **Files to Modify**:
-- `app/dashboard/page.js` (add history link)
+- `app/history/page.js` (add links to cards)
 
 ---
 
-### 3. Update Outdated Documentation
-**Estimated Time**: 30 minutes
+### 3. Update Documentation
+**Estimated Time**: 30-45 minutes
 **Status**: NOT STARTED
+
+Documentation is outdated and doesn't reflect recent changes.
 
 #### Tasks:
 - [ ] Update `CLAUDE.md`:
-  - Change status from "Phase 2 complete" to "Phase 4 complete"
-  - Update architecture section with auth pages
-  - Add database schema section
-  - Update file structure
-  - Add Phase 4.5 to planned work
-- [ ] Update or archive `NEXT_SESSION.md`:
-  - Either update to reflect Phase 4.5
-  - Or rename to `ARCHIVE_PHASE3_PLAN.md`
+  - Change status to "Sidebar & History Complete"
+  - Update architecture section with new layout system
+  - Add AppLayout, Sidebar, History page to file structure
+  - Document new navigation pattern
 - [ ] Update `README.md`:
-  - Add authentication features
-  - Update tech stack (add Next-Auth, Resend, bcryptjs)
-  - Update deployment instructions (env vars)
+  - Add History page to features
+  - Update screenshots (if any)
+  - Update tech stack if needed
 
 **Files to Modify**:
 - `CLAUDE.md`
-- `NEXT_SESSION.md` (update or archive)
 - `README.md`
-
----
-
-## 🆕 NEW FEATURE: UX-Focused QA Artifacts
-
-### UX Testing & Accessibility Artifacts
-**Estimated Time**: 4-6 hours
-**Status**: PLANNED
-**Feature Doc**: `docs/FEATURE_UX_QA_ARTIFACTS.md`
-
-Extend ORIZON to generate UX-focused QA artifacts while staying within the testing domain:
-- **UX Acceptance Criteria** (usability requirements, response times, interaction patterns)
-- **Accessibility Test Cases** (WCAG compliance, screen reader, keyboard nav)
-- **User Flow Test Scenarios** (journey-based testing, end-to-end paths)
-
-#### Implementation Tasks:
-- [ ] Create 3 new prompt templates (ux_acceptance_criteria.md, accessibility_test_cases.md, user_flow_scenarios.md)
-- [ ] Update `lib/promptBuilder.js` to support new artifact types
-- [ ] Add checkboxes to ConfigSection.jsx for new options
-- [ ] Add new tabs to OutputSection.jsx (UX Criteria, Accessibility, User Flows)
-- [ ] Update landing page copy to mention UX/accessibility testing
-- [ ] Update CLAUDE.md and README.md with new capabilities
-
-**Why Add This**:
-- ✅ Stays within QA/testing domain (not full UI/UX design tool)
-- ✅ Addresses real QA needs (accessibility compliance, usability testing)
-- ✅ Complements existing artifacts
-- ✅ Uses existing Claude AI capabilities
-- ✅ No major architectural changes
-
-**See Full Plan**: Read `docs/FEATURE_UX_QA_ARTIFACTS.md` for complete implementation details, examples, and success metrics.
 
 ---
 
 ## 🟡 MEDIUM PRIORITY (Do Soon)
 
-### 4. Dashboard Improvements
-**Estimated Time**: 1-2 hours
+### 4. Decide on API Key Strategy
+**Estimated Time**: 1 hour
 **Status**: NOT STARTED
+**Issue**: Two ways to provide API keys confuse users
+
+Current situation:
+1. Save key in Settings (encrypted in database)
+2. Enter key in Dashboard for each request
+
+#### Recommended Solution (Option A):
+**Use saved key by default, allow override**
+- Dashboard auto-loads saved key from settings
+- User can optionally override with different key
+- Show indicator: "Using saved key" vs "Custom key"
+- Best user experience
 
 #### Tasks:
-- [ ] Recent Analyses Widget:
-  - Show 3-5 most recent analyses
-  - Quick view of results
-  - Link to full history
-- [ ] Usage Statistics:
-  - Total analyses run
-  - Total tokens used
-  - Analyses by type (pie chart)
-  - Weekly/monthly trends
-- [ ] Quick Actions:
-  - "Repeat Last Analysis" button
-  - "View History" button
-  - "Update Settings" button
-
-**Files to Modify**:
-- `app/dashboard/page.js`
-
----
-
-### 5. Decide on API Key Strategy
-**Estimated Time**: 1 hour (discussion + implementation)
-**Status**: NOT STARTED
-**Issue**: Two ways to provide API keys:
-1. Save in settings (encrypted in database)
-2. Enter per-request in dashboard
-
-#### Decision Options:
-**Option A**: Use saved key by default, allow override
-- Dashboard loads saved key
-- User can optionally override with different key
-- Best for users who want convenience
-
-**Option B**: Always require key in dashboard
-- Ignore saved settings key
-- More secure (user provides each time)
-- Best for shared/public computers
-
-**Option C**: User preference toggle
-- Settings page: checkbox "Always use saved key"
-- Dashboard respects preference
-- Most flexible
-
-#### Tasks After Decision:
-- [ ] Update dashboard logic
-- [ ] Update API key input component
-- [ ] Add UI explanation
+- [ ] Update Dashboard to load saved key on mount
+- [ ] Add "Use Saved Key" toggle/button
+- [ ] Show clear indicator of which key is being used
+- [ ] Update UI to explain behavior
 - [ ] Update documentation
 
 **Files to Modify**:
 - `app/dashboard/page.js`
 - `app/components/config/ApiKeyInput.jsx`
-- `app/settings/page.js` (if adding toggle)
+
+---
+
+### 5. Analysis Actions
+**Estimated Time**: 2 hours
+**Status**: NOT STARTED
+
+Add helpful actions for analyses.
+
+#### Tasks:
+- [ ] "Run Again" functionality:
+  - Load analysis config into Dashboard
+  - Pre-fill input, config, model
+  - Navigate to Dashboard
+- [ ] Delete analysis:
+  - Confirmation modal
+  - Remove from database
+  - Refresh history list
+- [ ] Share analysis:
+  - Generate shareable link (public UUID)
+  - View-only page for shared analyses
+  - Optional: password protection
+
+**Files to Modify**:
+- `app/history/[id]/page.js`
+- `app/history/page.js`
+- `app/dashboard/page.js` (for "run again")
 
 ---
 
@@ -197,25 +193,22 @@ Extend ORIZON to generate UX-focused QA artifacts while staying within the testi
 **Status**: NOT STARTED
 
 #### Tasks:
-- [ ] Profile Page (`/profile`):
+- [ ] Profile Page (`/profile` or in Settings):
   - Display user info (email, join date)
   - Update password
   - Update email (requires re-verification)
-  - Profile picture upload (optional)
-- [ ] Account Deletion:
-  - Confirmation flow
+- [ ] Account Deletion (in Settings):
+  - Confirmation flow with password
   - Delete user data
-  - Delete analyses
+  - Delete all analyses
   - Logout and redirect
-- [ ] Security Settings:
-  - View active sessions
-  - Revoke sessions
-  - Two-factor auth (future)
 
 **Files to Create**:
-- `app/profile/page.js`
 - `app/api/user/profile/route.js`
 - `app/api/user/delete/route.js`
+
+**Files to Modify**:
+- `app/settings/page.js` (implement delete account button)
 
 ---
 
@@ -229,17 +222,13 @@ Extend ORIZON to generate UX-focused QA artifacts while staying within the testi
   - Verification code email (with ORIZON branding)
   - Password reset email
   - Welcome email (after verification)
-  - Account deletion confirmation
-- [ ] Use email template library:
-  - React Email (recommended for Next.js)
-  - Or custom HTML templates
+- [ ] Use React Email or custom HTML
 - [ ] Update `lib/email.js`:
   - Support both text and HTML
-  - Add email header/footer with branding
-  - Include logo and colors (#00D4FF, #6A00FF)
+  - Add ORIZON branding (#00D4FF, #6A00FF)
 
 **Files to Create**:
-- `emails/verification-code.jsx` (if using React Email)
+- `emails/verification-code.jsx`
 - `emails/password-reset.jsx`
 - `emails/welcome.jsx`
 
@@ -248,182 +237,93 @@ Extend ORIZON to generate UX-focused QA artifacts while staying within the testi
 
 ---
 
+## 🆕 NEW FEATURE IDEAS
+
+### UX-Focused QA Artifacts
+**Estimated Time**: 4-6 hours
+**Status**: PLANNED
+**Feature Doc**: `docs/FEATURE_UX_QA_ARTIFACTS.md`
+
+Extend ORIZON to generate UX-focused QA artifacts:
+- **UX Acceptance Criteria** (usability requirements, response times)
+- **Accessibility Test Cases** (WCAG compliance, screen reader)
+- **User Flow Test Scenarios** (journey-based testing)
+
+This stays within the QA/testing domain while adding valuable accessibility and usability testing capabilities.
+
+---
+
 ## 🟢 LOW PRIORITY (Nice to Have)
 
 ### 8. Export Enhancements
-**Estimated Time**: 2-3 hours
-**Status**: NOT STARTED
-
-#### Tasks:
-- [ ] Export to Jira:
-  - Jira Cloud API integration
-  - Create issues from user stories
-  - OAuth flow for Jira auth
-- [ ] Export as PDF:
-  - Use browser print API
-  - Styled PDF output
-  - Include all sections
-- [ ] Batch Export:
-  - Select multiple analyses from history
-  - Export as ZIP file
-  - Include metadata
-
-**Files to Modify**:
-- `app/components/output/OutputSection.jsx`
-- Create `lib/jiraIntegration.js`
-
----
+- [ ] Export to Jira (create issues from user stories)
+- [ ] Export as PDF (styled output)
+- [ ] Batch export (multiple analyses as ZIP)
 
 ### 9. Advanced Auth Features
-**Estimated Time**: 4-6 hours
-**Status**: NOT STARTED
-
-#### Tasks:
-- [ ] Multi-Factor Authentication:
-  - TOTP (Google Authenticator)
-  - Backup codes
-- [ ] Social Auth:
-  - GitHub OAuth
-  - Google OAuth
-  - Link multiple auth methods
-- [ ] Session Management:
-  - View active sessions
-  - Revoke specific sessions
-  - Force logout all devices
-
----
+- [ ] Multi-Factor Authentication (TOTP)
+- [ ] Social Auth (GitHub, Google OAuth)
+- [ ] Session Management (view/revoke sessions)
 
 ### 10. Usage Analytics & Limits
-**Estimated Time**: 3-4 hours
-**Status**: NOT STARTED
-
-#### Tasks:
-- [ ] Track Usage:
-  - Analyses per day/week/month
-  - Tokens consumed
-  - Cost estimation
-- [ ] Rate Limiting:
-  - Max analyses per day (free tier)
-  - API key usage tracking
-  - Upgrade prompts
-- [ ] Admin Dashboard:
-  - View all users
-  - System statistics
-  - Moderation tools
+- [ ] Track usage (analyses per day/week/month)
+- [ ] Rate limiting (max analyses per day)
+- [ ] Cost estimation
+- [ ] Upgrade prompts
 
 ---
 
-## 📋 BACKLOG (Future Considerations)
+## 📋 BACKLOG
 
-### 11. Team & Collaboration
+### Team & Collaboration
 - [ ] Team accounts
-- [ ] Share analyses with team members
+- [ ] Share analyses with team
 - [ ] Role-based permissions
-- [ ] Commenting on analyses
 
-### 12. CLI Tool (Original Phase 4)
+### CLI Tool
 - [ ] npx command for local analysis
-- [ ] Authentication via CLI
+- [ ] CLI authentication
 - [ ] Direct API usage
-- [ ] Output to files
 
-### 13. Integrations
+### Integrations
 - [ ] GitHub Actions integration
 - [ ] CI/CD webhooks
-- [ ] Slack notifications
-- [ ] Discord bot
+- [ ] Slack/Discord notifications
 
-### 14. Billing & Subscriptions
+### Billing
 - [ ] Free tier limits
 - [ ] Paid plans (Stripe)
 - [ ] Usage-based billing
-- [ ] Invoice generation
 
 ---
 
-## 🐛 KNOWN BUGS & ISSUES
-
-### Critical
-- **None currently** ✅
+## 🐛 KNOWN ISSUES
 
 ### Minor
 1. **Email Templates**: Plain text only (not branded)
 2. **No Account Recovery**: If user loses email access, account is unrecoverable
-3. **Session Storage Conflict**: Old session-based code may interfere
-4. **Showcase Page**: Exists but not integrated into navigation
+3. **Analysis Detail View**: History cards not clickable yet (needs Task #2)
+4. **API Key Confusion**: Two input methods confuse users (needs Task #4)
 
 ### Technical Debt
-1. **API Key Duplication**: Settings storage + per-request input
-2. **Middleware Performance**: Could be optimized
-3. **Error Handling**: Some API routes could have better error messages
-4. **Loading States**: Some pages lack proper loading indicators
+1. **Error Handling**: Some API routes need better error messages
+2. **Loading States**: Some pages lack proper loading indicators
+3. **Middleware Performance**: Could be optimized
 
 ---
 
-## ✅ COMPLETED (For Reference)
+## 🎯 Quick Start for Next Session
 
-### Phase 1 (Complete)
-- ✅ Prompt construction system
-- ✅ Claude API integration
-- ✅ Multiple input methods
-- ✅ Output formatting
+**Priority Order**:
+1. **Task #1**: Link analyses to user accounts (CRITICAL - blocks everything else)
+2. **Task #2**: Create analysis detail view (makes History page functional)
+3. **Task #3**: Update documentation (keep docs current)
+4. **Task #4**: Fix API key strategy (improves UX)
 
-### Phase 2 (Complete)
-- ✅ Component extraction (9 components)
-- ✅ Custom hooks (3 hooks)
-- ✅ Code reduction (74%)
-
-### Phase 4 (Complete)
-- ✅ User authentication (signup, login, logout)
-- ✅ Email verification
-- ✅ Password reset
-- ✅ User settings page
-- ✅ API key encryption
-- ✅ Protected routes
-- ✅ Dashboard integration
-- ✅ Landing page
-- ✅ Audit logging
-- ✅ Database schema
-
-### Recent UI Fixes (Complete)
-- ✅ Logo size adjustments (3 iterations)
-- ✅ Navbar size reduction
-- ✅ Fixed navbar covering content
-- ✅ CSS 404 errors resolved
-
----
-
-## 📊 Progress Tracking
-
-### Phase 4.5 Progress (User Integration)
-- [ ] 0/3 core tasks complete
-  - [ ] Link analyses to users
-  - [ ] Create history page
-  - [ ] Update documentation
-
-### Overall Feature Completion
-- Authentication: ✅ 100%
-- User Settings: ✅ 100%
-- Analysis Features: ✅ 80% (missing persistence)
-- History/Export: ❌ 0%
-- Account Management: ❌ 0%
-- Documentation: ⚠️ 50% (outdated)
-
----
-
-## 🎯 Next Session Quick Start
-
-**If you're starting a new session, DO THIS FIRST**:
-
-1. Read `PROJECT_STATUS.md` for complete context
-2. Read this `TODO.md` for action items
-3. Start with HIGH PRIORITY task #1: "Link Analyses to User Accounts"
-4. Don't skip tasks - they build on each other
-
-**Quick Command Reference**:
+**Quick Commands**:
 ```bash
 cd /home/diegocc/OrizonQA
-npm run dev              # Start dev server
+npm run dev              # Start dev server (port 3033)
 psql $POSTGRES_URL       # Access database
 npm run build            # Test production build
 ```
@@ -431,9 +331,10 @@ npm run build            # Test production build
 **Critical Files**:
 - `app/api/analyze/route.js` - Where analyses are created
 - `lib/db.js` - Database functions (saveAnalysis, getAnalysisByUser)
-- `app/dashboard/page.js` - Main application interface
-- `middleware.js` - Route protection
+- `app/dashboard/page.js` - Main analysis interface
+- `app/history/page.js` - Analysis history view
+- `app/components/layout/Sidebar.jsx` - Navigation sidebar
 
 ---
 
-**END OF TODO DOCUMENT**
+**END OF TODO**
