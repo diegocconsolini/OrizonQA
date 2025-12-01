@@ -16,6 +16,7 @@ import Logo from '@/app/components/ui/Logo';
 import Button from '@/app/components/ui/Button';
 import Card from '@/app/components/ui/Card';
 import { Tabs, TabList, TabButton, TabPanels, TabPanel } from '@/app/components/ui/Tabs';
+import AppLayout from '@/app/components/layout/AppLayout';
 import { Settings as SettingsIcon, Key, Server, Save, Loader2, Check, Eye, EyeOff, User, BarChart3, Zap, Calendar } from 'lucide-react';
 
 export default function SettingsPage() {
@@ -132,33 +133,9 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-bg-dark">
-      {/* Header */}
-      <nav className="fixed top-0 left-0 right-0 z-50 bg-bg-dark/80 backdrop-blur-xl border-b border-white/5">
-        <div className="max-w-7xl mx-auto px-6 py-4">
-          <div className="flex items-center justify-between">
-            <Logo variant="full" color="blue" size="xl" background="dark" />
-
-            <div className="flex items-center gap-4">
-              <a href="/dashboard" className="text-text-secondary-dark hover:text-white transition-colors font-secondary">
-                Dashboard
-              </a>
-              <a href="/settings" className="text-primary font-secondary">
-                Settings
-              </a>
-              {session?.user && (
-                <div className="flex items-center gap-2 px-3 py-2 bg-surface-dark rounded-lg border border-white/10">
-                  <User className="w-4 h-4 text-primary" />
-                  <span className="text-sm text-white font-secondary">{session.user.email}</span>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      </nav>
-
+    <AppLayout>
       {/* Main Content */}
-      <div className="pt-24 pb-12 px-6">
+      <div className="pb-12 px-6 py-8">
         <div className="max-w-3xl mx-auto">
           {/* Page Header */}
           <div className="mb-8">
@@ -427,6 +404,6 @@ export default function SettingsPage() {
           </div>
         </div>
       </div>
-    </div>
+    </AppLayout>
   );
 }

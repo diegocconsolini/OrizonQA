@@ -31,6 +31,9 @@ import {
   Button, Tag, EmptyState, Logo, Avatar, Tabs, TabList, TabButton, TabPanels, TabPanel
 } from '@/app/components/ui';
 
+// Layout
+import AppLayout from '@/app/components/layout/AppLayout';
+
 // Existing Components
 import Alert from '@/app/components/shared/Alert';
 import InputSection from '@/app/components/input/InputSection';
@@ -198,64 +201,28 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-bg-dark">
-      {/* Top Navigation Bar */}
-      <div className="bg-surface-dark border-b border-white/10 sticky top-0 z-50">
-        <div className="max-w-[1800px] mx-auto px-4 md:px-6 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <button
-              onClick={() => setSidebarOpen(!sidebarOpen)}
-              className="lg:hidden p-2 hover:bg-white/10 rounded-lg transition-colors"
-            >
-              <Menu className="w-5 h-5 text-white" />
-            </button>
-            <Logo variant="full" color="blue" size="sm" />
-          </div>
-
-          <div className="flex items-center gap-4">
-            <Avatar
-              name={session?.user?.name || session?.user?.email || 'User'}
-              size="sm"
-            />
-            <span className="hidden md:block text-sm text-text-secondary-dark font-secondary">
-              {session?.user?.email}
-            </span>
-            <a
-              href="/settings"
-              className="flex items-center gap-2 px-3 py-2 text-sm text-text-secondary-dark hover:text-white hover:bg-white/10 rounded-lg transition-all"
-            >
-              <Settings className="w-4 h-4" />
-              <span className="hidden sm:inline font-secondary">Settings</span>
-            </a>
-            <button
-              onClick={() => signOut({ callbackUrl: '/login' })}
-              className="flex items-center gap-2 px-3 py-2 text-sm text-text-secondary-dark hover:text-white hover:bg-white/10 rounded-lg transition-all"
-            >
-              <LogOut className="w-4 h-4" />
-              <span className="hidden sm:inline font-secondary">Sign Out</span>
-            </button>
-          </div>
-        </div>
-      </div>
-
+    <AppLayout>
       <div className="flex max-w-[1800px] mx-auto">
         {/* History Sidebar */}
         <aside
           className={`${
             sidebarOpen ? 'translate-x-0' : '-translate-x-full'
-          } lg:translate-x-0 fixed lg:sticky top-[57px] left-0 w-80 h-[calc(100vh-57px)] bg-surface-dark border-r border-white/10 overflow-y-auto transition-transform duration-300 z-40`}
+          } lg:translate-x-0 fixed lg:sticky top-0 left-0 w-80 h-screen bg-surface-dark border-r border-white/10 overflow-y-auto transition-transform duration-300 z-40`}
         >
+          {/* Mobile Header */}
+          <div className="lg:hidden p-4 border-b border-white/10 flex items-center justify-between">
+            <h2 className="text-lg font-semibold font-primary text-white">Overview</h2>
+            <button
+              onClick={() => setSidebarOpen(false)}
+              className="p-1 hover:bg-white/10 rounded transition-colors"
+            >
+              <X className="w-5 h-5 text-text-secondary-dark" />
+            </button>
+          </div>
+
           {/* Stats Section */}
           <div className="p-4 border-b border-white/10">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-semibold font-primary text-white">Overview</h2>
-              <button
-                onClick={() => setSidebarOpen(false)}
-                className="lg:hidden p-1 hover:bg-white/10 rounded transition-colors"
-              >
-                <X className="w-5 h-5 text-text-secondary-dark" />
-              </button>
-            </div>
+            <h2 className="hidden lg:block text-lg font-semibold font-primary text-white mb-4">Overview</h2>
 
             {analysisStats ? (
               <div className="grid grid-cols-2 gap-3">
@@ -356,6 +323,17 @@ export default function Dashboard() {
 
         {/* Main Content */}
         <main className="flex-1 p-4 md:p-6 lg:p-8">
+          {/* History Toggle Button (Mobile) */}
+          <div className="lg:hidden mb-4 flex justify-end">
+            <button
+              onClick={() => setSidebarOpen(true)}
+              className="flex items-center gap-2 px-3 py-2 text-sm text-text-secondary-dark hover:text-white hover:bg-white/10 rounded-lg transition-all"
+            >
+              <History className="w-4 h-4" />
+              <span className="font-secondary">History</span>
+            </button>
+          </div>
+
           {error && <Alert type="error" message={error} />}
           {success && <Alert type="success" message={success} />}
 
@@ -488,13 +466,14 @@ export default function Dashboard() {
         </main>
       </div>
 
-      {/* Mobile Sidebar Overlay */}
-      {sidebarOpen && (
-        <div
-          className="lg:hidden fixed inset-0 bg-black/50 z-30"
-          onClick={() => setSidebarOpen(false)}
-        />
-      )}
-    </div>
+        {/* Mobile Sidebar Overlay */}
+        {sidebarOpen && (
+          <div
+            className="lg:hidden fixed inset-0 bg-black/50 z-30"
+            onClick={() => setSidebarOpen(false)}
+          />
+        )}
+      </div>
+    </AppLayout>
   );
 }
