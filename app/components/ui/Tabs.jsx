@@ -22,7 +22,7 @@ import { useState, createContext, useContext } from 'react';
 
 const TabsContext = createContext();
 
-export default function Tabs({
+export function Tabs({
   defaultValue,
   value,
   onChange,
@@ -44,6 +44,9 @@ export default function Tabs({
     </TabsContext.Provider>
   );
 }
+
+// Default export for backwards compatibility
+export default Tabs;
 
 /**
  * Tab List Component
