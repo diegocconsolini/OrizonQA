@@ -36,13 +36,11 @@ export default function NewRequirementPage() {
         </div>
 
         <div className="px-6 py-8">
-          <div className="max-w-4xl mx-auto">
-            <div className="bg-slate-800 border border-slate-700 rounded-lg p-6">
-              <RequirementForm
-                projectId={projectId}
-                onCancel={() => router.push(`/projects/${projectId}/requirements`)}
-              />
-            </div>
+          <div className="bg-slate-800 border border-slate-700 rounded-lg p-6">
+            <RequirementForm
+              projectId={projectId}
+              onCancel={() => router.push(`/projects/${projectId}/requirements`)}
+            />
           </div>
         </div>
       </div>
