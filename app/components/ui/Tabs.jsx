@@ -28,7 +28,6 @@ export default function Tabs({
   onChange,
   children,
   className = '',
-  ...props
 }) {
   const [activeTab, setActiveTab] = useState(value || defaultValue || 0);
 
@@ -39,7 +38,7 @@ export default function Tabs({
 
   return (
     <TabsContext.Provider value={{ activeTab, setActiveTab: handleTabChange }}>
-      <div className={className} {...props}>
+      <div className={className}>
         {children}
       </div>
     </TabsContext.Provider>
