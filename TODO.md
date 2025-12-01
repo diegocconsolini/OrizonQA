@@ -103,34 +103,36 @@
 
 ---
 
+## ✅ COMPLETED MEDIUM PRIORITY (2025-12-01)
+
+### 4. API Key UX Improvement ✅
+**Completed**: 2025-12-01
+**Status**: ✅ COMPLETE
+
+**What Was Done**:
+- ✅ Dashboard auto-loads saved API key from Settings on mount
+- ✅ Added visual indicator showing "Using saved API key from Settings"
+- ✅ Added toggle button to switch between saved key and custom key
+- ✅ Input field disabled when using saved key (shows placeholder "••••••••••••••••")
+- ✅ Input field enabled when switching to custom key mode
+- ✅ Auto-loaded indicator badge: "● Auto-loaded" next to label
+- ✅ Contextual info messages explaining current mode
+- ✅ Smooth toggle between saved and custom key modes
+
+**User Experience**:
+- Users with saved API keys see them auto-loaded in Dashboard
+- Clear visual feedback with green indicator badge
+- One-click toggle to override with custom key if needed
+- One-click toggle back to saved key
+- No need to re-enter API key every session
+
+**Files Modified**:
+- `app/dashboard/page.js` (added state management for saved key)
+- `app/components/config/ApiKeyInput.jsx` (added UI indicator and toggle)
+
+---
+
 ## 🟡 MEDIUM PRIORITY (Do Soon)
-
-### 4. Decide on API Key Strategy
-**Estimated Time**: 1 hour
-**Status**: NOT STARTED
-**Issue**: Two ways to provide API keys confuse users
-
-Current situation:
-1. Save key in Settings (encrypted in database)
-2. Enter key in Dashboard for each request
-
-#### Recommended Solution (Option A):
-**Use saved key by default, allow override**
-- Dashboard auto-loads saved key from settings
-- User can optionally override with different key
-- Show indicator: "Using saved key" vs "Custom key"
-- Best user experience
-
-#### Tasks:
-- [ ] Update Dashboard to load saved key on mount
-- [ ] Add "Use Saved Key" toggle/button
-- [ ] Show clear indicator of which key is being used
-- [ ] Update UI to explain behavior
-- [ ] Update documentation
-
-**Files to Modify**:
-- `app/dashboard/page.js`
-- `app/components/config/ApiKeyInput.jsx`
 
 ---
 
