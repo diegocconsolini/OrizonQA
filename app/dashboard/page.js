@@ -464,7 +464,6 @@ export default function Dashboard() {
             Built with Claude AI • Your API key is never stored
           </div>
         </main>
-      </div>
 
         {/* Mobile Sidebar Overlay */}
         {sidebarOpen && (
