@@ -14,7 +14,7 @@ export default function NewProjectPage() {
       <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
         {/* Header */}
         <div className="border-b border-slate-700 bg-slate-800/50 backdrop-blur-sm">
-          <div className="max-w-4xl mx-auto px-6 py-6">
+          <div className="px-6 py-6">
             <Link
               href="/projects"
               className="inline-flex items-center gap-2 text-slate-400 hover:text-white transition-colors mb-4"
@@ -37,13 +37,14 @@ export default function NewProjectPage() {
         </div>
 
         {/* Content */}
-        <div className="max-w-4xl mx-auto px-6 py-8">
-          <div className="bg-slate-800 border border-slate-700 rounded-lg p-6">
-            <ProjectForm onCancel={() => router.push('/projects')} />
-          </div>
+        <div className="px-6 py-8">
+          <div className="max-w-4xl mx-auto">
+            <div className="bg-slate-800 border border-slate-700 rounded-lg p-6">
+              <ProjectForm onCancel={() => router.push('/projects')} />
+            </div>
 
-          {/* Help Text */}
-          <div className="mt-6 bg-slate-800/50 border border-slate-700/50 rounded-lg p-6">
+            {/* Help Text */}
+            <div className="mt-6 bg-slate-800/50 border border-slate-700/50 rounded-lg p-6">
             <h3 className="text-sm font-semibold text-white mb-3">What's a project?</h3>
             <ul className="space-y-2 text-sm text-slate-400">
               <li className="flex items-start gap-2">
@@ -71,6 +72,7 @@ export default function NewProjectPage() {
                 </span>
               </li>
             </ul>
+            </div>
           </div>
         </div>
       </div>

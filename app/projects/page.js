@@ -59,7 +59,7 @@ export default function ProjectsPage() {
       <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
         {/* Header */}
         <div className="border-b border-slate-700 bg-slate-800/50 backdrop-blur-sm">
-          <div className="max-w-7xl mx-auto px-6 py-6">
+          <div className="px-6 py-6">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="w-12 h-12 bg-gradient-to-br from-cyan-500 to-violet-500 rounded-lg flex items-center justify-center">
@@ -84,7 +84,7 @@ export default function ProjectsPage() {
         </div>
 
         {/* Content */}
-        <div className="max-w-7xl mx-auto px-6 py-8">
+        <div className="px-6 py-8">
           {/* Search Bar */}
           <div className="mb-6">
             <div className="relative">

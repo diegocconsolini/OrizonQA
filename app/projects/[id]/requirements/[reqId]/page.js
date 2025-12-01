@@ -112,7 +112,7 @@ export default function RequirementDetailPage() {
     <AppLayout>
       <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
         <div className="border-b border-slate-700 bg-slate-800/50 backdrop-blur-sm">
-          <div className="max-w-5xl mx-auto px-6 py-6">
+          <div className="px-6 py-6">
             <Link
               href={`/projects/${projectId}/requirements`}
               className="inline-flex items-center gap-2 text-slate-400 hover:text-white transition-colors mb-4"
@@ -160,7 +160,8 @@ export default function RequirementDetailPage() {
           </div>
         </div>
 
-        <div className="max-w-5xl mx-auto px-6 py-8 space-y-6">
+        <div className="px-6 py-8">
+          <div className="max-w-5xl mx-auto space-y-6">
           {/* Main Info */}
           <div className="bg-slate-800 border border-slate-700 rounded-lg p-6">
             <h2 className="text-lg font-semibold text-white mb-4">Details</h2>
@@ -258,6 +259,7 @@ export default function RequirementDetailPage() {
                 No test cases linked yet. Link tests to track coverage.
               </p>
             )}
+          </div>
           </div>
         </div>
       </div>

@@ -15,7 +15,7 @@ export default function NewRequirementPage() {
     <AppLayout>
       <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
         <div className="border-b border-slate-700 bg-slate-800/50 backdrop-blur-sm">
-          <div className="max-w-4xl mx-auto px-6 py-6">
+          <div className="px-6 py-6">
             <Link
               href={`/projects/${projectId}/requirements`}
               className="inline-flex items-center gap-2 text-slate-400 hover:text-white transition-colors mb-4"
@@ -35,12 +35,14 @@ export default function NewRequirementPage() {
           </div>
         </div>
 
-        <div className="max-w-4xl mx-auto px-6 py-8">
-          <div className="bg-slate-800 border border-slate-700 rounded-lg p-6">
-            <RequirementForm
-              projectId={projectId}
-              onCancel={() => router.push(`/projects/${projectId}/requirements`)}
-            />
+        <div className="px-6 py-8">
+          <div className="max-w-4xl mx-auto">
+            <div className="bg-slate-800 border border-slate-700 rounded-lg p-6">
+              <RequirementForm
+                projectId={projectId}
+                onCancel={() => router.push(`/projects/${projectId}/requirements`)}
+              />
+            </div>
           </div>
         </div>
       </div>
