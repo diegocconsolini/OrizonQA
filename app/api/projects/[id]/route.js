@@ -19,7 +19,7 @@ import {
  * GET /api/projects/[id]
  * Get project details with statistics
  */
-export async function GET(request, { params }) {
+export async function GET(request, context) {
   try {
     const session = await auth();
     if (!session?.user?.id) {
@@ -29,9 +29,9 @@ export async function GET(request, { params }) {
       );
     }
 
-    console.log('[GET /api/projects/[id]] params.id:', params.id, 'type:', typeof params.id);
+    // In Next.js 15+, params is a Promise
+    const params = await context.params;
     const projectId = parseInt(params.id);
-    console.log('[GET /api/projects/[id]] parsed projectId:', projectId, 'isNaN:', isNaN(projectId));
     if (isNaN(projectId)) {
       return NextResponse.json(
         { error: 'Invalid project ID', received: params.id },
@@ -80,7 +80,7 @@ export async function GET(request, { params }) {
  *   is_active: boolean (optional)
  * }
  */
-export async function PUT(request, { params }) {
+export async function PUT(request, context) {
   try {
     const session = await auth();
     if (!session?.user?.id) {
@@ -90,6 +90,7 @@ export async function PUT(request, { params }) {
       );
     }
 
+    const params = await context.params;
     const projectId = parseInt(params.id);
     if (isNaN(projectId)) {
       return NextResponse.json(
@@ -146,7 +147,7 @@ export async function PUT(request, { params }) {
  * Query params:
  * - hard=true: Permanently delete (requires confirmation)
  */
-export async function DELETE(request, { params }) {
+export async function DELETE(request, context) {
   try {
     const session = await auth();
     if (!session?.user?.id) {
@@ -156,6 +157,7 @@ export async function DELETE(request, { params }) {
       );
     }
 
+    const params = await context.params;
     const projectId = parseInt(params.id);
     if (isNaN(projectId)) {
       return NextResponse.json(
