@@ -161,7 +161,7 @@ export default function RequirementDetailPage() {
         </div>
 
         <div className="px-6 py-8">
-          <div className="max-w-5xl mx-auto space-y-6">
+          <div className="space-y-6">
           {/* Main Info */}
           <div className="bg-slate-800 border border-slate-700 rounded-lg p-6">
             <h2 className="text-lg font-semibold text-white mb-4">Details</h2>
