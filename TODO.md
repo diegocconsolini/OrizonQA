@@ -42,91 +42,64 @@
 
 ---
 
-## 🔥 HIGH PRIORITY (Do Next)
+## ✅ COMPLETED HIGH PRIORITY (2025-12-01)
 
-### 1. Link Analyses to User Accounts ⚠️ CRITICAL
-**Estimated Time**: 1-2 hours
-**Status**: NOT STARTED
-**Blocking**: Full user experience, analysis persistence
+### 1. Link Analyses to User Accounts ✅
+**Completed**: 2025-12-01
+**Status**: ✅ COMPLETE
 
-**Why Critical**: Database has `user_id` column in `analyses` table but it's not being used. Users' analyses are not being saved or linked to their accounts. The History page exists but won't show any user-specific data until this is implemented.
-
-#### Tasks:
-- [ ] Modify `/api/analyze/route.js`:
-  - Accept user session from Next-Auth
-  - Extract user_id from session
-  - Pass user_id to `saveAnalysis()` function
-- [ ] Update `lib/db.js` `saveAnalysis()`:
-  - Accept user_id parameter
-  - Insert user_id into analyses table
-- [ ] Update `app/hooks/useAnalysis.js`:
-  - Pass session to analysis API call
-  - Verify user_id is being saved
-- [ ] Test:
-  - Run analysis while logged in
-  - Check database: `SELECT * FROM analyses WHERE user_id IS NOT NULL;`
-  - Verify user_id matches logged-in user
-  - Verify History page shows analyses
-  - Verify Sidebar Quick Stats update
-
-**Files to Modify**:
-- `app/api/analyze/route.js`
-- `lib/db.js` (update saveAnalysis function)
-- `app/hooks/useAnalysis.js`
+**What Was Done**:
+- ✅ Analyses already linked to users in `app/api/analyze/route.js`
+- ✅ Uses `auth()` from NextAuth v5 to get session
+- ✅ Passes `userId` to `saveAnalysis()` in `lib/db.js`
+- ✅ All analyses properly saved with user_id
+- ✅ History page shows user-specific analyses
+- ✅ Sidebar Quick Stats connected to real data
 
 ---
 
-### 2. Analysis Detail View
-**Estimated Time**: 2-3 hours
-**Status**: NOT STARTED
-**Depends On**: #1 (Link Analyses to Users)
+### 2. Analysis Detail View ✅
+**Completed**: 2025-12-01
+**Status**: ✅ COMPLETE
 
-Currently, History page shows list of analyses but clicking them does nothing. Need to implement detail view.
+**What Was Done**:
+- ✅ Created `/app/history/[id]/page.js` - full detail page
+- ✅ Created `/app/api/user/analyses/[id]/route.js` - GET and DELETE endpoints
+- ✅ History cards now clickable, navigate to detail page
+- ✅ Detail page displays full results using OutputSection component
+- ✅ Download button exports to markdown
+- ✅ Delete button with confirmation dialog
+- ✅ Token usage display
+- ✅ Proper loading and error states
 
-#### Tasks:
-- [ ] Create `/app/history/[id]/page.js`:
-  - Protected route
-  - Fetch single analysis from API
-  - Display full results (user stories, tests, criteria)
-  - Download button
-  - Delete button
-  - "Run Again" button (copy config to Dashboard)
-- [ ] Create `/api/user/analyses/[id]/route.js`:
-  - GET: Fetch single analysis with full results
-  - DELETE: Delete analysis (with confirmation)
-- [ ] Make history cards clickable:
-  - Link to detail page
-  - Show chevron icon on hover
-
-**Files to Create**:
+**Files Created**:
 - `app/history/[id]/page.js`
 - `app/api/user/analyses/[id]/route.js`
 
-**Files to Modify**:
-- `app/history/page.js` (add links to cards)
+**Files Modified**:
+- `app/history/page.js` (added onClick navigation)
 
 ---
 
-### 3. Update Documentation
-**Estimated Time**: 30-45 minutes
-**Status**: NOT STARTED
+### 3. Update Documentation ✅
+**Completed**: 2025-12-01
+**Status**: ✅ COMPLETE
 
-Documentation is outdated and doesn't reflect recent changes.
+**What Was Done**:
+- ✅ Updated `CLAUDE.md` status to "Navigation & History System Complete"
+- ✅ Added layout components to architecture (Sidebar.jsx, AppLayout.jsx)
+- ✅ Added history pages to architecture (page.js, [id]/page.js)
+- ✅ Updated `README.md` with new features (Auth, History, Persistent Storage)
+- ✅ Updated tech stack (NextAuth v5, PostgreSQL, Resend)
+- ✅ Updated Privacy & Security section
 
-#### Tasks:
-- [ ] Update `CLAUDE.md`:
-  - Change status to "Sidebar & History Complete"
-  - Update architecture section with new layout system
-  - Add AppLayout, Sidebar, History page to file structure
-  - Document new navigation pattern
-- [ ] Update `README.md`:
-  - Add History page to features
-  - Update screenshots (if any)
-  - Update tech stack if needed
-
-**Files to Modify**:
+**Files Modified**:
 - `CLAUDE.md`
 - `README.md`
+
+---
+
+## 🔥 HIGH PRIORITY (Do Next)
 
 ---
 
