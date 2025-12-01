@@ -97,9 +97,9 @@ export default function Sidebar({ collapsed = false, onToggle }) {
       {/* Logo Section */}
       <div className="flex flex-col items-start justify-center px-4 py-4 border-b border-white/10">
         {!collapsed && (
-          <div className="flex flex-col gap-1">
+          <div className="flex flex-col gap-2">
             <Logo variant="full" color="blue" size="lg" background="dark" />
-            <p className="text-xs text-slate-400 font-secondary tracking-wider">
+            <p className="text-sm text-slate-300 font-medium font-secondary tracking-wide uppercase">
               AI-Powered QA Analysis
             </p>
           </div>
