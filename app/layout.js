@@ -4,6 +4,7 @@ import Providers from './providers'
 export const metadata = {
   title: 'ORIZON - AI-Powered QA Analysis',
   description: 'Transform your codebase into comprehensive user stories, test cases, and acceptance criteria using Claude AI',
+  manifest: '/site.webmanifest',
   icons: {
     icon: [
       { url: '/favicon-16x16.png', sizes: '16x16', type: 'image/png' },
