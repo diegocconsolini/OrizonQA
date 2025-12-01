@@ -80,16 +80,19 @@ app/
 │   │   ├── VerificationCodeInput.jsx
 │   │   ├── ForgotPasswordForm.jsx
 │   │   └── ResetPasswordForm.jsx
+│   ├── layout/                  # Layout components (NEW)
+│   │   ├── Sidebar.jsx          # Left navigation sidebar
+│   │   └── AppLayout.jsx        # Layout wrapper with sidebar
 │   ├── ui/                      # UI component library (30+ components)
-│   ├── config/               # Configuration components
+│   ├── config/                  # Configuration components
 │   │   ├── ApiKeyInput.jsx
 │   │   └── ConfigSection.jsx
-│   ├── input/                # Input method components
+│   ├── input/                   # Input method components
 │   │   ├── FileTree.jsx
 │   │   └── InputSection.jsx
-│   ├── output/               # Output display components
+│   ├── output/                  # Output display components
 │   │   └── OutputSection.jsx
-│   └── shared/               # Reusable UI components
+│   └── shared/                  # Reusable UI components
 │       ├── Alert.jsx
 │       ├── Header.jsx
 │       ├── HelpModal.jsx
@@ -99,6 +102,9 @@ app/
 │   ├── useFileUpload.js
 │   └── useGitHubFetch.js
 ├── dashboard/page.js         # Main app (protected, was root page)
+├── history/                  # Analysis history (NEW)
+│   ├── page.js               # History list with search/filter
+│   └── [id]/page.js          # Individual analysis detail
 ├── login/page.js             # Login page
 ├── signup/page.js            # Signup page
 ├── verify-email/page.js      # Email verification

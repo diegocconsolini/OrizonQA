@@ -4,11 +4,14 @@ Analyze codebases and generate user stories, test cases, and acceptance criteria
 
 ## Features
 
+- **User Authentication**: Secure signup, login, and password reset with email verification
 - **Multiple Input Methods**: Paste code, fetch from public GitHub repos, or upload files (including .zip)
 - **Configurable Analysis**: Choose what to generate - user stories, test cases, acceptance criteria
 - **Framework Support**: Generic, Jest, Pytest, or JUnit formatted test cases
 - **Output Formats**: Markdown, JSON, or Jira-ready format
 - **Edge Cases & Security**: Optional inclusion of edge case and security test scenarios
+- **Analysis History**: View, search, and filter all past analyses
+- **Persistent Storage**: All analyses are saved and linked to your account
 
 ## Getting Started
 
@@ -50,15 +53,22 @@ vercel
 
 ## Tech Stack
 
-- [Next.js 14](https://nextjs.org/) - React framework
+- [Next.js 14](https://nextjs.org/) - React framework with App Router
+- [NextAuth v5](https://next-auth.js.org/) - Authentication
+- [PostgreSQL](https://www.postgresql.org/) - Database (Vercel Postgres)
 - [Tailwind CSS](https://tailwindcss.com/) - Styling
 - [Lucide React](https://lucide.dev/) - Icons
 - [JSZip](https://stuk.github.io/jszip/) - ZIP file handling
 - [Claude API](https://docs.anthropic.com/claude/reference/messages_post) - AI analysis
+- [Resend](https://resend.com/) - Transactional emails
 
-## Privacy
+## Privacy & Security
 
-Your API key is sent directly to Anthropic's API via our serverless function and is never stored or logged. All processing happens in real-time with no data persistence.
+- API keys are encrypted with AES-256-GCM before storage
+- User passwords are hashed with bcrypt
+- All analyses are linked to your user account
+- Email verification required for account activation
+- Secure session management with NextAuth
 
 ## License
 
