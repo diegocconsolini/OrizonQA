@@ -109,13 +109,13 @@ export default function Dashboard() {
   const loading = analysisLoading || githubLoading;
 
   // Calculate token estimate
-  const getInputContent = useCallback(() => {
+  const getInputContent = () => {
     if (inputTab === 'paste') return codeInput;
     if (inputTab === 'upload' || uploadedFiles.length > 0) {
       return uploadedFiles.map(f => `=== FILE: ${f.name} ===\n${f.content}`).join('\n\n');
     }
     return '';
-  }, [inputTab, codeInput, uploadedFiles]);
+  };
 
   const estimatedTokens = Math.ceil(getInputContent().length / 4);
   const isTruncated = getInputContent().length > 100000;
