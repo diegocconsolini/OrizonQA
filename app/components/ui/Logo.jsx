@@ -55,7 +55,7 @@ export default function Logo({
     } else {
       // Blue variant (default)
       iconPath = background === 'dark'
-        ? '/logos/gargantua-blue-dark.png'
+        ? '/logos/orizon-icon-blue-darkv2.png'
         : '/logos/gargantua-blue-light.png';
     }
 

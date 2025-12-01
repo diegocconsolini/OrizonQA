@@ -4,6 +4,11 @@ import Providers from './providers'
 export const metadata = {
   title: 'ORIZON - AI-Powered QA Analysis',
   description: 'Transform your codebase into comprehensive user stories, test cases, and acceptance criteria using Claude AI',
+  icons: {
+    icon: '/logos/orizon-icon-blue-darkv2.png',
+    shortcut: '/logos/orizon-icon-blue-darkv2.png',
+    apple: '/logos/orizon-icon-blue-darkv2.png',
+  },
 }
 
 export default function RootLayout({ children }) {
