@@ -345,7 +345,7 @@ export default function Dashboard() {
               </div>
             ) : (
               <EmptyState
-                icon={History}
+                icon={<History className="w-12 h-12" />}
                 title="No analyses yet"
                 description="Your recent analyses will appear here"
                 size="sm"
@@ -360,7 +360,7 @@ export default function Dashboard() {
           {success && <Alert type="success" message={success} />}
 
           {/* Main Tabs */}
-          <Tabs defaultIndex={0} className="mb-6">
+          <Tabs defaultValue={0} className="mb-6">
             <TabList>
               <TabButton>Input</TabButton>
               <TabButton>Configure</TabButton>
@@ -419,7 +419,7 @@ export default function Dashboard() {
                   <OutputSection results={results} />
                 ) : (
                   <EmptyState
-                    icon={Sparkles}
+                    icon={<Sparkles className="w-12 h-12" />}
                     title="No results yet"
                     description="Configure your analysis and click 'Analyze Code' to generate QA artifacts"
                   />
@@ -467,14 +467,14 @@ export default function Dashboard() {
                 <div className="flex items-center gap-2">
                   <span className="text-text-secondary-dark">Input:</span>
                   <span className="text-primary font-semibold">
-                    {tokenUsage.input_tokens?.toLocaleString() || '0'}
+                    {(tokenUsage.input || tokenUsage.input_tokens)?.toLocaleString() || '0'}
                   </span>
                 </div>
                 <div className="w-px h-4 bg-white/10" />
                 <div className="flex items-center gap-2">
                   <span className="text-text-secondary-dark">Output:</span>
                   <span className="text-accent font-semibold">
-                    {tokenUsage.output_tokens?.toLocaleString() || '0'}
+                    {(tokenUsage.output || tokenUsage.output_tokens)?.toLocaleString() || '0'}
                   </span>
                 </div>
               </div>
