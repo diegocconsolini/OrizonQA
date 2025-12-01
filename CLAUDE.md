@@ -179,6 +179,28 @@ The application supports **two methods** for API keys:
 
 ## Important Patterns
 
+### UI Layout Guidelines
+
+**CRITICAL**: Do NOT use `max-w-*` (max-width) classes on form pages or content areas unless explicitly required for specific design purposes like centering narrow content (e.g., login forms).
+
+**Why**: Form pages need full width to accommodate complex forms with multiple columns, steps, and detailed inputs. Restricting width to `max-w-4xl` (896px) or similar creates unnecessary horizontal scrolling and poor UX on larger screens.
+
+**Examples**:
+- ❌ BAD: `<div className="max-w-4xl mx-auto bg-slate-800 ...">` on form pages
+- ✅ GOOD: `<div className="bg-slate-800 border border-slate-700 rounded-lg p-6">` on form pages
+- ✅ GOOD: `<div className="max-w-md mx-auto">` on login/signup pages (narrow forms that should be centered)
+
+**Where to apply full-width**:
+- Test case creation/edit pages
+- Requirement creation/edit pages
+- Project creation/edit pages
+- Any page with complex forms, multi-column layouts, or detailed inputs
+
+**Where max-width is acceptable**:
+- Login/signup forms (narrow, centered)
+- Simple single-column forms with few fields
+- Landing page content sections
+
 ### Client-Side State Management
 
 All state is managed via React `useState` hooks in the main `page.js` component. No external state management library is used.
