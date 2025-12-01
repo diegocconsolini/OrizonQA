@@ -14,7 +14,9 @@ import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import Logo from '@/app/components/ui/Logo';
 import Button from '@/app/components/ui/Button';
-import { Settings as SettingsIcon, Key, Server, Save, Loader2, Check, Eye, EyeOff } from 'lucide-react';
+import Card from '@/app/components/ui/Card';
+import { Tabs, TabList, TabButton, TabPanels, TabPanel } from '@/app/components/ui/Tabs';
+import { Settings as SettingsIcon, Key, Server, Save, Loader2, Check, Eye, EyeOff, User, BarChart3, Zap, Calendar } from 'lucide-react';
 
 export default function SettingsPage() {
   const { data: session, status } = useSession();
@@ -30,6 +32,13 @@ export default function SettingsPage() {
   const [claudeApiKey, setClaudeApiKey] = useState('');
   const [lmStudioUrl, setLmStudioUrl] = useState('http://192.168.2.101:1234');
 
+  // Usage stats
+  const [usageStats, setUsageStats] = useState({
+    total: 0,
+    totalTokens: 0,
+    lastAnalysis: null
+  });
+
   // Load user settings
   useEffect(() => {
     async function loadSettings() {
@@ -41,16 +50,28 @@ export default function SettingsPage() {
       }
 
       try {
-        const response = await fetch('/api/user/settings');
-        if (!response.ok) throw new Error('Failed to load settings');
+        // Load settings
+        const settingsResponse = await fetch('/api/user/settings');
+        if (!settingsResponse.ok) throw new Error('Failed to load settings');
 
-        const data = await response.json();
+        const settingsData = await settingsResponse.json();
 
-        if (data.claudeApiKey) {
-          setClaudeApiKey(data.claudeApiKey);
+        if (settingsData.claudeApiKey) {
+          setClaudeApiKey(settingsData.claudeApiKey);
         }
-        if (data.lmStudioUrl) {
-          setLmStudioUrl(data.lmStudioUrl);
+        if (settingsData.lmStudioUrl) {
+          setLmStudioUrl(settingsData.lmStudioUrl);
+        }
+
+        // Load usage stats
+        const analysesResponse = await fetch('/api/user/analyses?limit=1');
+        if (analysesResponse.ok) {
+          const analysesData = await analysesResponse.json();
+          setUsageStats({
+            total: analysesData.stats?.total || 0,
+            totalTokens: analysesData.stats?.totalTokens || 0,
+            lastAnalysis: analysesData.analyses?.[0]?.created_at || null
+          });
         }
       } catch (err) {
         console.error('Error loading settings:', err);
