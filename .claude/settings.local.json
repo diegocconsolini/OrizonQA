@@ -21,7 +21,8 @@
       "Bash(mkdir:*)",
       "Bash(npm run build:*)",
       "Bash(curl:*)",
-      "Bash(docker exec:*)"
+      "Bash(docker exec:*)",
+      "Bash(node scripts/verify-migration.js:*)"
     ],
     "deny": [],
     "ask": []
