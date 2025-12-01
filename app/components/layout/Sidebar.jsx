@@ -14,7 +14,7 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { usePathname } from 'next/navigation';
 import { useSession, signOut } from 'next-auth/react';
 import Logo from '../ui/Logo';
@@ -33,6 +33,8 @@ import {
 export default function Sidebar({ collapsed = false, onToggle }) {
   const pathname = usePathname();
   const { data: session } = useSession();
+  const [stats, setStats] = useState({ total: 0, totalTokens: 0 });
+  const [loadingStats, setLoadingStats] = useState(true);
 
   const navigationItems = [
     {
@@ -61,6 +63,30 @@ export default function Sidebar({ collapsed = false, onToggle }) {
   ];
 
   const isActive = (href) => pathname === href;
+
+  // Load user stats
+  useEffect(() => {
+    async function loadStats() {
+      if (!session?.user?.id) return;
+
+      try {
+        const response = await fetch('/api/user/analyses?limit=1');
+        if (response.ok) {
+          const data = await response.json();
+          setStats({
+            total: data.stats?.total || 0,
+            totalTokens: data.stats?.totalTokens || 0
+          });
+        }
+      } catch (error) {
+        console.error('Error loading stats:', error);
+      } finally {
+        setLoadingStats(false);
+      }
+    }
+
+    loadStats();
+  }, [session]);
 
   return (
     <aside
@@ -108,22 +134,30 @@ export default function Sidebar({ collapsed = false, onToggle }) {
             <p className="text-xs text-text-muted-dark uppercase tracking-wider mb-3 px-3">
               Quick Stats
             </p>
-            <div className="space-y-2">
-              <div className="px-3 py-2 bg-primary/5 rounded-lg border border-primary/10">
-                <div className="flex items-center gap-2 mb-1">
-                  <Zap className="w-4 h-4 text-primary" />
-                  <span className="text-xs text-text-secondary-dark">Analyses</span>
-                </div>
-                <p className="text-lg font-bold text-white">0</p>
+            {loadingStats ? (
+              <div className="h-24 flex items-center justify-center">
+                <div className="w-6 h-6 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
               </div>
-              <div className="px-3 py-2 bg-quantum/5 rounded-lg border border-quantum/10">
-                <div className="flex items-center gap-2 mb-1">
-                  <Shield className="w-4 h-4 text-quantum" />
-                  <span className="text-xs text-text-secondary-dark">Secure</span>
+            ) : (
+              <div className="space-y-2">
+                <div className="px-3 py-2 bg-primary/5 rounded-lg border border-primary/10">
+                  <div className="flex items-center gap-2 mb-1">
+                    <Zap className="w-4 h-4 text-primary" />
+                    <span className="text-xs text-text-secondary-dark">Analyses</span>
+                  </div>
+                  <p className="text-lg font-bold text-white">{stats.total}</p>
                 </div>
-                <p className="text-sm font-semibold text-quantum">Encrypted</p>
+                <div className="px-3 py-2 bg-quantum/5 rounded-lg border border-quantum/10">
+                  <div className="flex items-center gap-2 mb-1">
+                    <Shield className="w-4 h-4 text-quantum" />
+                    <span className="text-xs text-text-secondary-dark">Tokens</span>
+                  </div>
+                  <p className="text-sm font-semibold text-quantum">
+                    {((stats.totalTokens || 0) / 1000).toFixed(1)}K
+                  </p>
+                </div>
               </div>
-            </div>
+            )}
           </div>
         )}
       </nav>

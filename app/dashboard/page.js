@@ -16,19 +16,14 @@
  * - Results display with export options
  */
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import dynamic from 'next/dynamic';
-import { useSession, signOut } from 'next-auth/react';
-import {
-  Loader2, Sparkles, LogOut, User, Settings,
-  History, Zap, Activity, Clock, ChevronRight,
-  X, Menu
-} from 'lucide-react';
+import { useSession } from 'next-auth/react';
+import { Loader2, Sparkles } from 'lucide-react';
 
 // UI Components
 import {
-  Card, CardHeader, CardTitle, CardContent, CardDescription,
-  Button, Tag, EmptyState, Logo, Avatar, Tabs, TabList, TabButton, TabPanels, TabPanel
+  Card, Button, EmptyState, Tabs, TabList, TabButton, TabPanels, TabPanel
 } from '@/app/components/ui';
 
 // Layout
@@ -51,10 +46,6 @@ import useGitHubFetch from '@/app/hooks/useGitHubFetch';
 export default function Dashboard() {
   const { data: session, status } = useSession();
   const [settingsLoaded, setSettingsLoaded] = useState(false);
-  const [sidebarOpen, setSidebarOpen] = useState(true);
-  const [recentAnalyses, setRecentAnalyses] = useState([]);
-  const [analysisStats, setAnalysisStats] = useState(null);
-  const [loadingHistory, setLoadingHistory] = useState(true);
 
   // Input states
   const [inputTab, setInputTab] = useState('paste');
@@ -133,8 +124,6 @@ export default function Dashboard() {
     const content = getInputContent();
     const modelToUse = provider === 'lmstudio' && selectedModel ? selectedModel : model;
     await analyzeCodebase(content, apiKey, config, modelToUse, provider, lmStudioUrl);
-    // Refresh history after new analysis
-    loadRecentAnalyses();
   };
 
   const clearAll = () => {
@@ -168,171 +157,11 @@ export default function Dashboard() {
     loadUserSettings();
   }, [session, status, settingsLoaded]);
 
-  // Load recent analyses
-  const loadRecentAnalyses = useCallback(async () => {
-    if (!session?.user?.id) return;
-
-    try {
-      setLoadingHistory(true);
-      const response = await fetch('/api/user/analyses?limit=5');
-      if (response.ok) {
-        const data = await response.json();
-        setRecentAnalyses(data.analyses || []);
-        setAnalysisStats(data.stats || null);
-      }
-    } catch (error) {
-      console.error('Error loading recent analyses:', error);
-    } finally {
-      setLoadingHistory(false);
-    }
-  }, [session]);
-
-  useEffect(() => {
-    loadRecentAnalyses();
-  }, [loadRecentAnalyses]);
-
-  // Format time ago
-  const timeAgo = (date) => {
-    const seconds = Math.floor((new Date() - new Date(date)) / 1000);
-    if (seconds < 60) return 'just now';
-    if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
-    if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`;
-    return `${Math.floor(seconds / 86400)}d ago`;
-  };
-
   return (
     <AppLayout>
-      <div className="flex max-w-[1800px] mx-auto">
-        {/* History Sidebar */}
-        <aside
-          className={`${
-            sidebarOpen ? 'translate-x-0' : '-translate-x-full'
-          } lg:translate-x-0 fixed lg:sticky top-0 left-0 w-80 h-screen bg-surface-dark border-r border-white/10 overflow-y-auto transition-transform duration-300 z-40`}
-        >
-          {/* Mobile Header */}
-          <div className="lg:hidden p-4 border-b border-white/10 flex items-center justify-between">
-            <h2 className="text-lg font-semibold font-primary text-white">Overview</h2>
-            <button
-              onClick={() => setSidebarOpen(false)}
-              className="p-1 hover:bg-white/10 rounded transition-colors"
-            >
-              <X className="w-5 h-5 text-text-secondary-dark" />
-            </button>
-          </div>
-
-          {/* Stats Section */}
-          <div className="p-4 border-b border-white/10">
-            <h2 className="hidden lg:block text-lg font-semibold font-primary text-white mb-4">Overview</h2>
-
-            {analysisStats ? (
-              <div className="grid grid-cols-2 gap-3">
-                <Card className="p-3 bg-primary/5 border-primary/20">
-                  <div className="flex items-center gap-2 mb-1">
-                    <Zap className="w-4 h-4 text-primary" />
-                    <p className="text-xs text-text-secondary-dark font-secondary">Analyses</p>
-                  </div>
-                  <p className="text-2xl font-bold text-white font-primary">
-                    {analysisStats.total || 0}
-                  </p>
-                </Card>
-
-                <Card className="p-3 bg-accent/5 border-accent/20">
-                  <div className="flex items-center gap-2 mb-1">
-                    <Activity className="w-4 h-4 text-accent" />
-                    <p className="text-xs text-text-secondary-dark font-secondary">Tokens</p>
-                  </div>
-                  <p className="text-xl font-bold text-white font-primary">
-                    {((analysisStats.totalTokens || 0) / 1000).toFixed(1)}K
-                  </p>
-                </Card>
-              </div>
-            ) : (
-              <div className="h-24 flex items-center justify-center">
-                <Loader2 className="w-6 h-6 text-text-secondary-dark animate-spin" />
-              </div>
-            )}
-          </div>
-
-          {/* Recent Analyses */}
-          <div className="p-4">
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="text-sm font-semibold text-white font-primary">Recent</h3>
-              <a
-                href="/history"
-                className="text-xs text-primary hover:text-primary-hover transition-colors font-secondary"
-              >
-                View All
-              </a>
-            </div>
-
-            {loadingHistory ? (
-              <div className="space-y-3">
-                {[1, 2, 3].map(i => (
-                  <div key={i} className="h-20 bg-white/5 rounded-lg animate-pulse" />
-                ))}
-              </div>
-            ) : recentAnalyses.length > 0 ? (
-              <div className="space-y-2">
-                {recentAnalyses.map((analysis) => (
-                  <Card
-                    key={analysis.id}
-                    className="p-3 hover:bg-white/5 cursor-pointer transition-all group"
-                  >
-                    <div className="flex items-start justify-between mb-2">
-                      <div className="flex items-center gap-2">
-                        <Tag
-                          size="sm"
-                          className={analysis.provider === 'claude' ? 'bg-primary/10 text-primary' : 'bg-accent/10 text-accent'}
-                        >
-                          {analysis.provider === 'claude' ? '⚡' : '🤖'} {analysis.provider}
-                        </Tag>
-                      </div>
-                      <span className="text-xs text-text-secondary-dark font-secondary">
-                        {timeAgo(analysis.created_at)}
-                      </span>
-                    </div>
-
-                    <p className="text-sm text-white font-secondary mb-1 truncate">
-                      {analysis.input_type === 'github' && analysis.github_url
-                        ? analysis.github_url.split('/').slice(-2).join('/')
-                        : analysis.input_type === 'file'
-                        ? 'File Upload'
-                        : 'Code Paste'}
-                    </p>
-
-                    {analysis.token_usage && (
-                      <p className="text-xs text-text-secondary-dark font-secondary">
-                        {(analysis.token_usage.input_tokens || 0).toLocaleString()} tokens
-                      </p>
-                    )}
-
-                    <ChevronRight className="w-4 h-4 text-text-secondary-dark opacity-0 group-hover:opacity-100 transition-opacity absolute top-3 right-3" />
-                  </Card>
-                ))}
-              </div>
-            ) : (
-              <EmptyState
-                icon={<History className="w-12 h-12" />}
-                title="No analyses yet"
-                description="Your recent analyses will appear here"
-                size="sm"
-              />
-            )}
-          </div>
-        </aside>
-
+      <div className="max-w-[1400px] mx-auto">
         {/* Main Content */}
-        <main className="flex-1 p-4 md:p-6 lg:p-8">
-          {/* History Toggle Button (Mobile) */}
-          <div className="lg:hidden mb-4 flex justify-end">
-            <button
-              onClick={() => setSidebarOpen(true)}
-              className="flex items-center gap-2 px-3 py-2 text-sm text-text-secondary-dark hover:text-white hover:bg-white/10 rounded-lg transition-all"
-            >
-              <History className="w-4 h-4" />
-              <span className="font-secondary">History</span>
-            </button>
-          </div>
+        <main className="p-4 md:p-6 lg:p-8">
 
           {error && <Alert type="error" message={error} />}
           {success && <Alert type="success" message={success} />}
@@ -464,14 +293,6 @@ export default function Dashboard() {
             Built with Claude AI • Your API key is never stored
           </div>
         </main>
-
-        {/* Mobile Sidebar Overlay */}
-        {sidebarOpen && (
-          <div
-            className="lg:hidden fixed inset-0 bg-black/50 z-30"
-            onClick={() => setSidebarOpen(false)}
-          />
-        )}
       </div>
     </AppLayout>
   );
