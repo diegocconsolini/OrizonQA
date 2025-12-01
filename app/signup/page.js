@@ -47,12 +47,13 @@ export default function SignupPage() {
     <div className="min-h-screen bg-bg-dark flex">
       {/* Left Side - Brand Content */}
       <div className="hidden lg:flex lg:w-[45%] relative overflow-hidden">
-        {/* Background Gradient */}
-        <div className="absolute inset-0 bg-gradient-to-br from-quantum via-bg-dark to-primary/20" />
+        {/* Background Gradient with Animation */}
+        <div className="absolute inset-0 bg-gradient-to-br from-quantum via-bg-dark to-primary/20 animate-gradient" />
 
-        {/* Cosmic Elements */}
-        <div className="absolute top-20 left-20 w-64 h-64 bg-primary/10 rounded-full blur-3xl" />
-        <div className="absolute bottom-20 right-20 w-96 h-96 bg-quantum/10 rounded-full blur-3xl" />
+        {/* Animated Cosmic Elements */}
+        <div className="absolute top-20 left-20 w-64 h-64 bg-primary/10 rounded-full blur-3xl animate-float" />
+        <div className="absolute bottom-20 right-20 w-96 h-96 bg-quantum/10 rounded-full blur-3xl animate-float-delayed" />
+        <div className="absolute top-1/2 left-1/3 w-48 h-48 bg-accent/5 rounded-full blur-2xl animate-pulse-slow" />
 
         {/* Content */}
         <div className="relative z-10 flex flex-col justify-center px-16 w-full">

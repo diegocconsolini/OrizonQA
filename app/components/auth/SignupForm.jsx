@@ -94,59 +94,76 @@ export default function SignupForm() {
     if (error) setError('');
   };
 
-  // Client-side validation
-  const validateForm = () => {
+  // Validate current step
+  const validateStep = (step) => {
     const errors = {};
 
-    // Full name validation
-    if (!formData.fullName.trim()) {
-      errors.fullName = 'Full name is required';
-    } else if (formData.fullName.trim().length < 2) {
-      errors.fullName = 'Full name must be at least 2 characters';
-    }
-
-    // Email validation
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!formData.email) {
-      errors.email = 'Email is required';
-    } else if (!emailRegex.test(formData.email)) {
-      errors.email = 'Please enter a valid email address';
-    }
-
-    // Password validation
-    if (!formData.password) {
-      errors.password = 'Password is required';
-    } else {
-      const unmetCriteria = passwordCriteria.filter(c => !c.met);
-      if (unmetCriteria.length > 0) {
-        errors.password = 'Password does not meet all requirements';
+    if (step === 1) {
+      // Email validation
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!formData.email) {
+        errors.email = 'Email is required';
+      } else if (!emailRegex.test(formData.email)) {
+        errors.email = 'Please enter a valid email address';
       }
-    }
 
-    // Confirm password validation
-    if (!formData.confirmPassword) {
-      errors.confirmPassword = 'Please confirm your password';
-    } else if (formData.password !== formData.confirmPassword) {
-      errors.confirmPassword = 'Passwords do not match';
-    }
+      // Password validation
+      if (!formData.password) {
+        errors.password = 'Password is required';
+      } else {
+        const unmetCriteria = passwordCriteria.filter(c => !c.met);
+        if (unmetCriteria.length > 0) {
+          errors.password = 'Password does not meet all requirements';
+        }
+      }
 
-    // Terms acceptance
-    if (!termsAccepted) {
-      errors.terms = 'You must accept the Terms and Privacy Policy';
+      // Confirm password validation
+      if (!formData.confirmPassword) {
+        errors.confirmPassword = 'Please confirm your password';
+      } else if (formData.password !== formData.confirmPassword) {
+        errors.confirmPassword = 'Passwords do not match';
+      }
+    } else if (step === 2) {
+      // Full name validation
+      if (!formData.fullName.trim()) {
+        errors.fullName = 'Full name is required';
+      } else if (formData.fullName.trim().length < 2) {
+        errors.fullName = 'Full name must be at least 2 characters';
+      }
+    } else if (step === 3) {
+      // Terms acceptance
+      if (!termsAccepted) {
+        errors.terms = 'You must accept the Terms and Privacy Policy';
+      }
     }
 
     setFieldErrors(errors);
     return Object.keys(errors).length === 0;
   };
 
-  // Handle form submission
+  // Handle next step
+  const handleNext = () => {
+    setError('');
+    if (validateStep(currentStep)) {
+      setCurrentStep(prev => Math.min(prev + 1, totalSteps));
+    }
+  };
+
+  // Handle previous step
+  const handlePrevious = () => {
+    setError('');
+    setFieldErrors({});
+    setCurrentStep(prev => Math.max(prev - 1, 1));
+  };
+
+  // Handle form submission (on final step)
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     setFieldErrors({});
 
-    // Validate form
-    if (!validateForm()) {
+    // Validate final step
+    if (!validateStep(3)) {
       return;
     }
 
@@ -182,7 +199,49 @@ export default function SignupForm() {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <div className="space-y-6">
+      {/* Step Indicator */}
+      <div className="mb-8">
+        <div className="flex items-center justify-between mb-4">
+          {steps.map((step, index) => (
+            <div key={step.number} className="flex-1">
+              <div className="flex items-center">
+                <div
+                  className={`flex items-center justify-center w-10 h-10 rounded-full border-2 transition-all duration-300 ${
+                    currentStep >= step.number
+                      ? 'border-primary bg-primary text-black'
+                      : 'border-white/20 bg-white/5 text-text-secondary-dark'
+                  }`}
+                >
+                  {currentStep > step.number ? (
+                    <Check className="w-5 h-5" />
+                  ) : (
+                    <span className="font-semibold">{step.number}</span>
+                  )}
+                </div>
+                {index < steps.length - 1 && (
+                  <div
+                    className={`flex-1 h-0.5 mx-2 transition-all duration-300 ${
+                      currentStep > step.number ? 'bg-primary' : 'bg-white/10'
+                    }`}
+                  />
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+        <div className="flex justify-center mt-4">
+          <div className="text-center">
+            <h3 className="text-xl font-semibold text-white font-primary">
+              {steps[currentStep - 1].title}
+            </h3>
+            <p className="text-sm text-text-secondary-dark font-secondary">
+              {steps[currentStep - 1].description}
+            </p>
+          </div>
+        </div>
+      </div>
+
       {/* Global Error Message */}
       {error && (
         <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-lg">
@@ -190,161 +249,229 @@ export default function SignupForm() {
         </div>
       )}
 
-      {/* Full Name */}
-      <Input
-        type="text"
-        name="fullName"
-        label="Full Name"
-        placeholder="John Doe"
-        value={formData.fullName}
-        onChange={handleChange}
-        error={fieldErrors.fullName}
-        icon={<User className="w-5 h-5" />}
-        iconPosition="left"
-        disabled={loading}
-      />
-
-      {/* Email */}
-      <Input
-        type="email"
-        name="email"
-        label="Email Address"
-        placeholder="you@example.com"
-        value={formData.email}
-        onChange={handleChange}
-        error={fieldErrors.email}
-        icon={<Mail className="w-5 h-5" />}
-        iconPosition="left"
-        disabled={loading}
-      />
-
-      {/* Password */}
-      <div>
-        <Input
-          type="password"
-          name="password"
-          label="Password"
-          placeholder="Create a strong password"
-          value={formData.password}
-          onChange={handleChange}
-          error={fieldErrors.password}
-          icon={<Lock className="w-5 h-5" />}
-          iconPosition="left"
-          disabled={loading}
-        />
-
-        {/* Password Strength Indicator */}
-        {formData.password && (
-          <div className="mt-3 space-y-2">
-            <div className="flex items-center justify-between text-sm">
-              <span className="text-text-secondary-dark">Password Strength</span>
-              <span className={`font-medium ${
-                passwordStrength.label === 'Weak' ? 'text-red-400' :
-                passwordStrength.label === 'Fair' ? 'text-orange-500' :
-                passwordStrength.label === 'Good' ? 'text-yellow-500' :
-                'text-green-400'
-              }`}>
-                {passwordStrength.label}
-              </span>
-            </div>
-
-            {/* Strength Bar */}
-            <div className="h-2 bg-white/5 rounded-full overflow-hidden">
-              <div
-                className={`h-full transition-all duration-300 ${passwordStrength.color}`}
-                style={{ width: `${passwordStrength.score}%` }}
-              />
-            </div>
-          </div>
-        )}
-
-        {/* Password Criteria Checklist */}
-        {formData.password && (
-          <div className="mt-4 space-y-2">
-            {passwordCriteria.map((criterion, index) => (
-              <div key={index} className="flex items-center gap-2 text-sm">
-                {criterion.met ? (
-                  <Check className="w-4 h-4 text-green-400 flex-shrink-0" />
-                ) : (
-                  <X className="w-4 h-4 text-red-400 flex-shrink-0" />
-                )}
-                <span className={criterion.met ? 'text-green-400' : 'text-text-secondary-dark'}>
-                  {criterion.label}
-                </span>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-
-      {/* Confirm Password */}
-      <Input
-        type="password"
-        name="confirmPassword"
-        label="Confirm Password"
-        placeholder="Re-enter your password"
-        value={formData.confirmPassword}
-        onChange={handleChange}
-        error={fieldErrors.confirmPassword}
-        icon={<Lock className="w-5 h-5" />}
-        iconPosition="left"
-        disabled={loading}
-      />
-
-      {/* Terms & Privacy Checkbox */}
-      <div className="space-y-2">
-        <label className="flex items-start gap-3 cursor-pointer group">
-          <input
-            type="checkbox"
-            checked={termsAccepted}
-            onChange={(e) => {
-              setTermsAccepted(e.target.checked);
-              if (fieldErrors.terms) {
-                setFieldErrors(prev => ({ ...prev, terms: '' }));
-              }
-            }}
+      {/* Step 1: Account (Email & Password) */}
+      {currentStep === 1 && (
+        <div className="space-y-6 fade-in">
+          <Input
+            type="email"
+            name="email"
+            label="Email Address"
+            placeholder="you@example.com"
+            value={formData.email}
+            onChange={handleChange}
+            error={fieldErrors.email}
+            icon={<Mail className="w-5 h-5" />}
+            iconPosition="left"
             disabled={loading}
-            className="mt-1 w-4 h-4 rounded border-0 bg-surface-dark text-primary focus:ring-2 focus:ring-primary/30 focus:ring-offset-0 cursor-pointer disabled:opacity-50"
+            autoFocus
           />
-          <span className="text-sm text-text-secondary-dark group-hover:text-text-primary-dark transition-colors">
-            I agree to the{' '}
-            <a
-              href="/terms"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-primary hover:text-primary-hover underline"
-              onClick={(e) => e.stopPropagation()}
-            >
-              Terms of Service
-            </a>
-            {' '}and{' '}
-            <a
-              href="/privacy"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-primary hover:text-primary-hover underline"
-              onClick={(e) => e.stopPropagation()}
-            >
-              Privacy Policy
-            </a>
-          </span>
-        </label>
-        {fieldErrors.terms && (
-          <p className="text-sm text-red-400 ml-7">{fieldErrors.terms}</p>
+
+          <div>
+            <Input
+              type="password"
+              name="password"
+              label="Password"
+              placeholder="Create a strong password"
+              value={formData.password}
+              onChange={handleChange}
+              error={fieldErrors.password}
+              icon={<Lock className="w-5 h-5" />}
+              iconPosition="left"
+              disabled={loading}
+            />
+
+            {/* Password Strength Indicator */}
+            {formData.password && (
+              <div className="mt-3 space-y-2">
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-text-secondary-dark">Password Strength</span>
+                  <span className={`font-medium ${
+                    passwordStrength.label === 'Weak' ? 'text-red-400' :
+                    passwordStrength.label === 'Fair' ? 'text-orange-500' :
+                    passwordStrength.label === 'Good' ? 'text-yellow-500' :
+                    'text-green-400'
+                  }`}>
+                    {passwordStrength.label}
+                  </span>
+                </div>
+
+                {/* Strength Bar */}
+                <div className="h-2 bg-white/5 rounded-full overflow-hidden">
+                  <div
+                    className={`h-full transition-all duration-300 ${passwordStrength.color}`}
+                    style={{ width: `${passwordStrength.score}%` }}
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* Password Criteria Checklist */}
+            {formData.password && (
+              <div className="mt-4 space-y-2">
+                {passwordCriteria.map((criterion, index) => (
+                  <div key={index} className="flex items-center gap-2 text-sm">
+                    {criterion.met ? (
+                      <Check className="w-4 h-4 text-green-400 flex-shrink-0" />
+                    ) : (
+                      <X className="w-4 h-4 text-red-400 flex-shrink-0" />
+                    )}
+                    <span className={criterion.met ? 'text-green-400' : 'text-text-secondary-dark'}>
+                      {criterion.label}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <Input
+            type="password"
+            name="confirmPassword"
+            label="Confirm Password"
+            placeholder="Re-enter your password"
+            value={formData.confirmPassword}
+            onChange={handleChange}
+            error={fieldErrors.confirmPassword}
+            icon={<Lock className="w-5 h-5" />}
+            iconPosition="left"
+            disabled={loading}
+          />
+        </div>
+      )}
+
+      {/* Step 2: Profile (Name) */}
+      {currentStep === 2 && (
+        <div className="space-y-6 fade-in">
+          <Input
+            type="text"
+            name="fullName"
+            label="Full Name"
+            placeholder="John Doe"
+            value={formData.fullName}
+            onChange={handleChange}
+            error={fieldErrors.fullName}
+            icon={<User className="w-5 h-5" />}
+            iconPosition="left"
+            disabled={loading}
+            autoFocus
+          />
+
+          <div className="p-4 bg-primary/5 border border-primary/20 rounded-lg">
+            <p className="text-sm text-text-secondary-dark">
+              This will be displayed on your profile and used for communication.
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* Step 3: Review & Terms */}
+      {currentStep === 3 && (
+        <div className="space-y-6 fade-in">
+          {/* Review Information */}
+          <div className="space-y-4 p-6 bg-surface-hover-dark rounded-lg border border-white/10">
+            <div>
+              <p className="text-sm text-text-secondary-dark mb-1">Email</p>
+              <p className="text-white font-medium font-secondary">{formData.email}</p>
+            </div>
+            <div>
+              <p className="text-sm text-text-secondary-dark mb-1">Full Name</p>
+              <p className="text-white font-medium font-secondary">{formData.fullName}</p>
+            </div>
+            <div className="pt-4 border-t border-white/10">
+              <p className="text-xs text-text-secondary-dark">
+                <Check className="w-4 h-4 text-green-400 inline mr-1" />
+                Password strength: <span className="text-primary font-semibold">{passwordStrength.label}</span>
+              </p>
+            </div>
+          </div>
+
+          {/* Terms & Privacy Checkbox */}
+          <div className="space-y-2">
+            <label className="flex items-start gap-3 cursor-pointer group">
+              <input
+                type="checkbox"
+                checked={termsAccepted}
+                onChange={(e) => {
+                  setTermsAccepted(e.target.checked);
+                  if (fieldErrors.terms) {
+                    setFieldErrors(prev => ({ ...prev, terms: '' }));
+                  }
+                }}
+                disabled={loading}
+                className="mt-1 w-4 h-4 rounded border-0 bg-surface-dark text-primary focus:ring-2 focus:ring-primary/30 focus:ring-offset-0 cursor-pointer disabled:opacity-50"
+              />
+              <span className="text-sm text-text-secondary-dark group-hover:text-text-primary-dark transition-colors">
+                I agree to the{' '}
+                <a
+                  href="/terms"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-primary hover:text-primary-hover underline"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  Terms of Service
+                </a>
+                {' '}and{' '}
+                <a
+                  href="/privacy"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-primary hover:text-primary-hover underline"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  Privacy Policy
+                </a>
+              </span>
+            </label>
+            {fieldErrors.terms && (
+              <p className="text-sm text-red-400 ml-7">{fieldErrors.terms}</p>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Navigation Buttons */}
+      <div className="flex gap-3 pt-4">
+        {currentStep > 1 && (
+          <Button
+            type="button"
+            variant="secondary"
+            size="lg"
+            onClick={handlePrevious}
+            disabled={loading}
+            className="flex-1"
+          >
+            <ArrowLeft className="w-5 h-5 mr-2" />
+            Back
+          </Button>
+        )}
+
+        {currentStep < totalSteps ? (
+          <Button
+            type="button"
+            variant="primary"
+            size="lg"
+            onClick={handleNext}
+            disabled={loading}
+            className="flex-1"
+          >
+            Continue
+            <ArrowRight className="w-5 h-5 ml-2" />
+          </Button>
+        ) : (
+          <Button
+            type="button"
+            variant="primary"
+            size="lg"
+            onClick={handleSubmit}
+            loading={loading}
+            disabled={loading}
+            className="flex-1"
+          >
+            {loading ? 'Creating Account...' : 'Create Account'}
+          </Button>
         )}
       </div>
-
-      {/* Submit Button */}
-      <Button
-        type="submit"
-        variant="primary"
-        size="lg"
-        loading={loading}
-        disabled={loading}
-        className="w-full"
-      >
-        {loading ? 'Creating Account...' : 'Create Account'}
-      </Button>
-    </form>
+    </div>
   );
 }
