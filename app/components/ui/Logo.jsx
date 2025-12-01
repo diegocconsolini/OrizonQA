@@ -85,7 +85,7 @@ export default function Logo({
     } else {
       // Blue variant (default) - use official transparent logos
       logoPath = background === 'dark'
-        ? '/logos/orizon-full-blue-white.png'  // White letters for dark backgrounds
+        ? '/logos/orizon-full-blue-darkv2.png'  // White letters for dark backgrounds (v2)
         : '/logos/orizon-full-blue-black.png';  // Black letters for light backgrounds
     }
 
