@@ -1,0 +1,183 @@
+/**
+ * ORIZON Sidebar Component
+ *
+ * A persistent left sidebar for authenticated pages following the design mockups.
+ *
+ * Features:
+ * - Logo at top
+ * - Main navigation items
+ * - Collapsible sections
+ * - User profile at bottom
+ * - Mobile responsive (collapsible)
+ * - Active state indicators
+ */
+
+'use client';
+
+import { useState } from 'react';
+import { usePathname } from 'next/navigation';
+import { useSession, signOut } from 'next-auth/react';
+import Logo from '../ui/Logo';
+import {
+  LayoutDashboard,
+  Settings,
+  History,
+  User,
+  LogOut,
+  ChevronLeft,
+  ChevronRight,
+  Zap,
+  Shield
+} from 'lucide-react';
+
+export default function Sidebar({ collapsed = false, onToggle }) {
+  const pathname = usePathname();
+  const { data: session } = useSession();
+
+  const navigationItems = [
+    {
+      label: 'Dashboard',
+      href: '/dashboard',
+      icon: <LayoutDashboard className="w-5 h-5" />,
+    },
+    {
+      label: 'History',
+      href: '/history',
+      icon: <History className="w-5 h-5" />,
+    },
+    {
+      label: 'Settings',
+      href: '/settings',
+      icon: <Settings className="w-5 h-5" />,
+    },
+  ];
+
+  const bottomItems = [
+    {
+      label: 'Profile',
+      href: '/profile',
+      icon: <User className="w-5 h-5" />,
+    },
+  ];
+
+  const isActive = (href) => pathname === href;
+
+  return (
+    <aside
+      className={`fixed left-0 top-0 h-screen bg-surface-dark border-r border-white/10 flex flex-col transition-all duration-300 z-40 ${
+        collapsed ? 'w-20' : 'w-64'
+      }`}
+    >
+      {/* Logo Section */}
+      <div className="h-16 flex items-center justify-between px-4 border-b border-white/10">
+        {!collapsed && (
+          <Logo variant="icon" color="blue" size="md" background="dark" />
+        )}
+        {collapsed && (
+          <div className="w-full flex justify-center">
+            <Logo variant="icon" color="blue" size="sm" background="dark" />
+          </div>
+        )}
+      </div>
+
+      {/* Main Navigation */}
+      <nav className="flex-1 overflow-y-auto py-6">
+        <div className="space-y-1 px-3">
+          {navigationItems.map((item) => (
+            <a
+              key={item.href}
+              href={item.href}
+              className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 ${
+                isActive(item.href)
+                  ? 'bg-primary/10 text-primary border border-primary/20'
+                  : 'text-text-secondary-dark hover:bg-white/5 hover:text-white'
+              }`}
+              title={collapsed ? item.label : undefined}
+            >
+              {item.icon}
+              {!collapsed && (
+                <span className="font-secondary font-medium">{item.label}</span>
+              )}
+            </a>
+          ))}
+        </div>
+
+        {/* Quick Stats (when expanded) */}
+        {!collapsed && (
+          <div className="mt-8 px-3">
+            <p className="text-xs text-text-muted-dark uppercase tracking-wider mb-3 px-3">
+              Quick Stats
+            </p>
+            <div className="space-y-2">
+              <div className="px-3 py-2 bg-primary/5 rounded-lg border border-primary/10">
+                <div className="flex items-center gap-2 mb-1">
+                  <Zap className="w-4 h-4 text-primary" />
+                  <span className="text-xs text-text-secondary-dark">Analyses</span>
+                </div>
+                <p className="text-lg font-bold text-white">0</p>
+              </div>
+              <div className="px-3 py-2 bg-quantum/5 rounded-lg border border-quantum/10">
+                <div className="flex items-center gap-2 mb-1">
+                  <Shield className="w-4 h-4 text-quantum" />
+                  <span className="text-xs text-text-secondary-dark">Secure</span>
+                </div>
+                <p className="text-sm font-semibold text-quantum">Encrypted</p>
+              </div>
+            </div>
+          </div>
+        )}
+      </nav>
+
+      {/* Bottom Section */}
+      <div className="border-t border-white/10">
+        {/* User Profile */}
+        {session?.user && (
+          <div className={`p-4 ${collapsed ? 'flex justify-center' : ''}`}>
+            {!collapsed ? (
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-primary font-semibold">
+                  {session.user.email?.[0]?.toUpperCase() || 'U'}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-white truncate">
+                    {session.user.name || 'User'}
+                  </p>
+                  <p className="text-xs text-text-secondary-dark truncate">
+                    {session.user.email}
+                  </p>
+                </div>
+                <button
+                  onClick={() => signOut({ callbackUrl: '/login' })}
+                  className="p-2 hover:bg-white/5 rounded-lg transition-colors"
+                  title="Sign out"
+                >
+                  <LogOut className="w-4 h-4 text-text-secondary-dark" />
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={() => signOut({ callbackUrl: '/login' })}
+                className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-primary font-semibold hover:bg-primary/30 transition-colors"
+                title="Sign out"
+              >
+                {session.user.email?.[0]?.toUpperCase() || 'U'}
+              </button>
+            )}
+          </div>
+        )}
+
+        {/* Collapse Toggle */}
+        <button
+          onClick={onToggle}
+          className="w-full p-3 flex items-center justify-center border-t border-white/10 hover:bg-white/5 transition-colors"
+        >
+          {collapsed ? (
+            <ChevronRight className="w-5 h-5 text-text-secondary-dark" />
+          ) : (
+            <ChevronLeft className="w-5 h-5 text-text-secondary-dark" />
+          )}
+        </button>
+      </div>
+    </aside>
+  );
+}
