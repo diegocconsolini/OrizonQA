@@ -27,7 +27,8 @@ import {
   ChevronLeft,
   ChevronRight,
   Zap,
-  Shield
+  Shield,
+  FolderKanban
 } from 'lucide-react';
 
 export default function Sidebar({ collapsed = false, onToggle }) {
@@ -41,6 +42,11 @@ export default function Sidebar({ collapsed = false, onToggle }) {
       label: 'Dashboard',
       href: '/dashboard',
       icon: <LayoutDashboard className="w-5 h-5" />,
+    },
+    {
+      label: 'Projects',
+      href: '/projects',
+      icon: <FolderKanban className="w-5 h-5" />,
     },
     {
       label: 'History',
