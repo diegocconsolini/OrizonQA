@@ -29,10 +29,12 @@ export async function GET(request, { params }) {
       );
     }
 
+    console.log('[GET /api/projects/[id]] params.id:', params.id, 'type:', typeof params.id);
     const projectId = parseInt(params.id);
+    console.log('[GET /api/projects/[id]] parsed projectId:', projectId, 'isNaN:', isNaN(projectId));
     if (isNaN(projectId)) {
       return NextResponse.json(
-        { error: 'Invalid project ID' },
+        { error: 'Invalid project ID', received: params.id },
         { status: 400 }
       );
     }
