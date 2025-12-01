@@ -185,97 +185,221 @@ export default function SettingsPage() {
             </div>
           )}
 
-          {/* Settings Form */}
-          <div className="space-y-6">
-            {/* Claude API Key */}
-            <div className="bg-surface-dark rounded-2xl border border-white/10 p-6">
-              <div className="flex items-start gap-3 mb-4">
-                <Key className="w-5 h-5 text-primary mt-1" />
-                <div>
-                  <h2 className="text-xl font-semibold text-white font-primary mb-2">
-                    Claude API Key
-                  </h2>
-                  <p className="text-sm text-text-secondary-dark font-secondary mb-4">
-                    Your API key is encrypted and stored securely. You can get one from{' '}
-                    <a
-                      href="https://console.anthropic.com/settings/keys"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-primary hover:text-primary-hover underline"
+          {/* Tabbed Interface */}
+          <Tabs defaultValue={0} className="mb-6">
+            <TabList>
+              <TabButton>
+                <Key className="w-4 h-4 mr-2" />
+                API Keys
+              </TabButton>
+              <TabButton>
+                <BarChart3 className="w-4 h-4 mr-2" />
+                Usage Stats
+              </TabButton>
+              <TabButton>
+                <User className="w-4 h-4 mr-2" />
+                Account
+              </TabButton>
+            </TabList>
+
+            <TabPanels>
+              {/* API Keys Tab */}
+              <TabPanel>
+                <div className="space-y-6">
+                  {/* Claude API Key */}
+                  <Card className="p-6">
+                    <div className="flex items-start gap-3 mb-4">
+                      <Key className="w-5 h-5 text-primary mt-1" />
+                      <div>
+                        <h2 className="text-xl font-semibold text-white font-primary mb-2">
+                          Claude API Key
+                        </h2>
+                        <p className="text-sm text-text-secondary-dark font-secondary mb-4">
+                          Your API key is encrypted and stored securely. You can get one from{' '}
+                          <a
+                            href="https://console.anthropic.com/settings/keys"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-primary hover:text-primary-hover underline"
+                          >
+                            Anthropic Console
+                          </a>
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="relative">
+                      <input
+                        type={showApiKey ? 'text' : 'password'}
+                        value={claudeApiKey}
+                        onChange={(e) => setClaudeApiKey(e.target.value)}
+                        placeholder="sk-ant-..."
+                        className="w-full px-4 py-3 pr-12 bg-bg-dark border-2 border-white/10 rounded-lg text-white placeholder-text-secondary-dark focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary font-mono text-sm"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowApiKey(!showApiKey)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-text-secondary-dark hover:text-white transition-colors"
+                      >
+                        {showApiKey ? (
+                          <EyeOff className="w-5 h-5" />
+                        ) : (
+                          <Eye className="w-5 h-5" />
+                        )}
+                      </button>
+                    </div>
+                  </Card>
+
+                  {/* LM Studio URL */}
+                  <Card className="p-6">
+                    <div className="flex items-start gap-3 mb-4">
+                      <Server className="w-5 h-5 text-accent mt-1" />
+                      <div>
+                        <h2 className="text-xl font-semibold text-white font-primary mb-2">
+                          LM Studio URL
+                        </h2>
+                        <p className="text-sm text-text-secondary-dark font-secondary mb-4">
+                          Optional: URL for your local LM Studio server
+                        </p>
+                      </div>
+                    </div>
+
+                    <input
+                      type="text"
+                      value={lmStudioUrl}
+                      onChange={(e) => setLmStudioUrl(e.target.value)}
+                      placeholder="http://localhost:1234"
+                      className="w-full px-4 py-3 bg-bg-dark border-2 border-white/10 rounded-lg text-white placeholder-text-secondary-dark focus:outline-none focus:ring-2 focus:ring-accent/30 focus:border-accent font-mono text-sm"
+                    />
+                  </Card>
+
+                  {/* Save Button */}
+                  <div className="flex justify-end">
+                    <Button
+                      onClick={handleSave}
+                      disabled={saving}
+                      variant="primary"
+                      size="lg"
                     >
-                      Anthropic Console
-                    </a>
-                  </p>
+                      {saving ? (
+                        <>
+                          <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                          Saving...
+                        </>
+                      ) : (
+                        <>
+                          <Save className="w-5 h-5 mr-2" />
+                          Save Settings
+                        </>
+                      )}
+                    </Button>
+                  </div>
                 </div>
-              </div>
+              </TabPanel>
 
-              <div className="relative">
-                <input
-                  type={showApiKey ? 'text' : 'password'}
-                  value={claudeApiKey}
-                  onChange={(e) => setClaudeApiKey(e.target.value)}
-                  placeholder="sk-ant-..."
-                  className="w-full px-4 py-3 pr-12 bg-bg-dark border-2 border-white/10 rounded-lg text-white placeholder-text-secondary-dark focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary font-mono text-sm"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowApiKey(!showApiKey)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-text-secondary-dark hover:text-white transition-colors"
-                >
-                  {showApiKey ? (
-                    <EyeOff className="w-5 h-5" />
-                  ) : (
-                    <Eye className="w-5 h-5" />
-                  )}
-                </button>
-              </div>
-            </div>
+              {/* Usage Stats Tab */}
+              <TabPanel>
+                <div className="space-y-6">
+                  {/* Stats Overview */}
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <Card className="p-6 bg-primary/5 border-primary/20">
+                      <div className="flex items-center gap-3 mb-2">
+                        <BarChart3 className="w-5 h-5 text-primary" />
+                        <p className="text-sm text-text-secondary-dark font-secondary">Total Analyses</p>
+                      </div>
+                      <p className="text-3xl font-bold text-white font-primary">
+                        {usageStats.total}
+                      </p>
+                    </Card>
 
-            {/* LM Studio URL */}
-            <div className="bg-surface-dark rounded-2xl border border-white/10 p-6">
-              <div className="flex items-start gap-3 mb-4">
-                <Server className="w-5 h-5 text-secondary mt-1" />
-                <div>
-                  <h2 className="text-xl font-semibold text-white font-primary mb-2">
-                    LM Studio URL
-                  </h2>
-                  <p className="text-sm text-text-secondary-dark font-secondary mb-4">
-                    Optional: URL for your local LM Studio server
-                  </p>
+                    <Card className="p-6 bg-accent/5 border-accent/20">
+                      <div className="flex items-center gap-3 mb-2">
+                        <Zap className="w-5 h-5 text-accent" />
+                        <p className="text-sm text-text-secondary-dark font-secondary">Total Tokens</p>
+                      </div>
+                      <p className="text-3xl font-bold text-white font-primary">
+                        {usageStats.totalTokens.toLocaleString()}
+                      </p>
+                    </Card>
+
+                    <Card className="p-6 bg-quantum/5 border-quantum/20">
+                      <div className="flex items-center gap-3 mb-2">
+                        <Calendar className="w-5 h-5 text-quantum" />
+                        <p className="text-sm text-text-secondary-dark font-secondary">Last Analysis</p>
+                      </div>
+                      <p className="text-lg font-semibold text-white font-primary">
+                        {usageStats.lastAnalysis
+                          ? new Date(usageStats.lastAnalysis).toLocaleDateString()
+                          : 'Never'}
+                      </p>
+                    </Card>
+                  </div>
+
+                  {/* Usage Info */}
+                  <Card className="p-6">
+                    <h3 className="text-lg font-semibold text-white font-primary mb-4">
+                      Usage Information
+                    </h3>
+                    <div className="space-y-3 text-sm text-text-secondary-dark font-secondary">
+                      <p>• Analyses are stored securely and linked to your account</p>
+                      <p>• Token usage is tracked for each analysis</p>
+                      <p>• View your analysis history in the Dashboard</p>
+                      <p>• API costs are based on your Claude API usage</p>
+                    </div>
+                  </Card>
                 </div>
-              </div>
+              </TabPanel>
 
-              <input
-                type="text"
-                value={lmStudioUrl}
-                onChange={(e) => setLmStudioUrl(e.target.value)}
-                placeholder="http://localhost:1234"
-                className="w-full px-4 py-3 bg-bg-dark border-2 border-white/10 rounded-lg text-white placeholder-text-secondary-dark focus:outline-none focus:ring-2 focus:ring-secondary/30 focus:border-secondary font-mono text-sm"
-              />
-            </div>
+              {/* Account Tab */}
+              <TabPanel>
+                <div className="space-y-6">
+                  <Card className="p-6">
+                    <div className="flex items-start gap-3 mb-4">
+                      <User className="w-5 h-5 text-primary mt-1" />
+                      <div className="flex-1">
+                        <h2 className="text-xl font-semibold text-white font-primary mb-2">
+                          Account Information
+                        </h2>
+                        <div className="space-y-3 mt-4">
+                          <div>
+                            <p className="text-sm text-text-secondary-dark mb-1">Email</p>
+                            <p className="text-white font-medium font-secondary">{session?.user?.email}</p>
+                          </div>
+                          <div>
+                            <p className="text-sm text-text-secondary-dark mb-1">Name</p>
+                            <p className="text-white font-medium font-secondary">{session?.user?.name || 'Not set'}</p>
+                          </div>
+                          <div>
+                            <p className="text-sm text-text-secondary-dark mb-1">Account Status</p>
+                            <span className="inline-flex items-center gap-2 px-3 py-1 bg-green-400/10 border border-green-400/20 rounded-full">
+                              <div className="w-2 h-2 bg-green-400 rounded-full" />
+                              <span className="text-sm text-green-400 font-medium">Active</span>
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </Card>
 
-            {/* Save Button */}
-            <div className="flex justify-end">
-              <Button
-                onClick={handleSave}
-                disabled={saving}
-                variant="primary"
-                size="lg"
-              >
-                {saving ? (
-                  <>
-                    <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                    Saving...
-                  </>
-                ) : (
-                  <>
-                    <Save className="w-5 h-5 mr-2" />
-                    Save Settings
-                  </>
-                )}
-              </Button>
-            </div>
-          </div>
+                  <Card className="p-6">
+                    <h3 className="text-lg font-semibold text-white font-primary mb-4">
+                      Danger Zone
+                    </h3>
+                    <p className="text-sm text-text-secondary-dark font-secondary mb-4">
+                      Once you delete your account, there is no going back. Please be certain.
+                    </p>
+                    <Button
+                      variant="ghost"
+                      size="md"
+                      className="border-2 border-red-500/50 hover:bg-red-500/10 text-red-400"
+                    >
+                      Delete Account
+                    </Button>
+                  </Card>
+                </div>
+              </TabPanel>
+            </TabPanels>
+          </Tabs>
 
           {/* Info Card */}
           <div className="mt-8 p-6 bg-primary/5 border border-primary/20 rounded-2xl">
