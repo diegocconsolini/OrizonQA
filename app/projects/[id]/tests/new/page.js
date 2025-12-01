@@ -45,7 +45,7 @@ export default function NewTestCasePage() {
         </div>
 
         <div className="px-6 py-8">
-          <div className="max-w-4xl mx-auto bg-slate-800 border border-slate-700 rounded-lg p-6">
+          <div className="bg-slate-800 border border-slate-700 rounded-lg p-6">
             <TestCaseForm
               projectId={projectId}
               onCancel={handleCancel}
