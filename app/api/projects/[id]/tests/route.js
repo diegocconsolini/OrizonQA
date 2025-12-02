@@ -152,9 +152,29 @@ export async function POST(request, context) {
       );
     }
 
+    // Auto-generate key (will be replaced by the actual logic in createTestCase)
+    const { query } = await import('@/lib/db');
+    const lastKeyResult = await query(`
+      SELECT key FROM test_cases
+      WHERE project_id = $1
+      ORDER BY id DESC
+      LIMIT 1
+    `, [projectId]);
+
+    let keyCounter = 1;
+    if (lastKeyResult.rows.length > 0) {
+      const lastKey = lastKeyResult.rows[0].key;
+      const match = lastKey.match(/\d+$/);
+      if (match) {
+        keyCounter = parseInt(match[0]) + 1;
+      }
+    }
+    const key = `TC-${keyCounter}`;
+
     // Create test case
     const testCaseData = {
       project_id: projectId,
+      key,
       title,
       description: description || null,
       preconditions: preconditions || null,
