@@ -33,7 +33,8 @@
       "WebFetch(domain:authjs.dev)",
       "WebFetch(domain:github.com)",
       "WebFetch(domain:www.saasframe.io)",
-      "Bash(cat:*)"
+      "Bash(cat:*)",
+      "Bash(fuser:*)"
     ],
     "deny": [],
     "ask": []
