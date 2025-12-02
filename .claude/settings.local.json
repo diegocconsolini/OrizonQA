@@ -34,7 +34,8 @@
       "WebFetch(domain:github.com)",
       "WebFetch(domain:www.saasframe.io)",
       "Bash(cat:*)",
-      "Bash(fuser:*)"
+      "Bash(fuser:*)",
+      "Bash(chmod:*)"
     ],
     "deny": [],
     "ask": []
