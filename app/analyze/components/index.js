@@ -10,3 +10,4 @@ export { default as FileFolderPicker } from './FileFolderPicker';
 export { default as BranchSelector } from './BranchSelector';
 export { default as PrivacyNotice, PrivacyBadge } from './PrivacyNotice';
 export { default as GitInputSection } from './GitInputSection';
+export { default as CodeEditor, MultiFileEditor } from './CodeEditor';
