@@ -137,7 +137,7 @@ export default function SettingsPage() {
     <AppLayout>
       {/* Main Content */}
       <div className="pb-12 px-6 py-8">
-        <div className="max-w-3xl mx-auto">
+        <div>
           {/* Page Header */}
           <div className="mb-8">
             <div className="flex items-center gap-3 mb-2">
