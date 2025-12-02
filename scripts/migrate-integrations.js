@@ -9,13 +9,11 @@
 import { query } from '../lib/db.js';
 
 async function migrateIntegrations() {
-  console.log('=' Starting integration schema migration...\n');
+  console.log('Starting integration schema migration...\n');
 
   try {
-    // ==========================================
     // 1. Add Integration Fields to Projects
-    // ==========================================
-    console.log('=Ê Adding integration fields to projects table...');
+    console.log('[1/6] Adding integration fields to projects table...');
 
     await query(`
       ALTER TABLE projects
@@ -26,16 +24,10 @@ async function migrateIntegrations() {
       ADD COLUMN IF NOT EXISTS sync_status VARCHAR(50) DEFAULT 'idle'
     `);
 
-    console.log(' Projects table updated');
-    console.log('   - integration_type: azure_devops, github, gitlab, jira');
-    console.log('   - integration_config: JSONB with encrypted credentials');
-    console.log('   - webhook_secret: For validating webhooks');
-    console.log('   - last_sync_at, sync_status: Sync monitoring\n');
+    console.log('      Projects table updated\n');
 
-    // ==========================================
     // 2. Add Integration Fields to Requirements
-    // ==========================================
-    console.log('=À Adding integration fields to requirements table...');
+    console.log('[2/6] Adding integration fields to requirements table...');
 
     await query(`
       ALTER TABLE requirements
@@ -44,15 +36,10 @@ async function migrateIntegrations() {
       ADD COLUMN IF NOT EXISTS sync_error TEXT
     `);
 
-    console.log(' Requirements table updated');
-    console.log('   - sync_status: idle, syncing, synced, error');
-    console.log('   - last_synced_at: Last sync timestamp');
-    console.log('   - sync_error: Error message if sync fails\n');
+    console.log('      Requirements table updated\n');
 
-    // ==========================================
     // 3. Add Integration Fields to Test Runs
-    // ==========================================
-    console.log('>Í Adding integration fields to test_runs table...');
+    console.log('[3/6] Adding integration fields to test_runs table...');
 
     await query(`
       ALTER TABLE test_runs
@@ -62,16 +49,10 @@ async function migrateIntegrations() {
       ADD COLUMN IF NOT EXISTS webhook_payload JSONB
     `);
 
-    console.log(' Test runs table updated');
-    console.log('   - triggered_by: manual, ci_cd, webhook, scheduled');
-    console.log('   - external_run_id: Azure DevOps/GitHub run ID');
-    console.log('   - build_info: {commit_sha, branch, pr_number, build_id}');
-    console.log('   - webhook_payload: Full webhook payload for debugging\n');
+    console.log('      Test runs table updated\n');
 
-    // ==========================================
     // 4. Create Webhook Events Table
-    // ==========================================
-    console.log('>ù Creating webhook_events table...');
+    console.log('[4/6] Creating webhook_events table...');
 
     await query(`
       CREATE TABLE IF NOT EXISTS webhook_events (
@@ -97,16 +78,10 @@ async function migrateIntegrations() {
       ON webhook_events(processed, created_at)
     `);
 
-    console.log(' Webhook events table created');
-    console.log('   - Audit log for all incoming webhooks');
-    console.log('   - source: azure_devops, github, gitlab');
-    console.log('   - event_type: push, pull_request, work_item_updated');
-    console.log('   - Indexes: project_id, processed+created_at\n');
+    console.log('      Webhook events table created\n');
 
-    // ==========================================
     // 5. Create Git Commits Table
-    // ==========================================
-    console.log('=› Creating git_commits table...');
+    console.log('[5/6] Creating git_commits table...');
 
     await query(`
       CREATE TABLE IF NOT EXISTS git_commits (
@@ -133,15 +108,10 @@ async function migrateIntegrations() {
       ON git_commits(commit_sha)
     `);
 
-    console.log(' Git commits table created');
-    console.log('   - Stores commit information');
-    console.log('   - Unique constraint on project_id + commit_sha');
-    console.log('   - Indexes: project_id, commit_sha\n');
+    console.log('      Git commits table created\n');
 
-    // ==========================================
     // 6. Create Commit Links Table
-    // ==========================================
-    console.log('= Creating commit_links table...');
+    console.log('[6/6] Creating commit_links table...');
 
     await query(`
       CREATE TABLE IF NOT EXISTS commit_links (
@@ -164,37 +134,26 @@ async function migrateIntegrations() {
       ON commit_links(entity_type, entity_id)
     `);
 
-    console.log(' Commit links table created');
-    console.log('   - Links commits to requirements/test_cases');
-    console.log('   - entity_type: requirement, test_case');
-    console.log('   - Indexes: commit_id, entity_type+entity_id\n');
+    console.log('      Commit links table created\n');
 
-    // ==========================================
-    // 7. Summary
-    // ==========================================
-    console.log('PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP');
-    console.log(' Integration schema migration completed!\n');
+    // Summary
+    console.log('=========================================');
+    console.log('Integration schema migration completed!');
+    console.log('=========================================\n');
 
-    console.log('=  Summary:');
-    console.log('   " Projects: +5 fields (integration_type, config, webhook, sync)');
-    console.log('   " Requirements: +3 fields (sync_status, last_synced_at, error)');
-    console.log('   " Test Runs: +4 fields (triggered_by, external_id, build_info, payload)');
-    console.log('   " New Tables: webhook_events, git_commits, commit_links');
-    console.log('   " Total Indexes: 6\n');
-
-    console.log('<Ø Next Steps:');
-    console.log('   1. Implement Azure DevOps integration (lib/integrations/azure-devops.js)');
-    console.log('   2. Implement GitHub integration (lib/integrations/github.js)');
-    console.log('   3. Build integration settings UI');
-    console.log('PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP\n');
+    console.log('Summary:');
+    console.log('  * Projects: +5 fields');
+    console.log('  * Requirements: +3 fields');
+    console.log('  * Test Runs: +4 fields');
+    console.log('  * New Tables: 3 (webhook_events, git_commits, commit_links)');
+    console.log('  * Total Indexes: 6\n');
 
     process.exit(0);
   } catch (error) {
-    console.error('L Migration failed:', error);
+    console.error('Migration failed:', error);
     console.error(error.stack);
     process.exit(1);
   }
 }
 
-// Run migration
 migrateIntegrations();
