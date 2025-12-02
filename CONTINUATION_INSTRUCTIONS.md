@@ -1,8 +1,8 @@
 # Dashboard Rebuild - Continuation Instructions
 
 **Date:** 2025-12-02
-**Status:** Phase 1 In Progress (30% complete)
-**Priority:** Continue implementation
+**Status:** Phase 1 Complete (90% - Monaco Editor pending)
+**Priority:** Test and refine implementation
 
 ---
 
@@ -11,8 +11,9 @@
 This session accomplished:
 1. Created comprehensive Dashboard rebuild plans (3 documents)
 2. Identified Git integration as core differentiator
-3. Started Phase 1 implementation with IndexedDB storage layer
-4. Strategic decisions confirmed by user
+3. Completed Phase 1 implementation with all core components
+4. Created new `/analyze` route with Git-first workflow
+5. Updated Sidebar navigation with Analyze link
 
 ---
 
@@ -20,9 +21,9 @@ This session accomplished:
 
 | Decision | Choice |
 |----------|--------|
-| Route Naming | `/dashboard` → `/analyze` (new `/dashboard` for overview) |
+| Route Naming | `/dashboard` (overview) + `/analyze` (Git-first analysis) |
 | Template Strategy | Hybrid (curated + reviewed user submissions) |
-| Code Editor | Monaco Editor (VS Code experience) |
+| Code Editor | Monaco Editor (VS Code experience) - pending |
 | Core Differentiator | **Git Integration** (repository-first UX) |
 | Storage | **IndexedDB ONLY** - NO cloud storage of user code |
 
@@ -30,69 +31,61 @@ This session accomplished:
 
 ## Current Progress
 
-### Completed (3/10 tasks)
+### Completed (9/10 tasks)
 
 1. **IndexedDB Storage Layer** ✅
    - File: `app/lib/indexedDB.js`
    - Database: `orizon_repository_cache`
    - Stores: repositories, files, branches, fetch_history
-   - Features: save/get repos, files, branches, cleanup, stats
 
 2. **useIndexedDB Hook** ✅
    - File: `app/hooks/useIndexedDB.js`
    - Wraps IndexedDB for React
    - Includes privacy notice helper
-   - Auto-cleanup of old data (30 days)
 
 3. **useRepositories Hook** ✅
    - File: `app/hooks/useRepositories.js`
    - GitHub OAuth integration
    - Fetch repos, branches, file trees
-   - Multi-file selection with glob patterns
-   - Auto-caches to IndexedDB
 
-### Pending (7/10 tasks)
-
-4. **RepositorySelector Component** ⏳
+4. **RepositorySelector Component** ✅
+   - File: `app/analyze/components/RepositorySelector.jsx`
    - Visual repository list with search
-   - Shows private/public icons
-   - Favorites support
-   - Cache status indicators
+   - Private/public icons, favorites, cache indicators
 
-5. **FileFolderPicker Component** ⏳
+5. **FileFolderPicker Component** ✅
+   - File: `app/analyze/components/FileFolderPicker.jsx`
    - Tree view with expand/collapse
    - Checkboxes for multi-select
-   - "Select All Code Files" button
-   - "Select by Pattern" input
-   - File size and line count display
+   - Pattern-based selection
 
-6. **Privacy Notice Component** ⏳
-   - Banner: "Your Code Stays Local"
-   - Clear messaging: NO cloud storage
-   - Link to clear cache
+6. **Privacy Notice Component** ✅
+   - File: `app/analyze/components/PrivacyNotice.jsx`
+   - "Your Code Stays Local" messaging
+   - Cache management controls
 
-7. **Update InputSection** ⏳
-   - Integrate RepositorySelector
-   - Integrate FileFolderPicker
-   - Add privacy notice
-   - Keep existing paste/upload options
+7. **BranchSelector Component** ✅
+   - File: `app/analyze/components/BranchSelector.jsx`
+   - Dropdown for branch selection
 
-8. **Create /analyze Route** ⏳
-   - Copy current `/dashboard/page.js` to `/analyze/page.js`
-   - Create new `/dashboard/page.js` (overview)
-   - Update Sidebar navigation
-   - Add redirects
+8. **GitInputSection Component** ✅
+   - File: `app/analyze/components/GitInputSection.jsx`
+   - Integrates all Git components
+   - Three input modes: GitHub, Paste, Upload
 
-9. **Monaco Editor Integration** ⏳
-   - Install: `npm install @monaco-editor/react`
-   - Create MonacoEditor wrapper component
-   - Language auto-detection
-   - Dark theme (vs-dark)
+9. **Create /analyze Route** ✅
+   - File: `app/analyze/page.js`
+   - Git-first code analysis page
+   - Privacy tab with cache management
+   - Updated Sidebar navigation
 
-10. **End-to-End Testing** ⏳
-    - Connect GitHub → Select repo → Pick files → Analyze
-    - Verify IndexedDB caching works
-    - Test offline access to cached repos
+### Pending (1/10 tasks)
+
+10. **Monaco Editor Integration** ⏳
+    - Install: `npm install @monaco-editor/react`
+    - Create MonacoEditor wrapper component
+    - Language auto-detection
+    - Dark theme (vs-dark)
 
 ---
 
@@ -101,27 +94,36 @@ This session accomplished:
 ```
 app/
 ├── lib/
-│   └── indexedDB.js           # 🆕 IndexedDB storage layer
-└── hooks/
-    ├── useIndexedDB.js        # 🆕 React hook for IndexedDB
-    └── useRepositories.js     # 🆕 GitHub OAuth + file selection
+│   └── indexedDB.js               # IndexedDB storage layer
+├── hooks/
+│   ├── useIndexedDB.js            # React hook for IndexedDB
+│   └── useRepositories.js         # GitHub OAuth + file selection
+└── analyze/
+    ├── page.js                    # Git-first analysis page
+    └── components/
+        ├── index.js               # Component exports
+        ├── RepositorySelector.jsx # Repository browser
+        ├── FileFolderPicker.jsx   # File tree with selection
+        ├── BranchSelector.jsx     # Branch dropdown
+        ├── PrivacyNotice.jsx      # Privacy messaging
+        └── GitInputSection.jsx    # Main input section
 ```
 
 ---
 
-## Planning Documents Created
+## Build Status
 
-| Document | Size | Purpose |
-|----------|------|---------|
-| `DASHBOARD_REBUILD_PLAN.md` | 24KB | Original comprehensive plan |
-| `DASHBOARD_RESEARCH_ITERATION_2.md` | 38KB | Deep competitive research |
-| `DASHBOARD_REBUILD_FINAL_PLAN.md` | 51KB | Final approved plan with Git focus |
+**✅ Production build passing (43 routes)**
+
+```
+npm run build
+✓ Compiled successfully
+✓ Generating static pages (43/43)
+```
 
 ---
 
-## Critical Implementation Notes
-
-### Privacy Requirement (MUST FOLLOW)
+## Privacy Requirement (MUST FOLLOW)
 
 **All repository content must be stored in IndexedDB ONLY:**
 - NO cloud storage of code
@@ -129,75 +131,23 @@ app/
 - Clear privacy messaging to users
 - User can clear cache anytime
 
-### Existing OAuth Infrastructure (USE THIS)
-
-Already built and working:
-- `/lib/oauth/adapters/GitHubAdapter.js` - GitHub OAuth adapter
-- `/api/oauth/github/connect/route.js` - OAuth flow
-- `/api/oauth/github/repositories/route.js` - List repos
-- `/api/oauth/github/callback/route.js` - OAuth callback
-- `/lib/oauth/encryption.js` - Token encryption
-
-### Next Component to Build
-
-**RepositorySelector.jsx** should:
-```jsx
-<RepositorySelector
-  repositories={repos}
-  selectedRepo={selected}
-  onSelect={handleSelect}
-  onRefresh={refreshRepos}
-  loading={loading}
-  cachedRepos={cached}
-/>
-```
-
-Features needed:
-- Search/filter repos
-- Private/public icons (Lock/Globe)
-- Star favorites
-- Cache status badge
-- Last updated time
-- Language indicator
-
 ---
 
-## Code Patterns to Follow
+## Testing Checklist
 
-### Component Structure
-```jsx
-'use client';
-
-import { useState } from 'react';
-import { Lock, Globe, Star, RefreshCw } from 'lucide-react';
-
-export default function RepositorySelector({
-  repositories,
-  selectedRepo,
-  onSelect,
-  loading
-}) {
-  // Component logic
-}
-```
-
-### Design System Colors
-- Primary: `text-primary`, `bg-primary`
-- Surface: `bg-surface-dark`, `bg-surface-hover-dark`
-- Borders: `border-white/10`
-- Text: `text-white`, `text-text-secondary-dark`
-
-### File Tree Node Structure
-```javascript
-{
-  name: 'src',
-  path: 'src',
-  type: 'tree',  // or 'blob' for files
-  children: [...],
-  sha: 'abc123',
-  size: 0
-}
-```
+- [ ] Connect GitHub account in Settings
+- [ ] Navigate to /analyze
+- [ ] Select a repository from browser
+- [ ] Select branch from dropdown
+- [ ] Use FileFolderPicker to select files
+- [ ] "Select All Code Files" button works
+- [ ] "Select by Pattern" input works
+- [ ] Run analysis with selected files
+- [ ] Verify results display correctly
+- [ ] Check Privacy tab shows cache stats
+- [ ] Clear cache functionality works
+- [ ] Test paste code mode
+- [ ] Test file upload mode
 
 ---
 
@@ -206,33 +156,41 @@ export default function RepositorySelector({
 When resuming, start with:
 
 ```
-Continue implementing Phase 1 of the Dashboard rebuild.
+Continue with Phase 1 completion:
 
-Current progress: 3/10 tasks complete (IndexedDB layer, useIndexedDB hook, useRepositories hook).
+Progress: 9/10 tasks complete. Build passing.
 
-Next task: Build RepositorySelector component with visual repository list, search, favorites, and cache status indicators.
+Remaining: Monaco Editor integration for code preview/editing.
 
-Key requirement: All code stored in IndexedDB only - NO cloud storage. Make this clear to users.
+Key requirement: All code stored in IndexedDB only - NO cloud storage.
+
+Test the /analyze route end-to-end.
 ```
 
 ---
 
-## Reference Files to Read
+## Next Steps
 
-Before continuing, read these for context:
-1. `DASHBOARD_REBUILD_FINAL_PLAN.md` - Full plan with Git integration details
-2. `app/hooks/useRepositories.js` - Hook that components will use
-3. `app/components/ui/Card.jsx` - UI component pattern to follow
-4. `app/components/settings/GitHubConnectionSection.jsx` - Existing GitHub UI
+1. **Install Monaco Editor**
+   ```bash
+   npm install @monaco-editor/react
+   ```
+
+2. **Create MonacoEditor wrapper**
+   - Dark theme (vs-dark)
+   - Language auto-detection
+   - Read-only preview mode
+   - Optional edit mode
+
+3. **Test end-to-end workflow**
+   - Connect GitHub → Select repo → Pick files → Analyze
+
+4. **Phase 2 Planning**
+   - PR analysis mode
+   - Commit-linked results
+   - Template library
 
 ---
 
-## Git Status
-
-- Branch: `main`
-- Last commit: `978759c` - Add IndexedDB storage layer and repository hooks
-- Remote: Up to date with `origin/main`
-
----
-
-**Next Action:** Build RepositorySelector component
+**Build:** Passing
+**Next Action:** Test /analyze route, then add Monaco Editor

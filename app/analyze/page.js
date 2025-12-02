@@ -1,0 +1,429 @@
+'use client';
+
+/**
+ * Analyze Page - Git-First Code Analysis
+ *
+ * The primary code analysis interface with repository-first UX.
+ * This page replaces the dashboard's analysis functionality with
+ * an enhanced Git integration workflow.
+ *
+ * Features:
+ * - GitHub OAuth integration for repository browsing
+ * - File/folder picker with multi-select
+ * - IndexedDB caching for offline access
+ * - Privacy-first architecture (no cloud storage of code)
+ * - Alternative input modes (paste, upload)
+ * - Analysis configuration
+ * - QA artifact generation
+ *
+ * PRIVACY: All repository content is stored locally in IndexedDB.
+ * NO code is ever uploaded to ORIZON servers.
+ */
+
+import { useState, useEffect, useCallback } from 'react';
+import dynamic from 'next/dynamic';
+import { useSession } from 'next-auth/react';
+import { Loader2, Sparkles, Settings, Shield } from 'lucide-react';
+
+// UI Components
+import {
+  Card, Button, EmptyState, Tabs, TabList, TabButton, TabPanels, TabPanel
+} from '@/app/components/ui';
+
+// Layout
+import AppLayout from '@/app/components/layout/AppLayout';
+
+// Shared Components
+import Alert from '@/app/components/shared/Alert';
+import ConfigSection from '@/app/components/config/ConfigSection';
+import OutputSection from '@/app/components/output/OutputSection';
+
+// Git-first Components
+import { GitInputSection, PrivacyNotice } from './components';
+
+// Disable SSR for ApiKeyInput to prevent hydration mismatch
+const ApiKeyInput = dynamic(() => import('@/app/components/config/ApiKeyInput'), { ssr: false });
+
+// Hooks
+import useAnalysis from '@/app/hooks/useAnalysis';
+import useFileUpload from '@/app/hooks/useFileUpload';
+import useRepositories from '@/app/hooks/useRepositories';
+import useIndexedDB from '@/app/hooks/useIndexedDB';
+
+export default function AnalyzePage() {
+  const { data: session, status } = useSession();
+  const userId = session?.user?.id || 'anonymous';
+  const [settingsLoaded, setSettingsLoaded] = useState(false);
+
+  // Git/Repository state from hooks
+  const {
+    isConnected,
+    connection,
+    repositories,
+    selectedRepo,
+    selectRepository,
+    loading: reposLoading,
+    error: reposError,
+    branches,
+    selectedBranch,
+    changeBranch,
+    fileTree,
+    loadingFiles,
+    selectedFiles,
+    toggleFileSelection,
+    selectAllCodeFiles,
+    selectByPattern,
+    clearSelection,
+    fetchRepositories,
+    getFilesForAnalysis,
+    cachedRepos,
+    privacyNotice
+  } = useRepositories();
+
+  // IndexedDB state for cache management
+  const {
+    storageStats,
+    clearCache,
+    cleanupCache,
+    formatStorageSize,
+    isLoading: cacheLoading
+  } = useIndexedDB(userId);
+
+  // Alternative input states
+  const [codeInput, setCodeInput] = useState('');
+
+  // Config states
+  const [config, setConfig] = useState({
+    userStories: true,
+    testCases: true,
+    acceptanceCriteria: true,
+    edgeCases: false,
+    securityTests: false,
+    outputFormat: 'markdown',
+    testFramework: 'generic',
+    additionalContext: ''
+  });
+
+  // API states
+  const [provider, setProvider] = useState('claude');
+  const [apiKey, setApiKey] = useState('');
+  const [lmStudioUrl, setLmStudioUrl] = useState('http://192.168.2.101:1234');
+  const [selectedModel, setSelectedModel] = useState('');
+  const [usingSavedKey, setUsingSavedKey] = useState(false);
+  const [savedKeyAvailable, setSavedKeyAvailable] = useState(false);
+  const [savedApiKey, setSavedApiKey] = useState('');
+  const model = 'claude-sonnet-4-20250514';
+
+  // Custom hooks for analysis and file upload
+  const {
+    loading: analysisLoading,
+    error,
+    success,
+    results,
+    tokenUsage,
+    analyzeCodebase,
+    clearResults,
+    setError,
+    setSuccess
+  } = useAnalysis();
+
+  const {
+    uploadedFiles,
+    setUploadedFiles,
+    isDragging,
+    setIsDragging,
+    handleDrop,
+    handleFileSelect,
+    clearFiles
+  } = useFileUpload(setError, setSuccess);
+
+  const loading = analysisLoading || reposLoading || loadingFiles;
+
+  // Calculate token estimate
+  const getInputContent = useCallback(() => {
+    // Git mode - selected files from repository
+    if (selectedFiles.length > 0 && selectedRepo) {
+      // This will be replaced with actual content when analyzing
+      return `[${selectedFiles.length} files from ${selectedRepo.full_name}]`;
+    }
+    // Paste mode
+    if (codeInput) return codeInput;
+    // Upload mode
+    if (uploadedFiles.length > 0) {
+      return uploadedFiles.map(f => `=== FILE: ${f.name} ===\n${f.content}`).join('\n\n');
+    }
+    return '';
+  }, [selectedFiles, selectedRepo, codeInput, uploadedFiles]);
+
+  const estimatedTokens = Math.ceil(getInputContent().length / 4);
+  const isTruncated = getInputContent().length > 100000;
+
+  // Handle analysis
+  const handleAnalyze = async () => {
+    let content = '';
+
+    // Get content based on input mode
+    if (selectedFiles.length > 0 && selectedRepo) {
+      // Fetch actual file contents from GitHub
+      setSuccess('Fetching selected files...');
+      const files = await getFilesForAnalysis();
+      if (files.length === 0) {
+        setError('Failed to fetch file contents');
+        return;
+      }
+      content = files.map(f => `=== FILE: ${f.path} ===\n${f.content}`).join('\n\n');
+      setSuccess('');
+    } else if (codeInput.trim()) {
+      content = codeInput;
+    } else if (uploadedFiles.length > 0) {
+      content = uploadedFiles.map(f => `=== FILE: ${f.name} ===\n${f.content}`).join('\n\n');
+    }
+
+    if (!content.trim()) {
+      setError('Please provide code to analyze');
+      return;
+    }
+
+    const modelToUse = provider === 'lmstudio' && selectedModel ? selectedModel : model;
+    await analyzeCodebase(content, apiKey, config, modelToUse, provider, lmStudioUrl);
+  };
+
+  // Clear all inputs
+  const clearAll = () => {
+    setCodeInput('');
+    clearFiles();
+    clearSelection();
+    clearResults();
+  };
+
+  // Can analyze check
+  const canAnalyze = (provider === 'lmstudio' || apiKey) &&
+                     (codeInput.trim() || uploadedFiles.length > 0 || selectedFiles.length > 0);
+
+  // Load user settings
+  useEffect(() => {
+    async function loadUserSettings() {
+      if (status === 'loading' || !session || settingsLoaded) return;
+
+      try {
+        const response = await fetch('/api/user/settings');
+        if (response.ok) {
+          const data = await response.json();
+          if (data.claudeApiKey) {
+            setSavedApiKey(data.claudeApiKey);
+            setApiKey(data.claudeApiKey);
+            setUsingSavedKey(true);
+            setSavedKeyAvailable(true);
+          }
+          if (data.lmStudioUrl) setLmStudioUrl(data.lmStudioUrl);
+        }
+      } catch (error) {
+        console.error('Error loading user settings:', error);
+      } finally {
+        setSettingsLoaded(true);
+      }
+    }
+
+    loadUserSettings();
+  }, [session, status, settingsLoaded]);
+
+  // Handle switching back to saved key
+  useEffect(() => {
+    if (usingSavedKey && savedApiKey) {
+      setApiKey(savedApiKey);
+    }
+  }, [usingSavedKey, savedApiKey]);
+
+  return (
+    <AppLayout>
+      <div className="max-w-[1600px] mx-auto">
+        <main className="p-4 md:p-6 lg:p-8">
+          {/* Page Header */}
+          <div className="mb-6">
+            <div className="flex items-center justify-between mb-2">
+              <div>
+                <h1 className="text-2xl font-bold text-white font-primary">
+                  Code Analysis
+                </h1>
+                <p className="text-sm text-text-secondary-dark mt-1">
+                  Analyze code from GitHub repositories, paste, or upload files
+                </p>
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="flex items-center gap-1.5 px-3 py-1.5 bg-primary/10
+                              border border-primary/20 rounded-full text-xs text-primary">
+                  <Shield className="w-3.5 h-3.5" />
+                  <span>Local Storage Only</span>
+                </div>
+                {!isConnected && (
+                  <a
+                    href="/settings?tab=integrations"
+                    className="flex items-center gap-2 px-4 py-2 bg-white/5 border border-white/10
+                             rounded-lg text-sm text-white hover:bg-white/10 transition-all"
+                  >
+                    <Settings className="w-4 h-4" />
+                    Connect GitHub
+                  </a>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Alerts */}
+          {error && <Alert type="error" message={error} />}
+          {success && <Alert type="success" message={success} />}
+
+          {/* Main Tabs */}
+          <Tabs defaultValue={0} className="mb-6">
+            <TabList>
+              <TabButton>Input</TabButton>
+              <TabButton>Configure</TabButton>
+              <TabButton>Results</TabButton>
+              <TabButton>Privacy</TabButton>
+            </TabList>
+
+            <TabPanels>
+              {/* Input Tab - Git-First */}
+              <TabPanel>
+                <GitInputSection
+                  isConnected={isConnected}
+                  repositories={repositories}
+                  selectedRepo={selectedRepo}
+                  onSelectRepo={selectRepository}
+                  onRefreshRepos={fetchRepositories}
+                  reposLoading={reposLoading}
+                  reposError={reposError}
+                  branches={branches}
+                  selectedBranch={selectedBranch}
+                  onChangeBranch={changeBranch}
+                  fileTree={fileTree}
+                  selectedFiles={selectedFiles}
+                  onToggleFile={toggleFileSelection}
+                  onSelectAllCodeFiles={selectAllCodeFiles}
+                  onSelectByPattern={selectByPattern}
+                  onClearSelection={clearSelection}
+                  filesLoading={loadingFiles}
+                  cachedRepos={cachedRepos}
+                  codeInput={codeInput}
+                  onCodeInputChange={setCodeInput}
+                  uploadedFiles={uploadedFiles}
+                  onFileUpload={handleFileSelect}
+                  onClearUploadedFiles={clearFiles}
+                  onDrop={handleDrop}
+                  estimatedTokens={estimatedTokens}
+                  isTruncated={isTruncated}
+                />
+              </TabPanel>
+
+              {/* Configure Tab */}
+              <TabPanel>
+                <ConfigSection config={config} setConfig={setConfig} />
+
+                <ApiKeyInput
+                  provider={provider}
+                  setProvider={setProvider}
+                  apiKey={apiKey}
+                  setApiKey={setApiKey}
+                  lmStudioUrl={lmStudioUrl}
+                  setLmStudioUrl={setLmStudioUrl}
+                  selectedModel={selectedModel}
+                  setSelectedModel={setSelectedModel}
+                  model={model}
+                  usingSavedKey={usingSavedKey}
+                  setUsingSavedKey={setUsingSavedKey}
+                  savedKeyAvailable={savedKeyAvailable}
+                />
+              </TabPanel>
+
+              {/* Results Tab */}
+              <TabPanel>
+                {results ? (
+                  <OutputSection results={results} />
+                ) : (
+                  <EmptyState
+                    icon={<Sparkles className="w-12 h-12" />}
+                    title="No results yet"
+                    description="Select files from a repository or paste code, then click 'Analyze Code' to generate QA artifacts"
+                  />
+                )}
+              </TabPanel>
+
+              {/* Privacy Tab */}
+              <TabPanel>
+                <div className="max-w-2xl">
+                  <PrivacyNotice
+                    storageStats={storageStats}
+                    onClearCache={clearCache}
+                    onCleanupOldData={cleanupCache}
+                    formatStorageSize={formatStorageSize}
+                    isLoading={cacheLoading}
+                    compact={false}
+                  />
+                </div>
+              </TabPanel>
+            </TabPanels>
+          </Tabs>
+
+          {/* Action Buttons */}
+          <div className="flex gap-4 mb-6">
+            <Button
+              variant="primary"
+              size="lg"
+              onClick={handleAnalyze}
+              disabled={!canAnalyze || loading}
+              className="flex-1"
+            >
+              {loading ? (
+                <>
+                  <Loader2 className="animate-spin" size={20} />
+                  <span>Analyzing...</span>
+                </>
+              ) : (
+                <>
+                  <Sparkles size={20} />
+                  <span>Analyze Code</span>
+                </>
+              )}
+            </Button>
+
+            <Button
+              variant="secondary"
+              size="lg"
+              onClick={clearAll}
+              disabled={loading}
+            >
+              Clear All
+            </Button>
+          </div>
+
+          {/* Token Usage Display */}
+          {tokenUsage && (
+            <Card className="p-4 bg-surface-dark/50">
+              <div className="flex items-center justify-center gap-6 text-sm font-secondary">
+                <div className="flex items-center gap-2">
+                  <span className="text-text-secondary-dark">Input:</span>
+                  <span className="text-primary font-semibold">
+                    {(tokenUsage.input || tokenUsage.input_tokens)?.toLocaleString() || '0'}
+                  </span>
+                </div>
+                <div className="w-px h-4 bg-white/10" />
+                <div className="flex items-center gap-2">
+                  <span className="text-text-secondary-dark">Output:</span>
+                  <span className="text-accent font-semibold">
+                    {(tokenUsage.output || tokenUsage.output_tokens)?.toLocaleString() || '0'}
+                  </span>
+                </div>
+              </div>
+            </Card>
+          )}
+
+          {/* Footer */}
+          <div className="text-center mt-8 text-xs text-text-secondary-dark font-secondary flex items-center justify-center gap-2">
+            <Shield className="w-3.5 h-3.5" />
+            <span>Your code stays local • Built with Claude AI</span>
+          </div>
+        </main>
+      </div>
+    </AppLayout>
+  );
+}

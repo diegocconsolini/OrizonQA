@@ -28,7 +28,9 @@ import {
   ChevronRight,
   Zap,
   Shield,
-  FolderKanban
+  FolderKanban,
+  Code,
+  Github
 } from 'lucide-react';
 
 export default function Sidebar({ collapsed = false, onToggle }) {
@@ -42,6 +44,12 @@ export default function Sidebar({ collapsed = false, onToggle }) {
       label: 'Dashboard',
       href: '/dashboard',
       icon: <LayoutDashboard className="w-5 h-5" />,
+    },
+    {
+      label: 'Analyze',
+      href: '/analyze',
+      icon: <Code className="w-5 h-5" />,
+      badge: 'Git',
     },
     {
       label: 'Projects',
@@ -133,7 +141,14 @@ export default function Sidebar({ collapsed = false, onToggle }) {
             >
               {item.icon}
               {!collapsed && (
-                <span className="font-secondary font-medium">{item.label}</span>
+                <>
+                  <span className="font-secondary font-medium flex-1">{item.label}</span>
+                  {item.badge && (
+                    <span className="px-1.5 py-0.5 text-[10px] font-semibold bg-primary/20 text-primary rounded">
+                      {item.badge}
+                    </span>
+                  )}
+                </>
               )}
             </a>
           ))}
