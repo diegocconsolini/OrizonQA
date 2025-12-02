@@ -22,7 +22,8 @@
       "Bash(npm run build:*)",
       "Bash(curl:*)",
       "Bash(docker exec:*)",
-      "Bash(node scripts/verify-migration.js:*)"
+      "Bash(node scripts/verify-migration.js:*)",
+      "Bash(psql:*)"
     ],
     "deny": [],
     "ask": []
