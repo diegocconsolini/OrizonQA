@@ -33,11 +33,11 @@ npm install
 # Start local databases (PostgreSQL + Redis)
 docker-compose up -d
 
-# Run development server (opens at http://localhost:3000)
-npm run dev
+# Run development server (opens at http://localhost:3033)
+PORT=3033 npm run dev
 
 # Initialize database schema (first time only)
-# Visit: http://localhost:3000/api/db/init
+# Visit: http://localhost:3033/api/db/init
 
 # Build for production
 npm run build
