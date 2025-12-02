@@ -79,10 +79,10 @@ export default function IntegrationsPage() {
   if (loading) {
     return (
       <AppLayout>
-        <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center">
+        <div className="min-h-screen bg-bg-dark flex items-center justify-center">
           <div className="text-center">
-            <div className="inline-block w-8 h-8 border-4 border-cyan-500 border-t-transparent rounded-full animate-spin"></div>
-            <p className="text-slate-400 mt-4">Loading project...</p>
+            <div className="inline-block w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+            <p className="text-text-secondary-dark mt-4">Loading project...</p>
           </div>
         </div>
       </AppLayout>
@@ -92,11 +92,11 @@ export default function IntegrationsPage() {
   if (error || !project) {
     return (
       <AppLayout>
-        <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center">
+        <div className="min-h-screen bg-bg-dark flex items-center justify-center">
           <div className="text-center">
-            <Settings className="w-16 h-16 text-slate-600 mx-auto mb-4" />
+            <Settings className="w-16 h-16 text-text-muted-dark mx-auto mb-4" />
             <h3 className="text-xl font-semibold text-white mb-2">Project not found</h3>
-            <p className="text-slate-400 mb-6">{error || 'The project doesn\'t exist'}</p>
+            <p className="text-text-secondary-dark mb-6">{error || 'The project doesn\'t exist'}</p>
           </div>
         </div>
       </AppLayout>
@@ -108,12 +108,12 @@ export default function IntegrationsPage() {
 
   return (
     <AppLayout>
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
-        <div className="border-b border-slate-700 bg-slate-800/50 backdrop-blur-sm">
+      <div className="min-h-screen bg-bg-dark">
+        <div className="border-b border-white/10 bg-surface-dark/50 backdrop-blur-sm">
           <div className="px-6 py-6">
             <Link
               href={`/projects/${projectId}`}
-              className="inline-flex items-center gap-2 text-slate-400 hover:text-white transition-colors mb-4"
+              className="inline-flex items-center gap-2 text-text-secondary-dark hover:text-white transition-colors mb-4"
             >
               <ArrowLeft className="w-4 h-4" />
               Back to Project
@@ -124,7 +124,7 @@ export default function IntegrationsPage() {
               </div>
               <div>
                 <h1 className="text-2xl font-bold text-white">Integrations</h1>
-                <p className="text-sm text-slate-400">Connect {project.name} to external systems</p>
+                <p className="text-sm text-text-secondary-dark">Connect {project.name} to external systems</p>
               </div>
             </div>
           </div>
@@ -133,7 +133,7 @@ export default function IntegrationsPage() {
         <div className="px-6 py-8">
           {/* Current Integration Status */}
           {isIntegrationActive && (
-            <div className="bg-slate-800 border border-slate-700 rounded-lg p-6 mb-6">
+            <div className="bg-surface-dark border border-white/10 rounded-lg p-6 mb-6">
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-3">
                   <div className="text-4xl">{activeIntegration?.icon}</div>
@@ -142,12 +142,12 @@ export default function IntegrationsPage() {
                       {activeIntegration?.name}
                       <CheckCircle2 className="w-5 h-5 text-green-400" />
                     </h2>
-                    <p className="text-sm text-slate-400">Connected</p>
+                    <p className="text-sm text-text-secondary-dark">Connected</p>
                   </div>
                 </div>
                 <button
                   onClick={() => setSelectedIntegration(project.integration_type)}
-                  className="bg-slate-700 text-white px-4 py-2 rounded-lg hover:bg-slate-600 transition-colors"
+                  className="bg-surface-hover-dark text-white px-4 py-2 rounded-lg hover:bg-surface-hover-dark transition-colors"
                 >
                   Manage
                 </button>
@@ -155,8 +155,8 @@ export default function IntegrationsPage() {
 
               {/* Webhook URL */}
               {project.webhook_secret && (
-                <div className="border-t border-slate-700 pt-4 mt-4">
-                  <label className="text-sm font-medium text-slate-300 mb-2 block">
+                <div className="border-t border-white/10 pt-4 mt-4">
+                  <label className="text-sm font-medium text-white mb-2 block">
                     Webhook URL
                   </label>
                   <div className="flex items-center gap-2">
@@ -164,11 +164,11 @@ export default function IntegrationsPage() {
                       type="text"
                       value={`${window.location.origin}/api/integrations/${project.integration_type}/webhook?project=${projectId}`}
                       readOnly
-                      className="flex-1 bg-slate-900 border border-slate-600 text-slate-300 px-3 py-2 rounded-lg font-mono text-sm"
+                      className="flex-1 bg-slate-900 border border-white/20 text-white px-3 py-2 rounded-lg font-mono text-sm"
                     />
                     <button
                       onClick={() => copyToClipboard(`${window.location.origin}/api/integrations/${project.integration_type}/webhook?project=${projectId}`)}
-                      className="bg-slate-700 text-white px-4 py-2 rounded-lg hover:bg-slate-600 transition-colors flex items-center gap-2"
+                      className="bg-surface-hover-dark text-white px-4 py-2 rounded-lg hover:bg-surface-hover-dark transition-colors flex items-center gap-2"
                     >
                       {copiedWebhook ? (
                         <>
@@ -183,16 +183,16 @@ export default function IntegrationsPage() {
                       )}
                     </button>
                   </div>
-                  <p className="text-xs text-slate-400 mt-2">
+                  <p className="text-xs text-text-secondary-dark mt-2">
                     Configure this URL in your {activeIntegration?.name} project webhooks
                   </p>
                 </div>
               )}
 
               {/* Sync Status */}
-              <div className="border-t border-slate-700 pt-4 mt-4 grid grid-cols-2 gap-4">
+              <div className="border-t border-white/10 pt-4 mt-4 grid grid-cols-2 gap-4">
                 <div>
-                  <p className="text-xs text-slate-400 mb-1">Sync Status</p>
+                  <p className="text-xs text-text-secondary-dark mb-1">Sync Status</p>
                   <p className={`font-medium ${
                     project.sync_status === 'syncing' ? 'text-yellow-400' :
                     project.sync_status === 'error' ? 'text-red-400' :
@@ -202,7 +202,7 @@ export default function IntegrationsPage() {
                   </p>
                 </div>
                 <div>
-                  <p className="text-xs text-slate-400 mb-1">Last Synced</p>
+                  <p className="text-xs text-text-secondary-dark mb-1">Last Synced</p>
                   <p className="text-white text-sm">
                     {project.last_sync_at
                       ? new Date(project.last_sync_at).toLocaleString('en-US', {
@@ -228,13 +228,13 @@ export default function IntegrationsPage() {
                   <button
                     key={integration.id}
                     onClick={() => setSelectedIntegration(integration.id)}
-                    className="bg-slate-800 border border-slate-700 rounded-lg p-6 hover:border-cyan-500 transition-colors text-left"
+                    className="bg-surface-dark border border-white/10 rounded-lg p-6 hover:border-primary transition-colors text-left"
                   >
                     <div className="text-4xl mb-4">{integration.icon}</div>
                     <h3 className="text-lg font-semibold text-white mb-2">
                       {integration.name}
                     </h3>
-                    <p className="text-sm text-slate-400">{integration.description}</p>
+                    <p className="text-sm text-text-secondary-dark">{integration.description}</p>
                   </button>
                 ))}
               </div>

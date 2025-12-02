@@ -13,12 +13,12 @@ export default function NewRequirementPage() {
 
   return (
     <AppLayout>
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
-        <div className="border-b border-slate-700 bg-slate-800/50 backdrop-blur-sm">
+      <div className="min-h-screen bg-bg-dark">
+        <div className="border-b border-white/10 bg-surface-dark/50 backdrop-blur-sm">
           <div className="px-6 py-6">
             <Link
               href={`/projects/${projectId}/requirements`}
-              className="inline-flex items-center gap-2 text-slate-400 hover:text-white transition-colors mb-4"
+              className="inline-flex items-center gap-2 text-text-secondary-dark hover:text-white transition-colors mb-4"
             >
               <ArrowLeft className="w-4 h-4" />
               Back to Requirements
@@ -29,14 +29,14 @@ export default function NewRequirementPage() {
               </div>
               <div>
                 <h1 className="text-2xl font-bold text-white">Create Requirement</h1>
-                <p className="text-sm text-slate-400">Add a new requirement or user story</p>
+                <p className="text-sm text-text-secondary-dark">Add a new requirement or user story</p>
               </div>
             </div>
           </div>
         </div>
 
         <div className="px-6 py-8">
-          <div className="bg-slate-800 border border-slate-700 rounded-lg p-6">
+          <div className="bg-surface-dark border border-white/10 rounded-lg p-6">
             <RequirementForm
               projectId={projectId}
               onCancel={() => router.push(`/projects/${projectId}/requirements`)}

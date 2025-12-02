@@ -11,13 +11,13 @@ export default function NewProjectPage() {
 
   return (
     <AppLayout>
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+      <div className="min-h-screen bg-bg-dark">
         {/* Header */}
-        <div className="border-b border-slate-700 bg-slate-800/50 backdrop-blur-sm">
+        <div className="border-b border-white/10 bg-surface-dark/50 backdrop-blur-sm">
           <div className="px-6 py-6">
             <Link
               href="/projects"
-              className="inline-flex items-center gap-2 text-slate-400 hover:text-white transition-colors mb-4"
+              className="inline-flex items-center gap-2 text-text-secondary-dark hover:text-white transition-colors mb-4"
             >
               <ArrowLeft className="w-4 h-4" />
               Back to Projects
@@ -28,7 +28,7 @@ export default function NewProjectPage() {
               </div>
               <div>
                 <h1 className="text-2xl font-bold text-white">Create New Project</h1>
-                <p className="text-sm text-slate-400">
+                <p className="text-sm text-text-secondary-dark">
                   Set up a new test project to organize your QA work
                 </p>
               </div>
@@ -38,14 +38,14 @@ export default function NewProjectPage() {
 
         {/* Content */}
         <div className="px-6 py-8">
-          <div className="bg-slate-800 border border-slate-700 rounded-lg p-6">
+          <div className="bg-surface-dark border border-white/10 rounded-lg p-6">
             <ProjectForm onCancel={() => router.push('/projects')} />
           </div>
 
           {/* Help Text */}
-          <div className="mt-6 bg-slate-800/50 border border-slate-700/50 rounded-lg p-6">
+          <div className="mt-6 bg-surface-dark/50 border border-white/10/50 rounded-lg p-6">
             <h3 className="text-sm font-semibold text-white mb-3">What's a project?</h3>
-            <ul className="space-y-2 text-sm text-slate-400">
+            <ul className="space-y-2 text-sm text-text-secondary-dark">
               <li className="flex items-start gap-2">
                 <span className="text-cyan-400 mt-0.5">•</span>
                 <span>
