@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
 import { query } from '@/lib/db.js';
 import { logAudit, getRequestContext } from '@/lib/auditLog.js';
-import { Resend } from 'resend';
+import { sendVerificationEmail } from '@/lib/email.js';
 
 /**
  * Password validation helper
@@ -183,28 +183,9 @@ export async function POST(request) {
       metadata: { fullName }
     });
 
-    // Send verification email via Resend
+    // Send verification email
     try {
-      const resend = new Resend(process.env.RESEND_API_KEY);
-
-      await resend.emails.send({
-        from: 'ORIZON <noreply@yourdomain.com>',
-        to: email,
-        subject: 'Verify your ORIZON account',
-        text: `Welcome to ORIZON!
-
-Your verification code is: ${verificationCode}
-
-This code will expire in 10 minutes.
-
-Please enter this code to verify your email address and complete your registration.
-
-If you didn't create an account with ORIZON, please ignore this email.
-
-Thank you,
-The ORIZON Team`
-      });
-
+      await sendVerificationEmail(email, fullName, verificationCode);
       console.log(`Verification email sent to ${email}`);
     } catch (emailError) {
       console.error('Failed to send verification email:', emailError);
