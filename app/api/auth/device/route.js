@@ -37,7 +37,7 @@ export async function POST(request) {
         },
         body: JSON.stringify({
           client_id: GITHUB_CLIENT_ID,
-          scope: 'user:email read:user',
+          scope: 'read:user user:email repo', // Added 'repo' scope for private repository access
         }),
       });
 
