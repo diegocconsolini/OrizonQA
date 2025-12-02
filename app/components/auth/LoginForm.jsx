@@ -5,7 +5,7 @@ import { signIn } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import Button from '../ui/Button.jsx';
 import Input from '../ui/Input.jsx';
-import { Mail, Lock } from 'lucide-react';
+import { Mail, Lock, Github } from 'lucide-react';
 
 /**
  * LoginForm Component
@@ -120,6 +120,18 @@ export default function LoginForm() {
     }
   };
 
+  // Handle GitHub OAuth
+  const handleGitHubSignIn = async () => {
+    try {
+      await signIn('github', {
+        callbackUrl: '/dashboard',
+      });
+    } catch (err) {
+      console.error('GitHub sign in error:', err);
+      setError('Failed to sign in with GitHub. Please try again.');
+    }
+  };
+
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       {/* Global Error Message */}
@@ -128,6 +140,29 @@ export default function LoginForm() {
           <p className="text-sm text-red-400">{error}</p>
         </div>
       )}
+
+      {/* GitHub Sign In Button */}
+      <Button
+        type="button"
+        variant="secondary"
+        size="lg"
+        onClick={handleGitHubSignIn}
+        disabled={loading}
+        className="w-full"
+      >
+        <Github className="w-5 h-5 mr-2" />
+        Sign in with GitHub
+      </Button>
+
+      {/* Divider */}
+      <div className="relative">
+        <div className="absolute inset-0 flex items-center">
+          <div className="w-full border-t border-white/10"></div>
+        </div>
+        <div className="relative flex justify-center text-sm">
+          <span className="px-4 bg-bg-dark text-text-secondary-dark">Or continue with email</span>
+        </div>
+      </div>
 
       {/* Email */}
       <Input

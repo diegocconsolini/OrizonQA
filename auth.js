@@ -25,6 +25,7 @@
 
 import NextAuth from 'next-auth';
 import Credentials from 'next-auth/providers/credentials';
+import GitHub from 'next-auth/providers/github';
 import { authConfig } from '@/auth.config';
 import { query } from '@/lib/db';
 import bcrypt from 'bcryptjs';
@@ -32,6 +33,18 @@ import bcrypt from 'bcryptjs';
 export const { handlers, auth, signIn, signOut } = NextAuth({
   ...authConfig,
   providers: [
+    GitHub({
+      clientId: process.env.GITHUB_CLIENT_ID,
+      clientSecret: process.env.GITHUB_CLIENT_SECRET,
+      profile(profile) {
+        return {
+          id: String(profile.id),
+          name: profile.name || profile.login,
+          email: profile.email,
+          image: profile.avatar_url,
+        };
+      },
+    }),
     Credentials({
       name: 'Credentials',
       credentials: {
@@ -94,4 +107,64 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       }
     })
   ],
+  callbacks: {
+    ...authConfig.callbacks,
+    async signIn({ user, account, profile }) {
+      // Handle GitHub OAuth sign in
+      if (account?.provider === 'github') {
+        try {
+          const email = user.email?.toLowerCase();
+
+          if (!email) {
+            console.error('GitHub OAuth: No email provided');
+            return false;
+          }
+
+          // Check if user exists
+          const existingUser = await query(
+            'SELECT * FROM users WHERE email = $1',
+            [email]
+          );
+
+          if (existingUser.rows.length === 0) {
+            // Create new user for GitHub OAuth
+            const result = await query(`
+              INSERT INTO users (email, full_name, email_verified, is_active, created_at)
+              VALUES ($1, $2, true, true, NOW())
+              RETURNING id, email, full_name
+            `, [email, user.name || email.split('@')[0]]);
+
+            user.id = String(result.rows[0].id);
+
+            // Log audit event
+            await query(`
+              INSERT INTO audit_logs (user_id, action, details, ip_address, user_agent, created_at)
+              VALUES ($1, $2, $3, $4, $5, NOW())
+            `, [
+              result.rows[0].id,
+              'user_registered',
+              JSON.stringify({ method: 'github_oauth', email }),
+              null,
+              null
+            ]);
+          } else {
+            // User exists, update last login
+            user.id = String(existingUser.rows[0].id);
+            await query(
+              'UPDATE users SET last_login = NOW() WHERE id = $1',
+              [existingUser.rows[0].id]
+            );
+          }
+
+          return true;
+        } catch (error) {
+          console.error('GitHub OAuth error:', error);
+          return false;
+        }
+      }
+
+      // Default for credentials provider
+      return true;
+    },
+  },
 });
