@@ -54,6 +54,9 @@ export default function GitInputSection({
 
   // Cache state
   cachedRepos = [],
+  onSaveToCache,
+  isSavingCache = false,
+  cachedFiles = [],
 
   // Alternative input modes
   codeInput = '',
@@ -218,6 +221,9 @@ export default function GitInputSection({
                     onSelectAllCodeFiles={onSelectAllCodeFiles}
                     onSelectByPattern={onSelectByPattern}
                     onClearSelection={onClearSelection}
+                    onSaveToCache={onSaveToCache}
+                    isSavingCache={isSavingCache}
+                    cachedFiles={cachedFiles}
                     loading={filesLoading}
                     selectedRepo={selectedRepo}
                   />
