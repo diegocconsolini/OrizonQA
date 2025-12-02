@@ -264,7 +264,7 @@ export default function LoginPage() {
   // Show loading state while checking auth with skeleton
   if (status === 'loading') {
     return (
-      <div className="min-h-screen bg-bg-dark relative">
+      <div className="min-h-screen relative">
         {/* VIDEO BACKGROUND is in providers.js - persists across page transitions */}
 
         <div className="relative z-10 min-h-screen flex">
@@ -311,7 +311,7 @@ export default function LoginPage() {
   }
 
   return (
-    <div ref={containerRef} className="min-h-screen bg-bg-dark relative">
+    <div ref={containerRef} className="min-h-screen relative">
       {/* VIDEO BACKGROUND is in providers.js - persists across page transitions */}
 
       <div className="relative z-10 min-h-screen flex">
