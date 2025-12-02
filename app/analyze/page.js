@@ -40,6 +40,7 @@ import OutputSection from '@/app/components/output/OutputSection';
 
 // Git-first Components
 import { GitInputSection, PrivacyNotice, LocalCachePanel, CacheStatusBar } from './components';
+import ConfigPresets from './components/ConfigPresets';
 
 // Disable SSR for ApiKeyInput to prevent hydration mismatch
 const ApiKeyInput = dynamic(() => import('@/app/components/config/ApiKeyInput'), { ssr: false });
@@ -194,6 +195,7 @@ export default function AnalyzePage() {
     testFramework: 'generic',
     additionalContext: ''
   });
+  const [activePreset, setActivePreset] = useState(null);
 
   // API states
   const [provider, setProvider] = useState('claude');
@@ -412,8 +414,18 @@ export default function AnalyzePage() {
 
               {/* Configure Tab */}
               <TabPanel>
+                {/* Config Presets - Quick selection */}
+                <ConfigPresets
+                  config={config}
+                  setConfig={setConfig}
+                  activePreset={activePreset}
+                  setActivePreset={setActivePreset}
+                />
+
+                {/* Analysis Options - Detailed configuration */}
                 <ConfigSection config={config} setConfig={setConfig} />
 
+                {/* AI Provider - Clear separation */}
                 <ApiKeyInput
                   provider={provider}
                   setProvider={setProvider}
