@@ -81,10 +81,8 @@ export default function GitHubConnectionSection() {
       setActionLoading(true);
       setError('');
 
-      // Build redirect URI - use NEXTAUTH_URL from env if available for consistency
-      // This ensures the callback URL matches what's registered in GitHub OAuth App
-      const baseUrl = process.env.NEXT_PUBLIC_APP_URL || window.location.origin;
-      const redirectUri = `${baseUrl}/api/oauth/github/callback`;
+      // Build redirect URI (callback will redirect back here)
+      const redirectUri = `${window.location.origin}/api/oauth/github/callback`;
 
       // Request authorization URL with repo scope
       const response = await fetch('/api/oauth/github/connect', {
