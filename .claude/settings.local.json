@@ -27,7 +27,8 @@
       "Bash(PGPASSWORD=orizon_pass psql:*)",
       "Bash(node:*)",
       "Bash(vercel env add:*)",
-      "Bash(vercel env rm:*)"
+      "Bash(vercel env rm:*)",
+      "Bash(vercel env:*)"
     ],
     "deny": [],
     "ask": []
