@@ -39,7 +39,7 @@ import ConfigSection from '@/app/components/config/ConfigSection';
 import OutputSection from '@/app/components/output/OutputSection';
 
 // Git-first Components
-import { GitInputSection, PrivacyNotice } from './components';
+import { GitInputSection, PrivacyNotice, LocalCachePanel, CacheStatusBar } from './components';
 
 // Disable SSR for ApiKeyInput to prevent hydration mismatch
 const ApiKeyInput = dynamic(() => import('@/app/components/config/ApiKeyInput'), { ssr: false });
@@ -83,11 +83,102 @@ export default function AnalyzePage() {
   // IndexedDB state for cache management
   const {
     storageStats,
+    cachedRepos: indexedDBCachedRepos,
     clearCache,
     cleanupCache,
     formatStorageSize,
-    isLoading: cacheLoading
+    isLoading: cacheLoading,
+    cacheRepository,
+    getCachedFilePaths,
+    getCacheManifest,
+    removeFromCache,
+    refreshCache
   } = useIndexedDB(userId);
+
+  // Cache panel state
+  const [showCachePanel, setShowCachePanel] = useState(false);
+  const [cacheManifest, setCacheManifest] = useState([]);
+  const [cachedFilePaths, setCachedFilePaths] = useState([]);
+  const [isSavingCache, setIsSavingCache] = useState(false);
+
+  // Load cache manifest when panel opens
+  useEffect(() => {
+    if (showCachePanel) {
+      loadCacheManifest();
+    }
+  }, [showCachePanel]);
+
+  // Load cached file paths when repo changes
+  useEffect(() => {
+    if (selectedRepo) {
+      loadCachedFilePaths();
+    }
+  }, [selectedRepo]);
+
+  const loadCacheManifest = async () => {
+    const manifest = await getCacheManifest();
+    setCacheManifest(manifest);
+  };
+
+  const loadCachedFilePaths = async () => {
+    if (selectedRepo) {
+      const paths = await getCachedFilePaths(selectedRepo.owner, selectedRepo.name);
+      setCachedFilePaths(paths);
+    }
+  };
+
+  // Save selected files to cache
+  const handleSaveToCache = async () => {
+    if (!selectedRepo || selectedFiles.length === 0) return;
+
+    try {
+      setIsSavingCache(true);
+      setSuccess('Fetching files for cache...');
+
+      // Fetch file contents
+      const files = await getFilesForAnalysis();
+
+      if (files.length === 0) {
+        setError('No files to cache');
+        return;
+      }
+
+      // Save to IndexedDB
+      await cacheRepository(selectedRepo, files, selectedBranch);
+
+      setSuccess(`Cached ${files.length} files locally`);
+      await loadCachedFilePaths();
+      await loadCacheManifest();
+
+      // Clear success after 3s
+      setTimeout(() => setSuccess(''), 3000);
+    } catch (err) {
+      setError('Failed to cache files: ' + err.message);
+    } finally {
+      setIsSavingCache(false);
+    }
+  };
+
+  // Handle removing a repo from cache
+  const handleRemoveFromCache = async (owner, name) => {
+    await removeFromCache(owner, name);
+    await loadCacheManifest();
+    await loadCachedFilePaths();
+  };
+
+  // Handle clear all cache
+  const handleClearAllCache = async () => {
+    await clearCache();
+    setCacheManifest([]);
+    setCachedFilePaths([]);
+  };
+
+  // Calculate cache totals
+  const cacheTotals = {
+    repos: cacheManifest.length,
+    files: cacheManifest.reduce((sum, r) => sum + (r.fileCount || 0), 0),
+    size: cacheManifest.reduce((sum, r) => sum + (r.totalSize || 0), 0)
+  };
 
   // Alternative input states
   const [codeInput, setCodeInput] = useState('');
@@ -279,7 +370,7 @@ export default function AnalyzePage() {
               <TabButton>Input</TabButton>
               <TabButton>Configure</TabButton>
               <TabButton>Results</TabButton>
-              <TabButton>Privacy</TabButton>
+              <TabButton>Local Cache</TabButton>
             </TabList>
 
             <TabPanels>
@@ -312,6 +403,10 @@ export default function AnalyzePage() {
                   onDrop={handleDrop}
                   estimatedTokens={estimatedTokens}
                   isTruncated={isTruncated}
+                  // Cache props
+                  onSaveToCache={handleSaveToCache}
+                  isSavingCache={isSavingCache}
+                  cachedFiles={cachedFilePaths}
                 />
               </TabPanel>
 
@@ -348,17 +443,34 @@ export default function AnalyzePage() {
                 )}
               </TabPanel>
 
-              {/* Privacy Tab */}
+              {/* Privacy Tab - Now shows Local Cache Panel */}
               <TabPanel>
-                <div className="max-w-2xl">
-                  <PrivacyNotice
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  {/* Local Cache Panel */}
+                  <LocalCachePanel
+                    cacheManifest={cacheManifest}
                     storageStats={storageStats}
-                    onClearCache={clearCache}
-                    onCleanupOldData={cleanupCache}
+                    onRemoveRepo={handleRemoveFromCache}
+                    onClearAll={handleClearAllCache}
                     formatStorageSize={formatStorageSize}
                     isLoading={cacheLoading}
-                    compact={false}
+                    onRefresh={async () => {
+                      await refreshCache();
+                      await loadCacheManifest();
+                    }}
                   />
+
+                  {/* Privacy Notice */}
+                  <div>
+                    <PrivacyNotice
+                      storageStats={storageStats}
+                      onClearCache={handleClearAllCache}
+                      onCleanupOldData={cleanupCache}
+                      formatStorageSize={formatStorageSize}
+                      isLoading={cacheLoading}
+                      compact={false}
+                    />
+                  </div>
                 </div>
               </TabPanel>
             </TabPanels>
@@ -423,6 +535,23 @@ export default function AnalyzePage() {
             <span>Your code stays local • Built with Claude AI</span>
           </div>
         </main>
+
+        {/* Cache Status Bar - Always visible at bottom */}
+        <div className="sticky bottom-0 z-40">
+          <CacheStatusBar
+            totalRepos={cacheTotals.repos}
+            totalFiles={cacheTotals.files}
+            totalSize={cacheTotals.size}
+            formatStorageSize={formatStorageSize}
+            onViewCache={() => {
+              // Switch to Local Cache tab (index 3)
+              const tabButtons = document.querySelectorAll('[role="tab"]');
+              if (tabButtons[3]) tabButtons[3].click();
+            }}
+            onClearAll={handleClearAllCache}
+            isLoading={cacheLoading}
+          />
+        </div>
       </div>
     </AppLayout>
   );

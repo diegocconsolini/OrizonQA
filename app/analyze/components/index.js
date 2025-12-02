@@ -11,3 +11,5 @@ export { default as BranchSelector } from './BranchSelector';
 export { default as PrivacyNotice, PrivacyBadge } from './PrivacyNotice';
 export { default as GitInputSection } from './GitInputSection';
 export { default as CodeEditor, MultiFileEditor } from './CodeEditor';
+export { default as LocalCachePanel } from './LocalCachePanel';
+export { default as CacheStatusBar } from './CacheStatusBar';
