@@ -174,7 +174,7 @@ NEXTAUTH_URL=http://localhost:3033
 NEXTAUTH_SECRET=VgP7pvQVZYkoA9kNlOZtu4ydYxot4l5Pf4G0g5pfowk=
 
 # Email (Resend)
-RESEND_API_KEY=re_ckZTfwEH_FpsWtnqwDYRRWS9NhmvjH3Wd
+RESEND_API_KEY=re_xxxxxxxxxxxx
 
 # Encryption
 ENCRYPTION_KEY=443d8520487233d0e14c894a5c8fd0ae
