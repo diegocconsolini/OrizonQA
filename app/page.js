@@ -140,18 +140,7 @@ export default function LandingPage() {
 
   return (
     <div ref={containerRef} className="min-h-screen bg-bg-dark relative">
-      {/* VIDEO BACKGROUND - Persists across transitions */}
-      <div className="fixed inset-0 z-0 overflow-hidden">
-        <video
-          autoPlay
-          muted
-          playsInline
-          className="absolute inset-0 w-full h-full object-cover opacity-30"
-        >
-          <source src="/videos/event-horizon.mp4" type="video/mp4" />
-        </video>
-        <div className="absolute inset-0 bg-bg-dark/60" />
-      </div>
+      {/* VIDEO BACKGROUND is now in providers.js - persists across page transitions */}
 
       {/* NAVBAR */}
       <nav ref={navRef} className="fixed top-0 left-0 right-0 z-50 backdrop-blur-md bg-bg-dark/80 border-b border-white/10">

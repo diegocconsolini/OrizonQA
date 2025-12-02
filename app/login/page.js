@@ -265,18 +265,7 @@ export default function LoginPage() {
   if (status === 'loading') {
     return (
       <div className="min-h-screen bg-bg-dark relative">
-        {/* VIDEO BACKGROUND */}
-        <div className="fixed inset-0 z-0 overflow-hidden">
-          <video
-            autoPlay
-            muted
-            playsInline
-            className="absolute inset-0 w-full h-full object-cover opacity-30"
-          >
-            <source src="/videos/event-horizon.mp4" type="video/mp4" />
-          </video>
-          <div className="absolute inset-0 bg-bg-dark/60" />
-        </div>
+        {/* VIDEO BACKGROUND is in providers.js - persists across page transitions */}
 
         <div className="relative z-10 min-h-screen flex">
           {/* Left Side Skeleton */}
@@ -323,19 +312,7 @@ export default function LoginPage() {
 
   return (
     <div ref={containerRef} className="min-h-screen bg-bg-dark relative">
-      {/* VIDEO BACKGROUND - Same as landing page for continuity */}
-      <div className="fixed inset-0 z-0 overflow-hidden">
-        <video
-          autoPlay
-          muted
-          loop
-          playsInline
-          className="absolute inset-0 w-full h-full object-cover opacity-30"
-        >
-          <source src="/videos/event-horizon.mp4" type="video/mp4" />
-        </video>
-        <div className="absolute inset-0 bg-bg-dark/60" />
-      </div>
+      {/* VIDEO BACKGROUND is in providers.js - persists across page transitions */}
 
       <div className="relative z-10 min-h-screen flex">
         {/* Left Side - Brand Content */}
