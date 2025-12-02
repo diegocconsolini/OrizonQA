@@ -305,39 +305,52 @@ export default function TestCaseDetailPage() {
             </div>
 
             {/* Test Steps */}
-            {testCase.steps && testCase.steps.length > 0 && (
+            {testCase.steps && (
               <div className="bg-slate-800 border border-slate-700 rounded-lg p-6">
                 <h2 className="text-lg font-semibold text-white mb-4">Test Steps</h2>
-                <div className="space-y-4">
-                  {testCase.steps.map((step, index) => (
-                    <div key={index} className="p-4 bg-slate-700/50 rounded-lg">
-                      <div className="flex items-start gap-3">
+                <div className="space-y-3">
+                  {typeof testCase.steps === 'string' ? (
+                    // Parse string steps (e.g., "1. Step one\n2. Step two")
+                    testCase.steps.split('\n').filter(s => s.trim()).map((step, index) => (
+                      <div key={index} className="flex items-start gap-3">
                         <div className="flex-shrink-0 w-6 h-6 bg-cyan-500/20 text-cyan-400 rounded-full flex items-center justify-center text-xs font-semibold">
                           {index + 1}
                         </div>
-                        <div className="flex-1 space-y-2">
-                          {step.step && (
-                            <div>
-                              <p className="text-xs text-slate-400 mb-1">Action</p>
-                              <p className="text-white">{step.step}</p>
-                            </div>
-                          )}
-                          {step.expected && (
-                            <div>
-                              <p className="text-xs text-slate-400 mb-1">Expected Result</p>
-                              <p className="text-green-400">{step.expected}</p>
-                            </div>
-                          )}
-                          {step.data && (
-                            <div>
-                              <p className="text-xs text-slate-400 mb-1">Test Data</p>
-                              <p className="text-slate-300 font-mono text-sm">{step.data}</p>
-                            </div>
-                          )}
+                        <p className="text-white flex-1">{step.replace(/^\d+\.\s*/, '')}</p>
+                      </div>
+                    ))
+                  ) : Array.isArray(testCase.steps) ? (
+                    // Handle array of step objects
+                    testCase.steps.map((step, index) => (
+                      <div key={index} className="p-4 bg-slate-700/50 rounded-lg">
+                        <div className="flex items-start gap-3">
+                          <div className="flex-shrink-0 w-6 h-6 bg-cyan-500/20 text-cyan-400 rounded-full flex items-center justify-center text-xs font-semibold">
+                            {index + 1}
+                          </div>
+                          <div className="flex-1 space-y-2">
+                            {step.step && (
+                              <div>
+                                <p className="text-xs text-slate-400 mb-1">Action</p>
+                                <p className="text-white">{step.step}</p>
+                              </div>
+                            )}
+                            {step.expected && (
+                              <div>
+                                <p className="text-xs text-slate-400 mb-1">Expected Result</p>
+                                <p className="text-green-400">{step.expected}</p>
+                              </div>
+                            )}
+                            {step.data && (
+                              <div>
+                                <p className="text-xs text-slate-400 mb-1">Test Data</p>
+                                <p className="text-slate-300 font-mono text-sm">{step.data}</p>
+                              </div>
+                            )}
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  ))}
+                    ))
+                  ) : null}
                 </div>
               </div>
             )}
