@@ -164,21 +164,21 @@ export default function SettingsPage() {
           )}
 
           {/* Tabbed Interface */}
-          <Tabs defaultValue={0} className="mb-6">
+          <Tabs defaultValue="api-keys" className="mb-6">
             <TabList>
-              <TabButton>
+              <TabButton value="api-keys">
                 <Key className="w-4 h-4 mr-2" />
                 API Keys
               </TabButton>
-              <TabButton>
+              <TabButton value="github">
                 <Github className="w-4 h-4 mr-2" />
                 GitHub
               </TabButton>
-              <TabButton>
+              <TabButton value="usage">
                 <BarChart3 className="w-4 h-4 mr-2" />
                 Usage Stats
               </TabButton>
-              <TabButton>
+              <TabButton value="account">
                 <User className="w-4 h-4 mr-2" />
                 Account
               </TabButton>
@@ -186,7 +186,7 @@ export default function SettingsPage() {
 
             <TabPanels>
               {/* API Keys Tab */}
-              <TabPanel>
+              <TabPanel value="api-keys">
                 <div className="space-y-6">
                   {/* Claude API Key */}
                   <Card className="p-6">
@@ -280,12 +280,12 @@ export default function SettingsPage() {
               </TabPanel>
 
               {/* GitHub Tab */}
-              <TabPanel>
+              <TabPanel value="github">
                 <GitHubConnectionSection />
               </TabPanel>
 
               {/* Usage Stats Tab */}
-              <TabPanel>
+              <TabPanel value="usage">
                 <div className="space-y-6">
                   {/* Stats Overview */}
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -338,7 +338,7 @@ export default function SettingsPage() {
               </TabPanel>
 
               {/* Account Tab */}
-              <TabPanel>
+              <TabPanel value="account">
                 <div className="space-y-6">
                   <Card className="p-6">
                     <div className="flex items-start gap-3 mb-4">
