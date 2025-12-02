@@ -168,24 +168,35 @@ export default function useRepositories() {
 
   /**
    * Fetch file tree for a repository
+   * Uses OAuth connection for private repos, public API for public repos
    */
   const fetchFileTree = useCallback(async (owner, name, branch = 'main') => {
     try {
       setLoadingFiles(true);
       setError(null);
 
-      // Fetch tree from GitHub API
-      const response = await fetch(
-        `https://api.github.com/repos/${owner}/${name}/git/trees/${branch}?recursive=1`,
-        {
-          headers: {
-            'Accept': 'application/vnd.github+json'
+      let response;
+
+      // Try to use authenticated API via our backend if we have a connection
+      if (connection?.id) {
+        response = await fetch(
+          `/api/oauth/github/tree?connectionId=${connection.id}&owner=${owner}&repo=${name}&branch=${branch}`
+        );
+      } else {
+        // Fallback to public GitHub API (only works for public repos)
+        response = await fetch(
+          `https://api.github.com/repos/${owner}/${name}/git/trees/${branch}?recursive=1`,
+          {
+            headers: {
+              'Accept': 'application/vnd.github+json'
+            }
           }
-        }
-      );
+        );
+      }
 
       if (!response.ok) {
-        throw new Error('Failed to fetch repository file tree');
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || 'Failed to fetch repository file tree');
       }
 
       const data = await response.json();
@@ -221,7 +232,7 @@ export default function useRepositories() {
     } finally {
       setLoadingFiles(false);
     }
-  }, []);
+  }, [connection]);
 
   /**
    * Fetch file contents for selected files
