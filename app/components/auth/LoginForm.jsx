@@ -5,7 +5,7 @@ import { signIn } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import Button from '../ui/Button.jsx';
 import Input from '../ui/Input.jsx';
-import { Mail, Lock, Github } from 'lucide-react';
+import { Mail, Lock, Github, Shield, AlertTriangle } from 'lucide-react';
 
 /**
  * LoginForm Component
@@ -42,6 +42,7 @@ export default function LoginForm() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [fieldErrors, setFieldErrors] = useState({});
+  const [showRepoConsentModal, setShowRepoConsentModal] = useState(false);
 
   // Handle input changes
   const handleChange = (e) => {
@@ -120,7 +121,7 @@ export default function LoginForm() {
     }
   };
 
-  // Handle GitHub OAuth
+  // Handle GitHub OAuth (basic access - public info only)
   const handleGitHubSignIn = async () => {
     try {
       await signIn('github', {

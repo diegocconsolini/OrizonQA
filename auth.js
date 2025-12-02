@@ -36,9 +36,10 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     GitHub({
       clientId: process.env.GITHUB_CLIENT_ID,
       clientSecret: process.env.GITHUB_CLIENT_SECRET,
+      // Default: Only request basic user info (no repo access)
       authorization: {
         params: {
-          scope: 'read:user user:email repo', // Added 'repo' scope for private repository access
+          scope: 'read:user user:email',
         },
       },
       profile(profile) {
