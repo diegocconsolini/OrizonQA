@@ -119,13 +119,7 @@ export async function PUT(request, context) {
 
     const body = await request.json();
 
-    // Add updated_by to updates
-    const updates = {
-      ...body,
-      updated_by: session.user.id
-    };
-
-    const testCase = await updateTestCase(testId, updates);
+    const testCase = await updateTestCase(testId, session.user.id, body);
 
     if (!testCase) {
       return NextResponse.json(
