@@ -1177,31 +1177,91 @@ CREATE TABLE analysis_comparisons (
 
 ### Key Findings from Research
 
-1. **Templates are Critical**: Every successful tool has a template/example gallery
-2. **Onboarding Matters**: First 60 seconds determine adoption
-3. **Visual Feedback**: Users expect rich, formatted results (not plain text)
-4. **Progressive Disclosure**: Simple mode first, advanced mode optional
-5. **Integration > Standalone**: Tools that integrate win over isolated tools
+1. **🌟 Git Integration is Our Core Differentiator**: We have complete OAuth infrastructure
+2. **Templates are Critical**: Every successful tool has a template/example gallery
+3. **Onboarding Matters**: First 60 seconds determine adoption
+4. **Visual Feedback**: Users expect rich, formatted results (not plain text)
+5. **Progressive Disclosure**: Simple mode first, advanced mode optional
+6. **Integration > Standalone**: Tools that integrate win over isolated tools
 
-### Updated Priority Ranking
+---
+
+## 🌟 CRITICAL UPDATE: Git Integration as Core Feature
+
+### Current Git Infrastructure (Already Built)
+
+We have a **complete GitHub OAuth infrastructure** that most competitors lack:
+
+| Component | Status | File |
+|-----------|--------|------|
+| GitHub OAuth Adapter | ✅ Complete | `/lib/oauth/adapters/GitHubAdapter.js` |
+| OAuth Flow (connect/callback) | ✅ Complete | `/api/oauth/github/connect/route.js` |
+| Token Encryption | ✅ Complete | `/lib/oauth/encryption.js` |
+| Repository Listing | ✅ Complete | `/api/oauth/github/repositories/route.js` |
+| File Content Access | ✅ Complete | `GitHubAdapter.getFileContent()` |
+| Branch Selection | ✅ Complete | `useGitHubFetch.js` |
+| Private Repo Support | ✅ Complete | Via OAuth `repo` scope |
+| Token Revocation | ✅ Complete | `/api/oauth/github/revoke/route.js` |
+
+### Git Features to Prioritize
+
+**Phase 1 (Add to existing plan):**
+- Enhanced repository browser (visual list, search, favorites)
+- File/folder tree picker with multi-select
+- Improved branch selector with commit info
+
+**Phase 2 (New priority):**
+- Commit-linked analysis (results tied to specific SHA)
+- PR analysis mode (analyze changed files only)
+- PR comment posting (auto-suggest tests)
+
+**Phase 3 (Future):**
+- Scheduled/continuous analysis
+- GitHub Action for CI/CD
+- GitLab/Bitbucket support
+
+### Why Git Integration Wins
+
+Most competitors only support:
+- URL-based public repo access (limited)
+- No private repository access
+- No file selection (analyze everything or nothing)
+- No PR workflow integration
+
+**ORIZON offers:**
+- OAuth-based seamless authentication
+- Private AND public repo access
+- Visual file/folder picker (selective analysis)
+- Branch and commit selection
+- PR analysis with auto-comments
+- Repository-first UX (not URL-first)
+
+---
+
+### Updated Priority Ranking (Git-First)
 
 **Phase 1 (Week 1) - 🔴 CRITICAL:**
 - Route restructure
+- **🆕 Enhanced Git repository browser**
+- **🆕 Visual file/folder picker**
 - Onboarding wizard
 - Sample analysis
-- Code editor
+- Monaco code editor
 - Config presets
 
 **Phase 2 (Week 2) - 🔴 CRITICAL:**
 - Template gallery (15 templates)
 - Template categories
 - Search and filter
+- **🆕 Commit-linked analysis results**
 
 **Phase 3 (Week 3) - 🟡 HIGH:**
 - Rich results viewer
 - Export options
 - Coverage heatmap
 - Compare mode
+- **🆕 PR analysis mode**
+- **🆕 PR comment posting**
 
 **Phase 4 (Week 4) - 🟡 HIGH:**
 - Explain mode
@@ -1213,11 +1273,14 @@ CREATE TABLE analysis_comparisons (
 - Token analytics
 - Cost calculator
 
-**Phase 6 (Week 6+) - 🔵 LOW:**
+**Phase 6 (Week 6+) - 🔵 PLANNED:**
 - Projects integration
+- **🆕 GitHub Action**
+- **🆕 Scheduled analysis**
 - CI/CD webhooks
 - API access
 - Team features
+- **🆕 GitLab/Bitbucket support**
 
 ### Final Timeline
 
