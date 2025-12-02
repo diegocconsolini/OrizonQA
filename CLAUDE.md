@@ -54,34 +54,42 @@ docker-compose down
 
 **Note**: Local development requires Docker for PostgreSQL and Redis. See `DATABASE.md` for full setup instructions.
 
-## Git Auto-Commit & Commit Strategy
+## ⚠️ Git Auto-Commit Behavior (READ THIS FIRST)
 
-**IMPORTANT**: This repository has automatic git commits enabled as a safety net, but meaningful commit messages are still expected.
+**CRITICAL**: This repository has AUTOMATIC git commits enabled. Before making any commit:
+
+```bash
+# ALWAYS check status first
+git status
+git log --oneline -5
+```
 
 **Auto-commit behavior**:
-- Files are auto-committed periodically (messages like "Auto-commit: YYYY-MM-DD HH:MM:SS")
-- Use `git log --oneline -5` to check if changes were already auto-committed
-- If `git status` shows clean, changes are already committed
+- A background process auto-commits files periodically
+- Messages appear as "Auto-commit: YYYY-MM-DD HH:MM:SS"
+- If `git status` shows clean working tree, your changes were ALREADY auto-committed
+- **Do NOT create duplicate commits** - check first!
 
-**Best practice - Create meaningful commits**:
-- **Always prefer descriptive commit messages** over relying on auto-commits
-- Commit after completing a logical unit of work (feature, fix, refactor)
-- Write clear commit messages that explain WHAT changed and WHY
-- Examples of good commit messages:
-  - "Add RepositorySelector component with search and favorites"
-  - "Fix OAuth token refresh for expired GitHub connections"
-  - "Refactor IndexedDB layer to support branch caching"
+**Before committing**:
+1. Run `git status` - if clean, changes are already committed
+2. Run `git log --oneline -3` - see if auto-commit captured your changes
+3. Only create a new commit if there are unstaged/staged changes
 
-**When auto-commit is acceptable**:
-- Small work-in-progress saves during active development
-- Quick typo fixes or minor adjustments
-- When you'll squash commits later before PR
+**When to create manual commits**:
+- After completing a logical unit of work (feature, fix, refactor)
+- When you need a descriptive message for the change
+- Before pushing to remote
 
-**Workflow**:
-1. Make changes
-2. Check `git status` - if changes are staged/unstaged, create a proper commit
-3. If already auto-committed but message is important, use `git commit --amend` to improve the message (only if not pushed)
-4. Push with `git push` when ready
+**Good commit messages**:
+- "Add RepositorySelector component with search and favorites"
+- "Fix OAuth token refresh for expired GitHub connections"
+- "Refactor IndexedDB layer to support branch caching"
+
+**If changes were auto-committed but need better message**:
+```bash
+# Only if NOT pushed yet:
+git commit --amend -m "Better descriptive message"
+```
 
 ## Architecture
 
@@ -192,19 +200,28 @@ app/
 - Max 50 files from GitHub repositories
 - Displays files in an interactive tree structure with expand/collapse
 
-### API Key Handling
+### API Key & AI Configuration
+
+**IMPORTANT**: AI provider settings are managed in TWO places:
+1. **Settings Page (`/settings`)** - For saving encrypted API keys (recommended)
+2. **Analyze Page (`/analyze`) Configure tab** - For per-session configuration
 
 The application supports **two methods** for API keys:
 1. **Saved in Settings** (Recommended):
+   - Navigate to `/settings` → Integrations tab
    - Keys encrypted with AES-256-GCM before database storage
    - Only decrypted when needed for analysis
-   - Auto-loaded in dashboard for convenience
+   - Auto-loaded in Analyze page for convenience
    - User can update/delete anytime
-2. **Per-Request Input**:
+2. **Per-Session Input** (on Analyze page):
    - Keys held only in React state during the session
    - Sent directly to backend, which forwards to Anthropic
    - No persistence, logging, or server-side storage
    - User-provided keys are used for single requests only
+
+**AI Providers supported**:
+- **Claude AI** (Anthropic) - Cloud-based, requires API key
+- **LM Studio** - Local LLMs, no API key needed, connects to local server
 
 ## Important Patterns
 
