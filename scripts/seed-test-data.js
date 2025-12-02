@@ -332,7 +332,8 @@ async function createTestCases(projectId, userId, count) {
 
   for (let i = 0; i < count; i++) {
     const type = randomItem(testTypes);
-    const test = await createTestCase(projectId, userId, {
+    const test = await createTestCase({
+      project_id: projectId,
       key: `TC-${i + 1}`,
       title: generateTestTitle(type, i),
       description: `Test steps for test case ${i + 1}`,
@@ -343,6 +344,7 @@ async function createTestCases(projectId, userId, count) {
       steps: '1. Navigate to page\n2. Enter data\n3. Submit form\n4. Verify result',
       expected_result: 'Operation completes successfully',
       estimated_time: Math.floor(Math.random() * 30) + 5,
+      created_by: userId,
     });
 
     tests.push(test);
@@ -396,10 +398,11 @@ async function seedTestData() {
       console.log(`=� Creating project: ${template.name} (${template.key})`);
 
       // Create project
-      const project = await createProject(userId, {
+      const project = await createProject({
         key: template.key,
         name: template.name,
         description: template.description,
+        owner_id: userId,
       });
       totalProjects++;
 
