@@ -54,21 +54,34 @@ docker-compose down
 
 **Note**: Local development requires Docker for PostgreSQL and Redis. See `DATABASE.md` for full setup instructions.
 
-## Git Auto-Commit
+## Git Auto-Commit & Commit Strategy
 
-**IMPORTANT**: This repository has automatic git commits enabled. Files are auto-committed periodically without manual intervention.
+**IMPORTANT**: This repository has automatic git commits enabled as a safety net, but meaningful commit messages are still expected.
 
-**Workflow optimization**:
-- You do NOT need to prepare commits manually before checking status
-- Check `git log --oneline -5` to see if your changes were already auto-committed
-- Use `git status` to verify - if clean, changes are already committed
-- Focus on pushing when ready rather than committing
-- Auto-commits appear with messages like "Auto-commit: YYYY-MM-DD HH:MM:SS"
+**Auto-commit behavior**:
+- Files are auto-committed periodically (messages like "Auto-commit: YYYY-MM-DD HH:MM:SS")
+- Use `git log --oneline -5` to check if changes were already auto-committed
+- If `git status` shows clean, changes are already committed
 
-**When to manually commit**:
-- When you want a specific, descriptive commit message
-- Before creating a PR (to have meaningful commit history)
-- When explicitly asked by the user
+**Best practice - Create meaningful commits**:
+- **Always prefer descriptive commit messages** over relying on auto-commits
+- Commit after completing a logical unit of work (feature, fix, refactor)
+- Write clear commit messages that explain WHAT changed and WHY
+- Examples of good commit messages:
+  - "Add RepositorySelector component with search and favorites"
+  - "Fix OAuth token refresh for expired GitHub connections"
+  - "Refactor IndexedDB layer to support branch caching"
+
+**When auto-commit is acceptable**:
+- Small work-in-progress saves during active development
+- Quick typo fixes or minor adjustments
+- When you'll squash commits later before PR
+
+**Workflow**:
+1. Make changes
+2. Check `git status` - if changes are staged/unstaged, create a proper commit
+3. If already auto-committed but message is important, use `git commit --amend` to improve the message (only if not pushed)
+4. Push with `git push` when ready
 
 ## Architecture
 
