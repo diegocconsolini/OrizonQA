@@ -17,7 +17,8 @@ import Button from '@/app/components/ui/Button';
 import Card from '@/app/components/ui/Card';
 import { Tabs, TabList, TabButton, TabPanels, TabPanel } from '@/app/components/ui/Tabs';
 import AppLayout from '@/app/components/layout/AppLayout';
-import { Settings as SettingsIcon, Key, Server, Save, Loader2, Check, Eye, EyeOff, User, BarChart3, Zap, Calendar } from 'lucide-react';
+import { Settings as SettingsIcon, Key, Server, Save, Loader2, Check, Eye, EyeOff, User, BarChart3, Zap, Calendar, Github } from 'lucide-react';
+import GitHubConnectionSection from '@/app/components/settings/GitHubConnectionSection';
 
 export default function SettingsPage() {
   const { data: session, status } = useSession();
@@ -168,6 +169,10 @@ export default function SettingsPage() {
               <TabButton>
                 <Key className="w-4 h-4 mr-2" />
                 API Keys
+              </TabButton>
+              <TabButton>
+                <Github className="w-4 h-4 mr-2" />
+                GitHub
               </TabButton>
               <TabButton>
                 <BarChart3 className="w-4 h-4 mr-2" />
