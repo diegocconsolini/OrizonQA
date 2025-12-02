@@ -56,9 +56,9 @@ export default function ProjectsPage() {
 
   return (
     <AppLayout>
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+      <div className="min-h-screen bg-bg-dark">
         {/* Header */}
-        <div className="border-b border-slate-700 bg-slate-800/50 backdrop-blur-sm">
+        <div className="border-b border-white/10 bg-surface-dark/50 backdrop-blur-sm">
           <div className="px-6 py-6">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
@@ -67,7 +67,7 @@ export default function ProjectsPage() {
                 </div>
                 <div>
                   <h1 className="text-2xl font-bold text-white">Projects</h1>
-                  <p className="text-sm text-slate-400">
+                  <p className="text-sm text-text-secondary-dark">
                     Manage your QA test projects
                   </p>
                 </div>
@@ -88,13 +88,13 @@ export default function ProjectsPage() {
           {/* Search Bar */}
           <div className="mb-6">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-text-secondary-dark" />
               <input
                 type="text"
                 placeholder="Search projects by name, key, or description..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:border-cyan-500 transition-colors"
+                className="w-full pl-10 pr-4 py-3 bg-surface-dark border border-white/10 rounded-lg text-white placeholder-text-muted-dark focus:outline-none focus:border-primary transition-colors"
               />
             </div>
           </div>
@@ -103,7 +103,7 @@ export default function ProjectsPage() {
           {loading && (
             <div className="text-center py-12">
               <div className="inline-block w-8 h-8 border-4 border-cyan-500 border-t-transparent rounded-full animate-spin"></div>
-              <p className="text-slate-400 mt-4">Loading projects...</p>
+              <p className="text-text-secondary-dark mt-4">Loading projects...</p>
             </div>
           )}
 
@@ -123,11 +123,11 @@ export default function ProjectsPage() {
           {/* Empty State */}
           {!loading && !error && filteredProjects.length === 0 && searchTerm === '' && (
             <div className="text-center py-12">
-              <div className="w-16 h-16 bg-slate-800 rounded-lg flex items-center justify-center mx-auto mb-4">
-                <FolderKanban className="w-8 h-8 text-slate-600" />
+              <div className="w-16 h-16 bg-surface-dark rounded-lg flex items-center justify-center mx-auto mb-4">
+                <FolderKanban className="w-8 h-8 text-text-muted-dark" />
               </div>
               <h3 className="text-xl font-semibold text-white mb-2">No projects yet</h3>
-              <p className="text-slate-400 mb-6">
+              <p className="text-text-secondary-dark mb-6">
                 Create your first project to start organizing your test cases
               </p>
               <Link
@@ -143,7 +143,7 @@ export default function ProjectsPage() {
           {/* No Search Results */}
           {!loading && !error && filteredProjects.length === 0 && searchTerm !== '' && (
             <div className="text-center py-12">
-              <p className="text-slate-400 mb-2">
+              <p className="text-text-secondary-dark mb-2">
                 No projects found matching "{searchTerm}"
               </p>
               <button
@@ -158,7 +158,7 @@ export default function ProjectsPage() {
           {/* Projects Grid */}
           {!loading && !error && filteredProjects.length > 0 && (
             <>
-              <div className="mb-4 text-sm text-slate-400">
+              <div className="mb-4 text-sm text-text-secondary-dark">
                 {filteredProjects.length} {filteredProjects.length === 1 ? 'project' : 'projects'}
                 {searchTerm && ` matching "${searchTerm}"`}
               </div>
