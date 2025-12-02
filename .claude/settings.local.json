@@ -31,7 +31,8 @@
       "Bash(vercel env:*)",
       "WebSearch",
       "WebFetch(domain:authjs.dev)",
-      "WebFetch(domain:github.com)"
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:www.saasframe.io)"
     ],
     "deny": [],
     "ask": []
