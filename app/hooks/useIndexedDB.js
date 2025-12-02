@@ -211,6 +211,63 @@ export default function useIndexedDB(userId = 'anonymous') {
   }, [isAvailable]);
 
   /**
+   * Get list of cached file paths for a repository
+   */
+  const getCachedFilePaths = useCallback(async (owner, name) => {
+    if (!isAvailable) return [];
+
+    try {
+      const repoId = `${owner}_${name}`;
+      const files = await getRepositoryFiles(repoId);
+      return files ? files.map(f => f.path) : [];
+    } catch (err) {
+      return [];
+    }
+  }, [isAvailable]);
+
+  /**
+   * Get detailed cache manifest for all repos
+   * Returns full info for cache browser
+   */
+  const getCacheManifest = useCallback(async () => {
+    if (!isAvailable) return [];
+
+    try {
+      const repos = await getUserRepositories(userId);
+      const manifest = await Promise.all(
+        repos.map(async (repo) => {
+          const repoId = `${repo.owner}_${repo.name}`;
+          const files = await getRepositoryFiles(repoId);
+          const branches = await getBranches(repoId);
+
+          // Calculate total size
+          const totalSize = files?.reduce((sum, f) => sum + (f.content?.length || 0), 0) || 0;
+
+          return {
+            ...repo,
+            repoId,
+            fileCount: files?.length || 0,
+            totalSize,
+            branches,
+            files: files?.map(f => ({
+              path: f.path,
+              name: f.path.split('/').pop(),
+              size: f.content?.length || 0,
+              branch: f.branch,
+              cachedAt: f.cachedAt
+            })) || []
+          };
+        })
+      );
+
+      return manifest;
+    } catch (err) {
+      console.error('Failed to get cache manifest:', err);
+      return [];
+    }
+  }, [isAvailable, userId]);
+
+  /**
    * Remove a repository from cache
    */
   const removeFromCache = useCallback(async (owner, name) => {
@@ -298,6 +355,8 @@ export default function useIndexedDB(userId = 'anonymous') {
     isRepoCached,
     cacheBranches,
     getCachedBranches,
+    getCachedFilePaths,
+    getCacheManifest,
     removeFromCache,
     clearCache,
     cleanupCache,

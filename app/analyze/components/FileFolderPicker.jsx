@@ -38,7 +38,11 @@ import {
   Wand2,
   Filter,
   X,
-  RefreshCw
+  RefreshCw,
+  Download,
+  HardDrive,
+  CheckCircle2,
+  Loader2
 } from 'lucide-react';
 
 export default function FileFolderPicker({
@@ -48,6 +52,9 @@ export default function FileFolderPicker({
   onSelectAllCodeFiles,
   onSelectByPattern,
   onClearSelection,
+  onSaveToCache,
+  isSavingCache = false,
+  cachedFiles = [],
   loading = false,
   selectedRepo = null
 }) {
@@ -276,6 +283,14 @@ export default function FileFolderPicker({
             {node.name}
           </span>
 
+          {/* Cache indicator */}
+          {!isFolder && cachedFiles.includes(node.path) && (
+            <span className="flex items-center gap-1 px-1.5 py-0.5 bg-green-500/10 rounded text-xs text-green-400">
+              <CheckCircle2 className="w-3 h-3" />
+              cached
+            </span>
+          )}
+
           {/* File size */}
           {!isFolder && node.size > 0 && (
             <span className="text-xs text-text-secondary-dark/60">
@@ -418,18 +433,57 @@ export default function FileFolderPicker({
         )}
       </div>
 
-      {/* Footer */}
+      {/* Footer - Clear Action Area */}
       <div className="px-4 py-3 border-t border-white/10 bg-bg-dark/50">
-        <div className="flex items-center justify-between">
-          <p className="text-xs text-text-secondary-dark">
-            {selectedFiles.length} of {totalFiles} files selected
-          </p>
-          {selectedFiles.length > 0 && (
-            <p className="text-xs text-primary font-medium">
-              Ready for analysis
+        {selectedFiles.length === 0 ? (
+          // No files selected - show hint
+          <div className="text-center py-2">
+            <p className="text-sm text-text-secondary-dark">
+              Select files above to save them locally or analyze
             </p>
-          )}
-        </div>
+          </div>
+        ) : (
+          // Files selected - show clear action
+          <div className="space-y-3">
+            {/* Stats row */}
+            <div className="flex items-center justify-between text-xs">
+              <span className="text-text-secondary-dark">
+                {selectedFiles.length} of {totalFiles} files selected
+              </span>
+              <span className="text-text-secondary-dark">
+                {cachedFiles.filter(f => selectedFiles.includes(f)).length} already cached
+              </span>
+            </div>
+
+            {/* Primary Action Button */}
+            <button
+              onClick={onSaveToCache}
+              disabled={isSavingCache || selectedFiles.length === 0}
+              className="w-full py-3 px-4 bg-primary text-bg-dark font-semibold rounded-xl
+                       hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed
+                       transition-all duration-200 flex items-center justify-center gap-2
+                       shadow-lg shadow-primary/20"
+            >
+              {isSavingCache ? (
+                <>
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                  <span>Saving to Local Cache...</span>
+                </>
+              ) : (
+                <>
+                  <Download className="w-5 h-5" />
+                  <span>Save {selectedFiles.length} Files to Local Cache</span>
+                </>
+              )}
+            </button>
+
+            {/* Secondary info */}
+            <p className="text-xs text-text-secondary-dark text-center flex items-center justify-center gap-1.5">
+              <HardDrive className="w-3.5 h-3.5" />
+              Files are stored locally on your device - never uploaded
+            </p>
+          </div>
+        )}
       </div>
     </div>
   );
