@@ -54,6 +54,22 @@ docker-compose down
 
 **Note**: Local development requires Docker for PostgreSQL and Redis. See `DATABASE.md` for full setup instructions.
 
+## Git Auto-Commit
+
+**IMPORTANT**: This repository has automatic git commits enabled. Files are auto-committed periodically without manual intervention.
+
+**Workflow optimization**:
+- You do NOT need to prepare commits manually before checking status
+- Check `git log --oneline -5` to see if your changes were already auto-committed
+- Use `git status` to verify - if clean, changes are already committed
+- Focus on pushing when ready rather than committing
+- Auto-commits appear with messages like "Auto-commit: YYYY-MM-DD HH:MM:SS"
+
+**When to manually commit**:
+- When you want a specific, descriptive commit message
+- Before creating a PR (to have meaningful commit history)
+- When explicitly asked by the user
+
 ## Architecture
 
 ### Application Structure
