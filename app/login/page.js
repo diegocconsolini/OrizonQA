@@ -1,27 +1,42 @@
 /**
- * Login Page
+ * Login Page with GSAP Smooth Transitions
  *
- * Split-screen layout for user authentication:
- * - Left: Brand content with ORIZON logo and feature highlights
- * - Right: LoginForm component
- *
- * Design: Dark cosmic theme with purple/blue gradients
- * Responsive: Stacks on mobile devices
+ * Features:
+ * - Same video background as landing page for continuity
+ * - GSAP enter animations that mirror landing page exit
+ * - Smooth element reconstruction effect
  */
 
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
+import Link from 'next/link';
+import gsap from 'gsap';
 import LoginForm from '@/app/components/auth/LoginForm.jsx';
 import Logo from '@/app/components/ui/Logo.jsx';
-import { Check, Sparkles, GitBranch, FileCode, Zap, Shield } from 'lucide-react';
+import { usePageTransition } from '../contexts/PageTransitionContext';
+import { Check, Sparkles, GitBranch, FileCode, Zap, Shield, ArrowLeft } from 'lucide-react';
 
 export default function LoginPage() {
   const router = useRouter();
   const { data: session, status } = useSession();
+  const { endTransition } = usePageTransition();
   const [currentFeature, setCurrentFeature] = useState(0);
+  const [animationComplete, setAnimationComplete] = useState(false);
+
+  // Refs for GSAP animations
+  const containerRef = useRef(null);
+  const leftPanelRef = useRef(null);
+  const logoRef = useRef(null);
+  const headlineRef = useRef(null);
+  const subtitleRef = useRef(null);
+  const featuresRef = useRef(null);
+  const quoteRef = useRef(null);
+  const rightPanelRef = useRef(null);
+  const formCardRef = useRef(null);
+  const trustRef = useRef(null);
 
   // Rotating features for brand panel
   const features = [
@@ -52,13 +67,149 @@ export default function LoginPage() {
     }
   ];
 
-  // Rotate features every 4 seconds
+  // Rotate features every 4 seconds (only after animation complete)
   useEffect(() => {
+    if (!animationComplete) return;
+
     const interval = setInterval(() => {
       setCurrentFeature((prev) => (prev + 1) % features.length);
     }, 4000);
     return () => clearInterval(interval);
-  }, [features.length]);
+  }, [features.length, animationComplete]);
+
+  // GSAP entrance animation
+  useEffect(() => {
+    const fromLanding = sessionStorage.getItem('toLogin');
+
+    if (fromLanding) {
+      sessionStorage.removeItem('toLogin');
+      // Animate in from landing page transition
+      animateEnterFromLanding();
+    } else {
+      // Normal page load - quick fade in
+      animateNormalEnter();
+    }
+
+    endTransition();
+  }, [endTransition]);
+
+  function animateEnterFromLanding() {
+    // Set initial states (elements start hidden/positioned)
+    gsap.set([logoRef.current, headlineRef.current, subtitleRef.current, featuresRef.current, quoteRef.current], {
+      opacity: 0,
+      x: -50
+    });
+    gsap.set(formCardRef.current, {
+      opacity: 0,
+      x: 100,
+      scale: 0.95
+    });
+    gsap.set(trustRef.current, {
+      opacity: 0,
+      y: 20
+    });
+
+    const tl = gsap.timeline({
+      onComplete: () => setAnimationComplete(true)
+    });
+
+    // Stagger animate in login page elements
+    // Form card slides in from the right (main focus)
+    tl.to(formCardRef.current, {
+      opacity: 1,
+      x: 0,
+      scale: 1,
+      duration: 0.6,
+      ease: 'power3.out'
+    })
+    // Left panel elements animate in with stagger
+    .to(logoRef.current, {
+      opacity: 1,
+      x: 0,
+      duration: 0.4,
+      ease: 'power2.out'
+    }, '-=0.4')
+    .to(headlineRef.current, {
+      opacity: 1,
+      x: 0,
+      duration: 0.4,
+      ease: 'power2.out'
+    }, '-=0.3')
+    .to(subtitleRef.current, {
+      opacity: 1,
+      x: 0,
+      duration: 0.35,
+      ease: 'power2.out'
+    }, '-=0.25')
+    .to(featuresRef.current, {
+      opacity: 1,
+      x: 0,
+      duration: 0.4,
+      ease: 'power2.out'
+    }, '-=0.2')
+    .to(quoteRef.current, {
+      opacity: 1,
+      x: 0,
+      duration: 0.35,
+      ease: 'power2.out'
+    }, '-=0.2')
+    .to(trustRef.current, {
+      opacity: 1,
+      y: 0,
+      duration: 0.3,
+      ease: 'power2.out'
+    }, '-=0.2');
+  }
+
+  function animateNormalEnter() {
+    gsap.set([logoRef.current, headlineRef.current, subtitleRef.current, featuresRef.current, quoteRef.current, formCardRef.current, trustRef.current], {
+      opacity: 0
+    });
+
+    const tl = gsap.timeline({
+      onComplete: () => setAnimationComplete(true)
+    });
+
+    tl.to([formCardRef.current, logoRef.current, headlineRef.current, subtitleRef.current, featuresRef.current, quoteRef.current, trustRef.current], {
+      opacity: 1,
+      duration: 0.5,
+      stagger: 0.05,
+      ease: 'power2.out'
+    });
+  }
+
+  function handleBackClick(e) {
+    e.preventDefault();
+
+    const tl = gsap.timeline({
+      onComplete: () => {
+        sessionStorage.setItem('fromLogin', 'true');
+        router.push('/');
+      }
+    });
+
+    // Reverse animation - elements slide out
+    tl.to(formCardRef.current, {
+      opacity: 0,
+      x: 100,
+      scale: 0.95,
+      duration: 0.4,
+      ease: 'power2.in'
+    })
+    .to([quoteRef.current, featuresRef.current, subtitleRef.current, headlineRef.current, logoRef.current], {
+      opacity: 0,
+      x: -50,
+      duration: 0.3,
+      stagger: 0.05,
+      ease: 'power2.in'
+    }, '-=0.2')
+    .to(trustRef.current, {
+      opacity: 0,
+      y: 20,
+      duration: 0.2,
+      ease: 'power2.in'
+    }, '-=0.2');
+  }
 
   // Redirect authenticated users to dashboard
   useEffect(() => {
@@ -70,35 +221,51 @@ export default function LoginPage() {
   // Show loading state while checking auth with skeleton
   if (status === 'loading') {
     return (
-      <div className="min-h-screen bg-bg-dark flex">
-        {/* Left Side Skeleton */}
-        <div className="hidden lg:flex lg:w-[45%] relative overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-tl from-quantum via-bg-dark to-primary/20" />
-          <div className="absolute top-20 left-20 w-64 h-64 bg-primary/10 rounded-full blur-3xl animate-pulse" />
-          <div className="absolute bottom-20 right-20 w-96 h-96 bg-quantum/10 rounded-full blur-3xl animate-pulse" />
-
-          <div className="relative z-10 flex flex-col justify-center px-16 w-full space-y-8 animate-pulse">
-            <div className="h-12 w-48 bg-white/10 rounded" />
-            <div className="h-10 w-64 bg-white/5 rounded" />
-            <div className="h-6 w-80 bg-white/5 rounded" />
-            <div className="space-y-4 mt-8">
-              <div className="h-20 w-full bg-white/5 rounded" />
-              <div className="h-20 w-full bg-white/5 rounded" />
-              <div className="h-20 w-full bg-white/5 rounded" />
-            </div>
-          </div>
+      <div className="min-h-screen bg-bg-dark relative">
+        {/* VIDEO BACKGROUND */}
+        <div className="fixed inset-0 z-0 overflow-hidden">
+          <video
+            autoPlay
+            muted
+            loop
+            playsInline
+            className="absolute inset-0 w-full h-full object-cover opacity-30"
+          >
+            <source src="/videos/event-horizon.mp4" type="video/mp4" />
+          </video>
+          <div className="absolute inset-0 bg-bg-dark/60" />
         </div>
 
-        {/* Right Side Skeleton */}
-        <div className="w-full lg:w-[55%] flex items-center justify-center px-6 sm:px-12 lg:px-16 py-12">
-          <div className="w-full max-w-md">
-            <div className="bg-surface-dark rounded-2xl shadow-xl border border-white/10 p-8 sm:p-10 space-y-6 animate-pulse">
-              <div className="h-8 w-64 bg-white/10 rounded" />
-              <div className="h-4 w-48 bg-white/5 rounded" />
+        <div className="relative z-10 min-h-screen flex">
+          {/* Left Side Skeleton */}
+          <div className="hidden lg:flex lg:w-[45%] relative overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-tl from-quantum via-bg-dark to-primary/20" />
+            <div className="absolute top-20 left-20 w-64 h-64 bg-primary/10 rounded-full blur-3xl animate-pulse" />
+            <div className="absolute bottom-20 right-20 w-96 h-96 bg-quantum/10 rounded-full blur-3xl animate-pulse" />
+
+            <div className="relative z-10 flex flex-col justify-center px-16 w-full space-y-8 animate-pulse">
+              <div className="h-12 w-48 bg-white/10 rounded" />
+              <div className="h-10 w-64 bg-white/5 rounded" />
+              <div className="h-6 w-80 bg-white/5 rounded" />
               <div className="space-y-4 mt-8">
-                <div className="h-12 w-full bg-white/5 rounded" />
-                <div className="h-12 w-full bg-white/5 rounded" />
-                <div className="h-12 w-full bg-primary/20 rounded" />
+                <div className="h-20 w-full bg-white/5 rounded" />
+                <div className="h-20 w-full bg-white/5 rounded" />
+                <div className="h-20 w-full bg-white/5 rounded" />
+              </div>
+            </div>
+          </div>
+
+          {/* Right Side Skeleton */}
+          <div className="w-full lg:w-[55%] flex items-center justify-center px-6 sm:px-12 lg:px-16 py-12">
+            <div className="w-full max-w-md">
+              <div className="bg-surface-dark rounded-2xl shadow-xl border border-white/10 p-8 sm:p-10 space-y-6 animate-pulse">
+                <div className="h-8 w-64 bg-white/10 rounded" />
+                <div className="h-4 w-48 bg-white/5 rounded" />
+                <div className="space-y-4 mt-8">
+                  <div className="h-12 w-full bg-white/5 rounded" />
+                  <div className="h-12 w-full bg-white/5 rounded" />
+                  <div className="h-12 w-full bg-primary/20 rounded" />
+                </div>
               </div>
             </div>
           </div>
@@ -113,156 +280,149 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-bg-dark flex">
-      {/* Left Side - Brand Content */}
-      <div className="hidden lg:flex lg:w-[45%] relative overflow-hidden">
-        {/* Background Gradient with Animation */}
-        <div className="absolute inset-0 bg-gradient-to-tl from-quantum via-bg-dark to-primary/20 animate-gradient" />
-
-        {/* Animated Cosmic Elements */}
-        <div className="absolute top-20 left-20 w-64 h-64 bg-primary/10 rounded-full blur-3xl animate-float" />
-        <div className="absolute bottom-20 right-20 w-96 h-96 bg-quantum/10 rounded-full blur-3xl animate-float-delayed" />
-        <div className="absolute top-1/2 left-1/3 w-48 h-48 bg-accent/5 rounded-full blur-2xl animate-pulse-slow" />
-
-        {/* Content */}
-        <div className="relative z-10 flex flex-col justify-center px-16 w-full">
-          {/* Logo */}
-          <div className="mb-12">
-            <Logo variant="full" color="blue" size="xl" background="dark" />
-          </div>
-
-          {/* Headline */}
-          <h1 className="text-4xl font-bold text-white mb-6 font-primary">
-            Welcome back
-          </h1>
-
-          <p className="text-xl text-text-secondary-dark mb-12 font-secondary">
-            Continue your AI-powered QA journey
-          </p>
-
-          {/* Feature Highlights - Animated Rotation */}
-          <div className="space-y-5">
-            {features.map((feature, index) => (
-              <div
-                key={index}
-                className={`transition-all duration-700 ${
-                  index === currentFeature
-                    ? 'opacity-100 translate-x-0 scale-100'
-                    : index < currentFeature
-                    ? 'opacity-0 -translate-x-4 scale-95 absolute'
-                    : 'opacity-0 translate-x-4 scale-95 absolute'
-                }`}
-              >
-                <FeatureItem
-                  icon={feature.icon}
-                  text={feature.text}
-                  description={feature.description}
-                  highlighted={index === currentFeature}
-                />
-              </div>
-            ))}
-          </div>
-
-          {/* Feature Progress Indicators */}
-          <div className="mt-8 flex gap-2 justify-center">
-            {features.map((_, index) => (
-              <button
-                key={index}
-                onClick={() => setCurrentFeature(index)}
-                className={`h-1.5 rounded-full transition-all duration-300 ${
-                  index === currentFeature
-                    ? 'w-12 bg-primary'
-                    : 'w-6 bg-white/20 hover:bg-white/30'
-                }`}
-                aria-label={`Show feature ${index + 1}`}
-              />
-            ))}
-          </div>
-
-          {/* Decorative Quote */}
-          <div className="mt-16 p-6 bg-white/5 backdrop-blur-sm rounded-xl border border-primary/20">
-            <p className="text-text-secondary-dark italic font-secondary">
-              "ORIZON transformed how we approach QA. What used to take days now takes minutes."
-            </p>
-            <p className="text-primary text-sm mt-3 font-semibold">
-              - Development Team Lead
-            </p>
-          </div>
-        </div>
+    <div ref={containerRef} className="min-h-screen bg-bg-dark relative">
+      {/* VIDEO BACKGROUND - Same as landing page for continuity */}
+      <div className="fixed inset-0 z-0 overflow-hidden">
+        <video
+          autoPlay
+          muted
+          loop
+          playsInline
+          className="absolute inset-0 w-full h-full object-cover opacity-30"
+        >
+          <source src="/videos/event-horizon.mp4" type="video/mp4" />
+        </video>
+        <div className="absolute inset-0 bg-bg-dark/60" />
       </div>
 
-      {/* Right Side - Login Form */}
-      <div className="w-full lg:w-[55%] flex items-center justify-center px-6 sm:px-12 lg:px-16 py-12">
-        <div className="w-full max-w-md">
-          {/* Mobile Logo */}
-          <div className="lg:hidden mb-8 text-center">
-            <Logo variant="full" color="blue" size="lg" background="dark" className="mx-auto" />
-          </div>
+      <div className="relative z-10 min-h-screen flex">
+        {/* Left Side - Brand Content */}
+        <div ref={leftPanelRef} className="hidden lg:flex lg:w-[45%] relative overflow-hidden">
+          {/* Background Gradient with Animation */}
+          <div className="absolute inset-0 bg-gradient-to-tl from-quantum via-bg-dark to-primary/20 animate-gradient" />
 
-          {/* Form Card */}
-          <div className="bg-surface-dark rounded-2xl shadow-xl border border-white/10 p-8 sm:p-10">
-            <div className="mb-8">
-              <h2 className="text-3xl font-bold text-white mb-2 font-primary">
-                Log in to your account
-              </h2>
-              <p className="text-text-secondary-dark font-secondary">
-                Welcome back! Please enter your credentials
-              </p>
+          {/* Animated Cosmic Elements */}
+          <div className="absolute top-20 left-20 w-64 h-64 bg-primary/10 rounded-full blur-3xl animate-float" />
+          <div className="absolute bottom-20 right-20 w-96 h-96 bg-quantum/10 rounded-full blur-3xl animate-float-delayed" />
+          <div className="absolute top-1/2 left-1/3 w-48 h-48 bg-accent/5 rounded-full blur-2xl animate-pulse-slow" />
+
+          {/* Content */}
+          <div className="relative z-10 flex flex-col justify-center px-16 w-full">
+            {/* Logo */}
+            <div ref={logoRef} className="mb-12">
+              <button onClick={handleBackClick} className="group flex items-center gap-3 mb-6 text-text-secondary-dark hover:text-white transition-colors">
+                <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
+                <span className="text-sm">Back to home</span>
+              </button>
+              <Logo variant="full" color="blue" size="xl" background="dark" />
             </div>
 
-            <LoginForm />
+            {/* Headline */}
+            <h1 ref={headlineRef} className="text-4xl font-bold text-white mb-6 font-primary">
+              Welcome back
+            </h1>
 
-            {/* Sign Up Link */}
-            <div className="mt-6 text-center">
-              <p className="text-text-secondary-dark text-sm font-secondary">
-                Don't have an account?{' '}
-                <a
-                  href="/signup"
-                  className="text-primary hover:text-primary-hover font-semibold transition-colors"
-                >
-                  Sign up
-                </a>
-              </p>
-            </div>
-
-            {/* OAuth Placeholder (for future implementation) */}
-            {/* <div className="mt-8">
-              <div className="relative">
-                <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-white/10"></div>
-                </div>
-                <div className="relative flex justify-center text-sm">
-                  <span className="px-4 bg-surface-dark text-text-secondary-dark">
-                    Or continue with
-                  </span>
-                </div>
-              </div>
-
-              <div className="mt-6 grid grid-cols-2 gap-3">
-                <Button variant="ghost" size="md" className="w-full">
-                  <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24">
-                    GitHub icon SVG
-                  </svg>
-                  GitHub
-                </Button>
-                <Button variant="ghost" size="md" className="w-full">
-                  <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24">
-                    Google icon SVG
-                  </svg>
-                  Google
-                </Button>
-              </div>
-            </div> */}
-          </div>
-
-          {/* Trust Indicators */}
-          <div className="mt-8 text-center">
-            <p className="text-xs text-text-secondary-dark font-secondary">
-              Protected by industry-standard encryption.{' '}
-              <a href="/privacy" className="text-primary hover:underline">
-                Privacy Policy
-              </a>
+            <p ref={subtitleRef} className="text-xl text-text-secondary-dark mb-12 font-secondary">
+              Continue your AI-powered QA journey
             </p>
+
+            {/* Feature Highlights - Animated Rotation */}
+            <div ref={featuresRef} className="space-y-5">
+              {features.map((feature, index) => (
+                <div
+                  key={index}
+                  className={`transition-all duration-700 ${
+                    index === currentFeature
+                      ? 'opacity-100 translate-x-0 scale-100'
+                      : index < currentFeature
+                      ? 'opacity-0 -translate-x-4 scale-95 absolute'
+                      : 'opacity-0 translate-x-4 scale-95 absolute'
+                  }`}
+                >
+                  <FeatureItem
+                    icon={feature.icon}
+                    text={feature.text}
+                    description={feature.description}
+                    highlighted={index === currentFeature}
+                  />
+                </div>
+              ))}
+            </div>
+
+            {/* Feature Progress Indicators */}
+            <div className="mt-8 flex gap-2 justify-center">
+              {features.map((_, index) => (
+                <button
+                  key={index}
+                  onClick={() => setCurrentFeature(index)}
+                  className={`h-1.5 rounded-full transition-all duration-300 ${
+                    index === currentFeature
+                      ? 'w-12 bg-primary'
+                      : 'w-6 bg-white/20 hover:bg-white/30'
+                  }`}
+                  aria-label={`Show feature ${index + 1}`}
+                />
+              ))}
+            </div>
+
+            {/* Decorative Quote */}
+            <div ref={quoteRef} className="mt-16 p-6 bg-white/5 backdrop-blur-sm rounded-xl border border-primary/20">
+              <p className="text-text-secondary-dark italic font-secondary">
+                "ORIZON transformed how we approach QA. What used to take days now takes minutes."
+              </p>
+              <p className="text-primary text-sm mt-3 font-semibold">
+                - Development Team Lead
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Right Side - Login Form */}
+        <div ref={rightPanelRef} className="w-full lg:w-[55%] flex items-center justify-center px-6 sm:px-12 lg:px-16 py-12">
+          <div className="w-full max-w-md">
+            {/* Mobile Logo */}
+            <div className="lg:hidden mb-8 text-center">
+              <Link href="/" className="inline-block">
+                <Logo variant="full" color="blue" size="lg" background="dark" className="mx-auto" />
+              </Link>
+            </div>
+
+            {/* Form Card */}
+            <div ref={formCardRef} className="bg-surface-dark rounded-2xl shadow-xl border border-white/10 p-8 sm:p-10">
+              <div className="mb-8">
+                <h2 className="text-3xl font-bold text-white mb-2 font-primary">
+                  Log in to your account
+                </h2>
+                <p className="text-text-secondary-dark font-secondary">
+                  Welcome back! Please enter your credentials
+                </p>
+              </div>
+
+              <LoginForm />
+
+              {/* Sign Up Link */}
+              <div className="mt-6 text-center">
+                <p className="text-text-secondary-dark text-sm font-secondary">
+                  Don't have an account?{' '}
+                  <Link
+                    href="/signup"
+                    className="text-primary hover:text-primary-hover font-semibold transition-colors"
+                  >
+                    Sign up
+                  </Link>
+                </p>
+              </div>
+            </div>
+
+            {/* Trust Indicators */}
+            <div ref={trustRef} className="mt-8 text-center">
+              <p className="text-xs text-text-secondary-dark font-secondary">
+                Protected by industry-standard encryption.{' '}
+                <Link href="/privacy" className="text-primary hover:underline">
+                  Privacy Policy
+                </Link>
+              </p>
+            </div>
           </div>
         </div>
       </div>
