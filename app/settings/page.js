@@ -279,6 +279,11 @@ export default function SettingsPage() {
                 </div>
               </TabPanel>
 
+              {/* GitHub Tab */}
+              <TabPanel>
+                <GitHubConnectionSection />
+              </TabPanel>
+
               {/* Usage Stats Tab */}
               <TabPanel>
                 <div className="space-y-6">
