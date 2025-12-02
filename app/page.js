@@ -39,7 +39,6 @@ export default function LandingPage() {
       <div className="fixed inset-0 z-0 overflow-hidden">
         <video
           autoPlay
-          loop
           muted
           playsInline
           className="absolute inset-0 w-full h-full object-cover opacity-30"
