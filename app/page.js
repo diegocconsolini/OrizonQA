@@ -42,11 +42,12 @@ export default function LandingPage() {
           loop
           muted
           playsInline
-          className="absolute inset-0 w-full h-full object-cover opacity-40"
+          className="absolute inset-0 w-full h-full object-cover opacity-30"
         >
           <source src="/videos/event-horizon.mp4" type="video/mp4" />
         </video>
-        <div className="absolute inset-0 bg-gradient-to-br from-bg-dark/80 via-surface-dark/50 to-bg-dark/80" />
+        {/* Dark overlay */}
+        <div className="absolute inset-0 bg-bg-dark/60" />
       </div>
 
       {/* NAVBAR */}
