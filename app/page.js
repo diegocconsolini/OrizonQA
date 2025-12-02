@@ -35,18 +35,11 @@ export default function LandingPage() {
 
   return (
     <div className="min-h-screen bg-bg-dark relative">
-      {/* VIDEO BACKGROUND */}
+      {/* GRADIENT BACKGROUND */}
       <div className="fixed inset-0 z-0 overflow-hidden">
-        <video
-          autoPlay
-          muted
-          playsInline
-          className="absolute inset-0 w-full h-full object-cover opacity-30"
-        >
-          <source src="/videos/event-horizon.mp4" type="video/mp4" />
-        </video>
-        {/* Dark overlay */}
-        <div className="absolute inset-0 bg-bg-dark/60" />
+        <div className="absolute inset-0 bg-gradient-to-br from-bg-dark via-surface-dark/30 to-bg-dark" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,rgba(0,212,255,0.05),transparent_50%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_80%,rgba(106,0,255,0.05),transparent_50%)]" />
       </div>
 
       {/* NAVBAR */}
@@ -56,7 +49,7 @@ export default function LandingPage() {
         <div className="container mx-auto px-6">
           <div className="flex items-center justify-between h-20">
             {/* Logo */}
-            <Logo variant="full" color="blue" size="2xl" background="dark" />
+            <Logo variant="full" color="blue" size="xl" background="dark" />
 
             {/* Nav Links */}
             <div className="flex items-center gap-6">
@@ -282,7 +275,7 @@ export default function LandingPage() {
       <footer className="border-t border-white/5 py-12 px-6 relative z-10">
         <div className="max-w-6xl mx-auto">
           <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-            <Logo variant="full" color="blue" size="3xl" background="dark" />
+            <Logo variant="full" color="blue" size="lg" background="dark" />
 
             <div className="flex items-center gap-8 text-sm text-text-secondary-dark">
               <Link href="/login" className="hover:text-white transition-colors">Sign In</Link>
