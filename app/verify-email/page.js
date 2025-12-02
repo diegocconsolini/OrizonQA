@@ -1,13 +1,13 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { Suspense, useState, useEffect, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import VerificationCodeInput from '@/app/components/auth/VerificationCodeInput.jsx';
 import Button from '@/app/components/ui/Button.jsx';
 import Logo from '@/app/components/ui/Logo.jsx';
 import { Mail, Check, RefreshCw } from 'lucide-react';
 
-export default function VerifyEmailPage() {
+function VerifyEmailContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const formRef = useRef(null);
