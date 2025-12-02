@@ -94,20 +94,31 @@ export default function LoginPage() {
   }, [endTransition]);
 
   function animateEnterFromLanding() {
+    // Filter out null refs (elements hidden on mobile)
+    const leftPanelElements = [logoRef.current, headlineRef.current, subtitleRef.current, featuresRef.current, quoteRef.current].filter(Boolean);
+
     // Set initial states (elements start hidden/positioned)
-    gsap.set([logoRef.current, headlineRef.current, subtitleRef.current, featuresRef.current, quoteRef.current], {
-      opacity: 0,
-      x: -50
-    });
-    gsap.set(formCardRef.current, {
-      opacity: 0,
-      x: 100,
-      scale: 0.95
-    });
-    gsap.set(trustRef.current, {
-      opacity: 0,
-      y: 20
-    });
+    if (leftPanelElements.length > 0) {
+      gsap.set(leftPanelElements, {
+        opacity: 0,
+        x: -50
+      });
+    }
+
+    if (formCardRef.current) {
+      gsap.set(formCardRef.current, {
+        opacity: 0,
+        x: 100,
+        scale: 0.95
+      });
+    }
+
+    if (trustRef.current) {
+      gsap.set(trustRef.current, {
+        opacity: 0,
+        y: 20
+      });
+    }
 
     const tl = gsap.timeline({
       onComplete: () => setAnimationComplete(true)
@@ -115,54 +126,77 @@ export default function LoginPage() {
 
     // Stagger animate in login page elements
     // Form card slides in from the right (main focus)
-    tl.to(formCardRef.current, {
-      opacity: 1,
-      x: 0,
-      scale: 1,
-      duration: 0.6,
-      ease: 'power3.out'
-    })
-    // Left panel elements animate in with stagger
-    .to(logoRef.current, {
-      opacity: 1,
-      x: 0,
-      duration: 0.4,
-      ease: 'power2.out'
-    }, '-=0.4')
-    .to(headlineRef.current, {
-      opacity: 1,
-      x: 0,
-      duration: 0.4,
-      ease: 'power2.out'
-    }, '-=0.3')
-    .to(subtitleRef.current, {
-      opacity: 1,
-      x: 0,
-      duration: 0.35,
-      ease: 'power2.out'
-    }, '-=0.25')
-    .to(featuresRef.current, {
-      opacity: 1,
-      x: 0,
-      duration: 0.4,
-      ease: 'power2.out'
-    }, '-=0.2')
-    .to(quoteRef.current, {
-      opacity: 1,
-      x: 0,
-      duration: 0.35,
-      ease: 'power2.out'
-    }, '-=0.2')
-    .to(trustRef.current, {
-      opacity: 1,
-      y: 0,
-      duration: 0.3,
-      ease: 'power2.out'
-    }, '-=0.2');
+    if (formCardRef.current) {
+      tl.to(formCardRef.current, {
+        opacity: 1,
+        x: 0,
+        scale: 1,
+        duration: 0.6,
+        ease: 'power3.out'
+      });
+    }
+
+    // Left panel elements animate in with stagger (only if visible)
+    if (logoRef.current) {
+      tl.to(logoRef.current, {
+        opacity: 1,
+        x: 0,
+        duration: 0.4,
+        ease: 'power2.out'
+      }, '-=0.4');
+    }
+    if (headlineRef.current) {
+      tl.to(headlineRef.current, {
+        opacity: 1,
+        x: 0,
+        duration: 0.4,
+        ease: 'power2.out'
+      }, '-=0.3');
+    }
+    if (subtitleRef.current) {
+      tl.to(subtitleRef.current, {
+        opacity: 1,
+        x: 0,
+        duration: 0.35,
+        ease: 'power2.out'
+      }, '-=0.25');
+    }
+    if (featuresRef.current) {
+      tl.to(featuresRef.current, {
+        opacity: 1,
+        x: 0,
+        duration: 0.4,
+        ease: 'power2.out'
+      }, '-=0.2');
+    }
+    if (quoteRef.current) {
+      tl.to(quoteRef.current, {
+        opacity: 1,
+        x: 0,
+        duration: 0.35,
+        ease: 'power2.out'
+      }, '-=0.2');
+    }
+    if (trustRef.current) {
+      tl.to(trustRef.current, {
+        opacity: 1,
+        y: 0,
+        duration: 0.3,
+        ease: 'power2.out'
+      }, '-=0.2');
+    }
   }
 
   function animateNormalEnter() {
-    gsap.set([logoRef.current, headlineRef.current, subtitleRef.current, featuresRef.current, quoteRef.current, formCardRef.current, trustRef.current], {
+    // Filter out null refs (elements hidden on mobile)
+    const allElements = [formCardRef.current, logoRef.current, headlineRef.current, subtitleRef.current, featuresRef.current, quoteRef.current, trustRef.current].filter(Boolean);
+
+    if (allElements.length === 0) {
+      setAnimationComplete(true);
+      return;
+    }
+
+    gsap.set(allElements, {
       opacity: 0
     });
 
@@ -170,7 +204,7 @@ export default function LoginPage() {
       onComplete: () => setAnimationComplete(true)
     });
 
-    tl.to([formCardRef.current, logoRef.current, headlineRef.current, subtitleRef.current, featuresRef.current, quoteRef.current, trustRef.current], {
+    tl.to(allElements, {
       opacity: 1,
       duration: 0.5,
       stagger: 0.05,
@@ -188,27 +222,36 @@ export default function LoginPage() {
       }
     });
 
-    // Reverse animation - elements slide out
-    tl.to(formCardRef.current, {
-      opacity: 0,
-      x: 100,
-      scale: 0.95,
-      duration: 0.4,
-      ease: 'power2.in'
-    })
-    .to([quoteRef.current, featuresRef.current, subtitleRef.current, headlineRef.current, logoRef.current], {
-      opacity: 0,
-      x: -50,
-      duration: 0.3,
-      stagger: 0.05,
-      ease: 'power2.in'
-    }, '-=0.2')
-    .to(trustRef.current, {
-      opacity: 0,
-      y: 20,
-      duration: 0.2,
-      ease: 'power2.in'
-    }, '-=0.2');
+    // Reverse animation - elements slide out (with null checks)
+    if (formCardRef.current) {
+      tl.to(formCardRef.current, {
+        opacity: 0,
+        x: 100,
+        scale: 0.95,
+        duration: 0.4,
+        ease: 'power2.in'
+      });
+    }
+
+    const leftPanelElements = [quoteRef.current, featuresRef.current, subtitleRef.current, headlineRef.current, logoRef.current].filter(Boolean);
+    if (leftPanelElements.length > 0) {
+      tl.to(leftPanelElements, {
+        opacity: 0,
+        x: -50,
+        duration: 0.3,
+        stagger: 0.05,
+        ease: 'power2.in'
+      }, '-=0.2');
+    }
+
+    if (trustRef.current) {
+      tl.to(trustRef.current, {
+        opacity: 0,
+        y: 20,
+        duration: 0.2,
+        ease: 'power2.in'
+      }, '-=0.2');
+    }
   }
 
   // Redirect authenticated users to dashboard
