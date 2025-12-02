@@ -104,7 +104,7 @@ export default function ProjectForm({ initialData = null, onCancel }) {
 
       {/* Project Name */}
       <div>
-        <label htmlFor="name" className="block text-sm font-medium text-white mb-2">
+        <label htmlFor="name" className="block text-sm font-medium text-slate-300 mb-2">
           Project Name <span className="text-red-400">*</span>
         </label>
         <input
@@ -115,17 +115,17 @@ export default function ProjectForm({ initialData = null, onCancel }) {
           onChange={handleChange}
           disabled={loading}
           placeholder="My E-Commerce Project"
-          className="w-full px-4 py-3 bg-surface-dark border border-white/10 rounded-lg text-white placeholder-text-muted-dark focus:outline-none focus:border-primary transition-colors disabled:opacity-50"
+          className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:border-cyan-500 transition-colors disabled:opacity-50"
           required
         />
-        <p className="text-xs text-text-secondary-dark mt-1">
+        <p className="text-xs text-slate-400 mt-1">
           A descriptive name for your project
         </p>
       </div>
 
       {/* Project Key */}
       <div>
-        <label htmlFor="key" className="block text-sm font-medium text-white mb-2">
+        <label htmlFor="key" className="block text-sm font-medium text-slate-300 mb-2">
           Project Key <span className="text-red-400">*</span>
         </label>
         <input
@@ -137,10 +137,10 @@ export default function ProjectForm({ initialData = null, onCancel }) {
           disabled={loading || !!initialData}
           placeholder="ECOM"
           maxLength={10}
-          className="w-full px-4 py-3 bg-surface-dark border border-white/10 rounded-lg text-white placeholder-text-muted-dark focus:outline-none focus:border-primary transition-colors disabled:opacity-50 font-mono"
+          className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:border-cyan-500 transition-colors disabled:opacity-50 font-mono"
           required
         />
-        <p className="text-xs text-text-secondary-dark mt-1">
+        <p className="text-xs text-slate-400 mt-1">
           {initialData
             ? 'Project key cannot be changed after creation'
             : '2-10 uppercase alphanumeric characters (e.g., PROJ, AUTH, ECOM)'}
@@ -149,7 +149,7 @@ export default function ProjectForm({ initialData = null, onCancel }) {
 
       {/* Description */}
       <div>
-        <label htmlFor="description" className="block text-sm font-medium text-white mb-2">
+        <label htmlFor="description" className="block text-sm font-medium text-slate-300 mb-2">
           Description
         </label>
         <textarea
@@ -160,9 +160,9 @@ export default function ProjectForm({ initialData = null, onCancel }) {
           disabled={loading}
           placeholder="Brief description of what this project tests..."
           rows={4}
-          className="w-full px-4 py-3 bg-surface-dark border border-white/10 rounded-lg text-white placeholder-text-muted-dark focus:outline-none focus:border-primary transition-colors disabled:opacity-50 resize-none"
+          className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:border-cyan-500 transition-colors disabled:opacity-50 resize-none"
         />
-        <p className="text-xs text-text-secondary-dark mt-1">
+        <p className="text-xs text-slate-400 mt-1">
           Optional description to help team members understand the project scope
         </p>
       </div>
@@ -192,7 +192,7 @@ export default function ProjectForm({ initialData = null, onCancel }) {
             type="button"
             onClick={onCancel}
             disabled={loading}
-            className="flex items-center gap-2 bg-surface-hover-dark text-white px-6 py-3 rounded-lg hover:bg-surface-hover-dark transition-colors disabled:opacity-50"
+            className="flex items-center gap-2 bg-slate-700 text-white px-6 py-3 rounded-lg hover:bg-slate-600 transition-colors disabled:opacity-50"
           >
             <X className="w-4 h-4" />
             Cancel

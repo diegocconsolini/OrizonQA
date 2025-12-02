@@ -157,9 +157,9 @@ export default function TestCaseForm({ projectId, testCase, onCancel, onSuccess 
           type="text"
           value={formData.title}
           onChange={(e) => handleInputChange('title', e.target.value)}
-          className={`w-full px-4 py-2 bg-surface-dark border ${
-            validationErrors.title ? 'border-red-500' : 'border-white/10'
-          } rounded-lg text-white placeholder-text-muted-dark focus:outline-none focus:ring-2 focus:ring-cyan-500/50`}
+          className={`w-full px-4 py-2 bg-slate-800 border ${
+            validationErrors.title ? 'border-red-500' : 'border-slate-700'
+          } rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-cyan-500/50`}
           placeholder="Enter test case title"
         />
         {validationErrors.title && (
@@ -176,7 +176,7 @@ export default function TestCaseForm({ projectId, testCase, onCancel, onSuccess 
           value={formData.description}
           onChange={(e) => handleInputChange('description', e.target.value)}
           rows={3}
-          className="w-full px-4 py-2 bg-surface-dark border border-white/10 rounded-lg text-white placeholder-text-muted-dark focus:outline-none focus:ring-2 focus:ring-cyan-500/50"
+          className="w-full px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-cyan-500/50"
           placeholder="Enter test case description"
         />
       </div>
@@ -190,7 +190,7 @@ export default function TestCaseForm({ projectId, testCase, onCancel, onSuccess 
           value={formData.preconditions}
           onChange={(e) => handleInputChange('preconditions', e.target.value)}
           rows={2}
-          className="w-full px-4 py-2 bg-surface-dark border border-white/10 rounded-lg text-white placeholder-text-muted-dark focus:outline-none focus:ring-2 focus:ring-cyan-500/50"
+          className="w-full px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-cyan-500/50"
           placeholder="Enter preconditions (e.g., User must be logged in)"
         />
       </div>
@@ -202,9 +202,9 @@ export default function TestCaseForm({ projectId, testCase, onCancel, onSuccess 
         </label>
         <div className="space-y-4">
           {formData.steps.map((step, index) => (
-            <div key={index} className="p-4 bg-surface-dark/50 border border-white/10 rounded-lg">
+            <div key={index} className="p-4 bg-slate-800/50 border border-slate-700 rounded-lg">
               <div className="flex items-start justify-between mb-3">
-                <span className="text-sm font-medium text-white">Step {index + 1}</span>
+                <span className="text-sm font-medium text-slate-300">Step {index + 1}</span>
                 {formData.steps.length > 1 && (
                   <button
                     type="button"
@@ -222,7 +222,7 @@ export default function TestCaseForm({ projectId, testCase, onCancel, onSuccess 
                     type="text"
                     value={step.step}
                     onChange={(e) => handleStepChange(index, 'step', e.target.value)}
-                    className="w-full px-3 py-2 bg-surface-dark border border-white/10 rounded-lg text-white placeholder-text-muted-dark text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500/50"
+                    className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white placeholder-slate-400 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500/50"
                     placeholder="Step description"
                   />
                 </div>
@@ -232,7 +232,7 @@ export default function TestCaseForm({ projectId, testCase, onCancel, onSuccess 
                     type="text"
                     value={step.expected}
                     onChange={(e) => handleStepChange(index, 'expected', e.target.value)}
-                    className="w-full px-3 py-2 bg-surface-dark border border-white/10 rounded-lg text-white placeholder-text-muted-dark text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500/50"
+                    className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white placeholder-slate-400 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500/50"
                     placeholder="Expected result"
                   />
                 </div>
@@ -242,7 +242,7 @@ export default function TestCaseForm({ projectId, testCase, onCancel, onSuccess 
                     type="text"
                     value={step.data}
                     onChange={(e) => handleStepChange(index, 'data', e.target.value)}
-                    className="w-full px-3 py-2 bg-surface-dark border border-white/10 rounded-lg text-white placeholder-text-muted-dark text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500/50"
+                    className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white placeholder-slate-400 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500/50"
                     placeholder="Test data (optional)"
                   />
                 </div>
@@ -254,7 +254,7 @@ export default function TestCaseForm({ projectId, testCase, onCancel, onSuccess 
         <button
           type="button"
           onClick={addStep}
-          className="mt-3 flex items-center gap-2 px-4 py-2 bg-surface-hover-dark hover:bg-surface-hover-dark text-white rounded-lg transition-colors"
+          className="mt-3 flex items-center gap-2 px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg transition-colors"
         >
           <Plus className="w-4 h-4" />
           Add Step
@@ -270,7 +270,7 @@ export default function TestCaseForm({ projectId, testCase, onCancel, onSuccess 
           value={formData.expected_result}
           onChange={(e) => handleInputChange('expected_result', e.target.value)}
           rows={2}
-          className="w-full px-4 py-2 bg-surface-dark border border-white/10 rounded-lg text-white placeholder-text-muted-dark focus:outline-none focus:ring-2 focus:ring-cyan-500/50"
+          className="w-full px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-cyan-500/50"
           placeholder="Overall expected result"
         />
       </div>
@@ -285,7 +285,7 @@ export default function TestCaseForm({ projectId, testCase, onCancel, onSuccess 
           <select
             value={formData.priority}
             onChange={(e) => handleInputChange('priority', e.target.value)}
-            className="w-full px-4 py-2 bg-surface-dark border border-white/10 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-cyan-500/50"
+            className="w-full px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-cyan-500/50"
           >
             {priorities.map(priority => (
               <option key={priority} value={priority}>{priority}</option>
@@ -301,7 +301,7 @@ export default function TestCaseForm({ projectId, testCase, onCancel, onSuccess 
           <select
             value={formData.type}
             onChange={(e) => handleInputChange('type', e.target.value)}
-            className="w-full px-4 py-2 bg-surface-dark border border-white/10 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-cyan-500/50"
+            className="w-full px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-cyan-500/50"
           >
             {types.map(type => (
               <option key={type} value={type}>{type}</option>
@@ -317,7 +317,7 @@ export default function TestCaseForm({ projectId, testCase, onCancel, onSuccess 
           <select
             value={formData.status}
             onChange={(e) => handleInputChange('status', e.target.value)}
-            className="w-full px-4 py-2 bg-surface-dark border border-white/10 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-cyan-500/50"
+            className="w-full px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-cyan-500/50"
           >
             {statuses.map(status => (
               <option key={status} value={status}>{status}</option>
@@ -333,7 +333,7 @@ export default function TestCaseForm({ projectId, testCase, onCancel, onSuccess 
             type="checkbox"
             checked={formData.automated}
             onChange={(e) => handleInputChange('automated', e.target.checked)}
-            className="w-4 h-4 bg-surface-dark border-white/10 rounded text-cyan-500 focus:ring-2 focus:ring-cyan-500/50"
+            className="w-4 h-4 bg-slate-800 border-slate-700 rounded text-cyan-500 focus:ring-2 focus:ring-cyan-500/50"
           />
           <span className="text-sm font-medium text-white">Automated Test</span>
         </label>
@@ -350,13 +350,13 @@ export default function TestCaseForm({ projectId, testCase, onCancel, onSuccess 
             value={tagInput}
             onChange={(e) => setTagInput(e.target.value)}
             onKeyPress={handleTagInputKeyPress}
-            className="flex-1 px-4 py-2 bg-surface-dark border border-white/10 rounded-lg text-white placeholder-text-muted-dark focus:outline-none focus:ring-2 focus:ring-cyan-500/50"
+            className="flex-1 px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-cyan-500/50"
             placeholder="Add a tag"
           />
           <button
             type="button"
             onClick={addTag}
-            className="px-4 py-2 bg-surface-hover-dark hover:bg-surface-hover-dark text-white rounded-lg transition-colors flex items-center gap-2"
+            className="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg transition-colors flex items-center gap-2"
           >
             <Plus className="w-4 h-4" />
             Add
@@ -368,7 +368,7 @@ export default function TestCaseForm({ projectId, testCase, onCancel, onSuccess 
             {formData.tags.map((tag, index) => (
               <span
                 key={index}
-                className="inline-flex items-center gap-2 px-3 py-1 bg-surface-hover-dark text-slate-200 rounded-full text-sm"
+                className="inline-flex items-center gap-2 px-3 py-1 bg-slate-700 text-slate-200 rounded-full text-sm"
               >
                 {tag}
                 <button
@@ -385,11 +385,11 @@ export default function TestCaseForm({ projectId, testCase, onCancel, onSuccess 
       </div>
 
       {/* Form Actions */}
-      <div className="flex gap-3 pt-4 border-t border-white/10">
+      <div className="flex gap-3 pt-4 border-t border-slate-700">
         <button
           type="button"
           onClick={onCancel}
-          className="px-6 py-2 bg-surface-hover-dark hover:bg-surface-hover-dark text-white rounded-lg transition-colors"
+          className="px-6 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg transition-colors"
           disabled={loading}
         >
           Cancel

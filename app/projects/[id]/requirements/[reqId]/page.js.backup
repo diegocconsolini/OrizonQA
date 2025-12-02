@@ -77,10 +77,10 @@ export default function RequirementDetailPage() {
   if (loading) {
     return (
       <AppLayout>
-        <div className="min-h-screen bg-bg-dark flex items-center justify-center">
+        <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center">
           <div className="text-center">
             <div className="inline-block w-8 h-8 border-4 border-violet-500 border-t-transparent rounded-full animate-spin"></div>
-            <p className="text-text-secondary-dark mt-4">Loading requirement...</p>
+            <p className="text-slate-400 mt-4">Loading requirement...</p>
           </div>
         </div>
       </AppLayout>
@@ -90,11 +90,11 @@ export default function RequirementDetailPage() {
   if (error || !requirement) {
     return (
       <AppLayout>
-        <div className="min-h-screen bg-bg-dark flex items-center justify-center">
+        <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center">
           <div className="text-center">
-            <FileText className="w-16 h-16 text-text-muted-dark mx-auto mb-4" />
+            <FileText className="w-16 h-16 text-slate-600 mx-auto mb-4" />
             <h3 className="text-xl font-semibold text-white mb-2">Requirement not found</h3>
-            <p className="text-text-secondary-dark mb-6">{error || 'The requirement doesn\'t exist or you don\'t have access'}</p>
+            <p className="text-slate-400 mb-6">{error || 'The requirement doesn\'t exist or you don\'t have access'}</p>
             <Link
               href={`/projects/${projectId}/requirements`}
               className="inline-flex items-center gap-2 text-violet-400 hover:text-violet-300"
@@ -110,12 +110,12 @@ export default function RequirementDetailPage() {
 
   return (
     <AppLayout>
-      <div className="min-h-screen bg-bg-dark">
-        <div className="border-b border-white/10 bg-surface-dark/50 backdrop-blur-sm">
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+        <div className="border-b border-slate-700 bg-slate-800/50 backdrop-blur-sm">
           <div className="px-6 py-6">
             <Link
               href={`/projects/${projectId}/requirements`}
-              className="inline-flex items-center gap-2 text-text-secondary-dark hover:text-white transition-colors mb-4"
+              className="inline-flex items-center gap-2 text-slate-400 hover:text-white transition-colors mb-4"
             >
               <ArrowLeft className="w-4 h-4" />
               Back to Requirements
@@ -127,7 +127,7 @@ export default function RequirementDetailPage() {
                 </div>
                 <div>
                   <div className="flex items-center gap-2 mb-1">
-                    <span className="text-xs font-mono text-text-secondary-dark bg-surface-hover-dark px-2 py-1 rounded">
+                    <span className="text-xs font-mono text-slate-400 bg-slate-700 px-2 py-1 rounded">
                       {requirement.key}
                     </span>
                     <span className="text-xs px-2 py-1 rounded bg-violet-500/10 text-violet-400">
@@ -143,7 +143,7 @@ export default function RequirementDetailPage() {
               <div className="flex gap-2">
                 <button
                   onClick={() => router.push(`/projects/${projectId}/requirements/${reqId}/edit`)}
-                  className="flex items-center gap-2 bg-surface-hover-dark text-white px-4 py-2 rounded-lg hover:bg-surface-hover-dark transition-colors"
+                  className="flex items-center gap-2 bg-slate-700 text-white px-4 py-2 rounded-lg hover:bg-slate-600 transition-colors"
                 >
                   <Edit className="w-4 h-4" />
                   Edit
@@ -163,43 +163,43 @@ export default function RequirementDetailPage() {
         <div className="px-6 py-8">
           <div className="space-y-6">
           {/* Main Info */}
-          <div className="bg-surface-dark border border-white/10 rounded-lg p-6">
+          <div className="bg-slate-800 border border-slate-700 rounded-lg p-6">
             <h2 className="text-lg font-semibold text-white mb-4">Details</h2>
 
             {requirement.description && (
               <div className="mb-6">
-                <h3 className="text-sm font-medium text-white mb-2">Description</h3>
-                <p className="text-text-secondary-dark whitespace-pre-wrap">{requirement.description}</p>
+                <h3 className="text-sm font-medium text-slate-300 mb-2">Description</h3>
+                <p className="text-slate-400 whitespace-pre-wrap">{requirement.description}</p>
               </div>
             )}
 
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <div>
-                <p className="text-xs text-text-secondary-dark mb-1">Priority</p>
+                <p className="text-xs text-slate-400 mb-1">Priority</p>
                 <p className="text-white font-medium">{requirement.priority}</p>
               </div>
               <div>
-                <p className="text-xs text-text-secondary-dark mb-1">Version</p>
+                <p className="text-xs text-slate-400 mb-1">Version</p>
                 <p className="text-white font-medium">{requirement.version || 'N/A'}</p>
               </div>
               <div>
-                <p className="text-xs text-text-secondary-dark mb-1">Created</p>
+                <p className="text-xs text-slate-400 mb-1">Created</p>
                 <p className="text-white text-sm">{formatDate(requirement.created_at)}</p>
               </div>
               <div>
-                <p className="text-xs text-text-secondary-dark mb-1">Updated</p>
+                <p className="text-xs text-slate-400 mb-1">Updated</p>
                 <p className="text-white text-sm">{formatDate(requirement.updated_at)}</p>
               </div>
             </div>
 
             {(requirement.external_id || requirement.external_url) && (
-              <div className="mt-6 pt-6 border-t border-white/10">
-                <h3 className="text-sm font-medium text-white mb-3">External Links</h3>
+              <div className="mt-6 pt-6 border-t border-slate-700">
+                <h3 className="text-sm font-medium text-slate-300 mb-3">External Links</h3>
                 <div className="flex items-center gap-4">
                   {requirement.external_id && (
                     <div className="flex items-center gap-2 text-sm">
                       <ExternalLink className="w-4 h-4 text-violet-400" />
-                      <span className="text-text-secondary-dark">External ID:</span>
+                      <span className="text-slate-400">External ID:</span>
                       <span className="text-white font-mono">{requirement.external_id}</span>
                     </div>
                   )}
@@ -220,7 +220,7 @@ export default function RequirementDetailPage() {
           </div>
 
           {/* Linked Test Cases */}
-          <div className="bg-surface-dark border border-white/10 rounded-lg p-6">
+          <div className="bg-slate-800 border border-slate-700 rounded-lg p-6">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-semibold text-white flex items-center gap-2">
                 <TestTube2 className="w-5 h-5 text-cyan-400" />
@@ -240,22 +240,22 @@ export default function RequirementDetailPage() {
                   <Link
                     key={tc.id}
                     href={`/projects/${projectId}/tests/${tc.id}`}
-                    className="block p-4 bg-surface-hover-dark/50 rounded-lg hover:bg-surface-hover-dark transition-colors"
+                    className="block p-4 bg-slate-700/50 rounded-lg hover:bg-slate-700 transition-colors"
                   >
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
-                        <span className="text-xs font-mono text-text-secondary-dark bg-surface-dark px-2 py-1 rounded">
+                        <span className="text-xs font-mono text-slate-400 bg-slate-800 px-2 py-1 rounded">
                           {tc.key}
                         </span>
                         <span className="text-white">{tc.title}</span>
                       </div>
-                      <span className="text-xs text-text-secondary-dark">{tc.coverage_type}</span>
+                      <span className="text-xs text-slate-400">{tc.coverage_type}</span>
                     </div>
                   </Link>
                 ))}
               </div>
             ) : (
-              <p className="text-text-secondary-dark text-center py-8">
+              <p className="text-slate-400 text-center py-8">
                 No test cases linked yet. Link tests to track coverage.
               </p>
             )}

@@ -87,7 +87,7 @@ export default function TestCaseDetailPage() {
       case 'High': return 'text-orange-400';
       case 'Medium': return 'text-yellow-400';
       case 'Low': return 'text-green-400';
-      default: return 'text-text-secondary-dark';
+      default: return 'text-slate-400';
     }
   };
 
@@ -97,7 +97,7 @@ export default function TestCaseDetailPage() {
       case 'Draft': return 'bg-yellow-500/10 text-yellow-400';
       case 'Deprecated': return 'bg-red-500/10 text-red-400';
       case 'Active': return 'bg-cyan-500/10 text-cyan-400';
-      default: return 'bg-slate-500/10 text-text-secondary-dark';
+      default: return 'bg-slate-500/10 text-slate-400';
     }
   };
 
@@ -111,16 +111,16 @@ export default function TestCaseDetailPage() {
       'API': 'bg-green-500/10 text-green-400',
       'UI': 'bg-pink-500/10 text-pink-400'
     };
-    return colors[type] || 'bg-slate-500/10 text-text-secondary-dark';
+    return colors[type] || 'bg-slate-500/10 text-slate-400';
   };
 
   if (loading) {
     return (
       <AppLayout>
-        <div className="min-h-screen bg-bg-dark flex items-center justify-center">
+        <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center">
           <div className="text-center">
-            <div className="inline-block w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
-            <p className="text-text-secondary-dark mt-4">Loading test case...</p>
+            <div className="inline-block w-8 h-8 border-4 border-cyan-500 border-t-transparent rounded-full animate-spin"></div>
+            <p className="text-slate-400 mt-4">Loading test case...</p>
           </div>
         </div>
       </AppLayout>
@@ -130,11 +130,11 @@ export default function TestCaseDetailPage() {
   if (error || !testCase) {
     return (
       <AppLayout>
-        <div className="min-h-screen bg-bg-dark flex items-center justify-center">
+        <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center">
           <div className="text-center">
-            <TestTube2 className="w-16 h-16 text-text-muted-dark mx-auto mb-4" />
+            <TestTube2 className="w-16 h-16 text-slate-600 mx-auto mb-4" />
             <h3 className="text-xl font-semibold text-white mb-2">Test case not found</h3>
-            <p className="text-text-secondary-dark mb-6">{error || 'The test case doesn\'t exist or you don\'t have access'}</p>
+            <p className="text-slate-400 mb-6">{error || 'The test case doesn\'t exist or you don\'t have access'}</p>
             <Link
               href={`/projects/${projectId}/tests`}
               className="inline-flex items-center gap-2 text-cyan-400 hover:text-cyan-300"
@@ -151,12 +151,12 @@ export default function TestCaseDetailPage() {
   if (editMode) {
     return (
       <AppLayout>
-        <div className="min-h-screen bg-bg-dark">
-          <div className="border-b border-white/10 bg-surface-dark/50 backdrop-blur-sm">
+        <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+          <div className="border-b border-slate-700 bg-slate-800/50 backdrop-blur-sm">
             <div className="px-6 py-6">
               <button
                 onClick={() => setEditMode(false)}
-                className="inline-flex items-center gap-2 text-text-secondary-dark hover:text-white transition-colors mb-4"
+                className="inline-flex items-center gap-2 text-slate-400 hover:text-white transition-colors mb-4"
               >
                 <ArrowLeft className="w-4 h-4" />
                 Cancel Editing
@@ -167,14 +167,14 @@ export default function TestCaseDetailPage() {
                 </div>
                 <div>
                   <h1 className="text-2xl font-bold text-white">Edit Test Case</h1>
-                  <p className="text-sm text-text-secondary-dark">Update test case details</p>
+                  <p className="text-sm text-slate-400">Update test case details</p>
                 </div>
               </div>
             </div>
           </div>
 
           <div className="px-6 py-8">
-            <div className="bg-surface-dark border border-white/10 rounded-lg p-6">
+            <div className="bg-slate-800 border border-slate-700 rounded-lg p-6">
               <TestCaseForm
                 projectId={projectId}
                 testCase={testCase}
@@ -190,12 +190,12 @@ export default function TestCaseDetailPage() {
 
   return (
     <AppLayout>
-      <div className="min-h-screen bg-bg-dark">
-        <div className="border-b border-white/10 bg-surface-dark/50 backdrop-blur-sm">
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+        <div className="border-b border-slate-700 bg-slate-800/50 backdrop-blur-sm">
           <div className="px-6 py-6">
             <Link
               href={`/projects/${projectId}/tests`}
-              className="inline-flex items-center gap-2 text-text-secondary-dark hover:text-white transition-colors mb-4"
+              className="inline-flex items-center gap-2 text-slate-400 hover:text-white transition-colors mb-4"
             >
               <ArrowLeft className="w-4 h-4" />
               Back to Test Cases
@@ -207,7 +207,7 @@ export default function TestCaseDetailPage() {
                 </div>
                 <div>
                   <div className="flex items-center gap-2 mb-1">
-                    <span className="text-xs font-mono text-text-secondary-dark bg-surface-hover-dark px-2 py-1 rounded">
+                    <span className="text-xs font-mono text-slate-400 bg-slate-700 px-2 py-1 rounded">
                       {testCase.key}
                     </span>
                     <span className={`text-xs px-2 py-1 rounded ${getTypeColor(testCase.type)}`}>
@@ -229,7 +229,7 @@ export default function TestCaseDetailPage() {
               <div className="flex gap-2">
                 <button
                   onClick={() => setEditMode(true)}
-                  className="flex items-center gap-2 bg-surface-hover-dark text-white px-4 py-2 rounded-lg hover:bg-surface-hover-dark transition-colors"
+                  className="flex items-center gap-2 bg-slate-700 text-white px-4 py-2 rounded-lg hover:bg-slate-600 transition-colors"
                 >
                   <Edit className="w-4 h-4" />
                   Edit
@@ -249,52 +249,52 @@ export default function TestCaseDetailPage() {
         <div className="px-6 py-8">
           <div className="space-y-6">
             {/* Main Info */}
-            <div className="bg-surface-dark border border-white/10 rounded-lg p-6">
+            <div className="bg-slate-800 border border-slate-700 rounded-lg p-6">
               <h2 className="text-lg font-semibold text-white mb-4">Details</h2>
 
               {testCase.description && (
                 <div className="mb-6">
-                  <h3 className="text-sm font-medium text-white mb-2">Description</h3>
-                  <p className="text-text-secondary-dark whitespace-pre-wrap">{testCase.description}</p>
+                  <h3 className="text-sm font-medium text-slate-300 mb-2">Description</h3>
+                  <p className="text-slate-400 whitespace-pre-wrap">{testCase.description}</p>
                 </div>
               )}
 
               {testCase.preconditions && (
                 <div className="mb-6">
-                  <h3 className="text-sm font-medium text-white mb-2">Preconditions</h3>
-                  <p className="text-text-secondary-dark whitespace-pre-wrap">{testCase.preconditions}</p>
+                  <h3 className="text-sm font-medium text-slate-300 mb-2">Preconditions</h3>
+                  <p className="text-slate-400 whitespace-pre-wrap">{testCase.preconditions}</p>
                 </div>
               )}
 
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <div>
-                  <p className="text-xs text-text-secondary-dark mb-1">Priority</p>
+                  <p className="text-xs text-slate-400 mb-1">Priority</p>
                   <p className={`font-medium ${getPriorityColor(testCase.priority)}`}>
                     {testCase.priority}
                   </p>
                 </div>
                 <div>
-                  <p className="text-xs text-text-secondary-dark mb-1">Type</p>
+                  <p className="text-xs text-slate-400 mb-1">Type</p>
                   <p className="text-white font-medium">{testCase.type}</p>
                 </div>
                 <div>
-                  <p className="text-xs text-text-secondary-dark mb-1">Created</p>
+                  <p className="text-xs text-slate-400 mb-1">Created</p>
                   <p className="text-white text-sm">{formatDate(testCase.created_at)}</p>
                 </div>
                 <div>
-                  <p className="text-xs text-text-secondary-dark mb-1">Updated</p>
+                  <p className="text-xs text-slate-400 mb-1">Updated</p>
                   <p className="text-white text-sm">{formatDate(testCase.updated_at)}</p>
                 </div>
               </div>
 
               {testCase.tags && testCase.tags.length > 0 && (
-                <div className="mt-6 pt-6 border-t border-white/10">
-                  <h3 className="text-sm font-medium text-white mb-3">Tags</h3>
+                <div className="mt-6 pt-6 border-t border-slate-700">
+                  <h3 className="text-sm font-medium text-slate-300 mb-3">Tags</h3>
                   <div className="flex flex-wrap gap-2">
                     {testCase.tags.map((tag, index) => (
                       <span
                         key={index}
-                        className="px-3 py-1 bg-surface-hover-dark text-slate-200 rounded-full text-sm"
+                        className="px-3 py-1 bg-slate-700 text-slate-200 rounded-full text-sm"
                       >
                         {tag}
                       </span>
@@ -306,7 +306,7 @@ export default function TestCaseDetailPage() {
 
             {/* Test Steps */}
             {testCase.steps && (
-              <div className="bg-surface-dark border border-white/10 rounded-lg p-6">
+              <div className="bg-slate-800 border border-slate-700 rounded-lg p-6">
                 <h2 className="text-lg font-semibold text-white mb-4">Test Steps</h2>
                 <div className="space-y-3">
                   {typeof testCase.steps === 'string' ? (
@@ -322,7 +322,7 @@ export default function TestCaseDetailPage() {
                   ) : Array.isArray(testCase.steps) ? (
                     // Handle array of step objects
                     testCase.steps.map((step, index) => (
-                      <div key={index} className="p-4 bg-surface-hover-dark/50 rounded-lg">
+                      <div key={index} className="p-4 bg-slate-700/50 rounded-lg">
                         <div className="flex items-start gap-3">
                           <div className="flex-shrink-0 w-6 h-6 bg-cyan-500/20 text-cyan-400 rounded-full flex items-center justify-center text-xs font-semibold">
                             {index + 1}
@@ -330,20 +330,20 @@ export default function TestCaseDetailPage() {
                           <div className="flex-1 space-y-2">
                             {step.step && (
                               <div>
-                                <p className="text-xs text-text-secondary-dark mb-1">Action</p>
+                                <p className="text-xs text-slate-400 mb-1">Action</p>
                                 <p className="text-white">{step.step}</p>
                               </div>
                             )}
                             {step.expected && (
                               <div>
-                                <p className="text-xs text-text-secondary-dark mb-1">Expected Result</p>
+                                <p className="text-xs text-slate-400 mb-1">Expected Result</p>
                                 <p className="text-green-400">{step.expected}</p>
                               </div>
                             )}
                             {step.data && (
                               <div>
-                                <p className="text-xs text-text-secondary-dark mb-1">Test Data</p>
-                                <p className="text-white font-mono text-sm">{step.data}</p>
+                                <p className="text-xs text-slate-400 mb-1">Test Data</p>
+                                <p className="text-slate-300 font-mono text-sm">{step.data}</p>
                               </div>
                             )}
                           </div>
@@ -357,14 +357,14 @@ export default function TestCaseDetailPage() {
 
             {/* Expected Result */}
             {testCase.expected_result && (
-              <div className="bg-surface-dark border border-white/10 rounded-lg p-6">
+              <div className="bg-slate-800 border border-slate-700 rounded-lg p-6">
                 <h2 className="text-lg font-semibold text-white mb-4">Expected Result</h2>
-                <p className="text-text-secondary-dark whitespace-pre-wrap">{testCase.expected_result}</p>
+                <p className="text-slate-400 whitespace-pre-wrap">{testCase.expected_result}</p>
               </div>
             )}
 
             {/* Requirements Coverage */}
-            <div className="bg-surface-dark border border-white/10 rounded-lg p-6">
+            <div className="bg-slate-800 border border-slate-700 rounded-lg p-6">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-lg font-semibold text-white flex items-center gap-2">
                   <FileText className="w-5 h-5 text-violet-400" />
@@ -378,11 +378,11 @@ export default function TestCaseDetailPage() {
                 </Link>
               </div>
               {testCase.requirement_count > 0 ? (
-                <p className="text-text-secondary-dark">
+                <p className="text-slate-400">
                   This test case covers {testCase.requirement_count} requirement(s)
                 </p>
               ) : (
-                <p className="text-text-secondary-dark text-center py-4">
+                <p className="text-slate-400 text-center py-4">
                   No requirements linked yet. Link requirements to track coverage.
                 </p>
               )}

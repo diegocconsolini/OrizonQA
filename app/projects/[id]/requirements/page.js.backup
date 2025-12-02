@@ -99,13 +99,13 @@ export default function RequirementsPage() {
 
   return (
     <AppLayout>
-      <div className="min-h-screen bg-bg-dark">
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
         {/* Header */}
-        <div className="border-b border-white/10 bg-surface-dark/50 backdrop-blur-sm">
+        <div className="border-b border-slate-700 bg-slate-800/50 backdrop-blur-sm">
           <div className="px-6 py-6">
             <Link
               href={`/projects/${projectId}`}
-              className="inline-flex items-center gap-2 text-text-secondary-dark hover:text-white transition-colors mb-4"
+              className="inline-flex items-center gap-2 text-slate-400 hover:text-white transition-colors mb-4"
             >
               <ArrowLeft className="w-4 h-4" />
               Back to Project
@@ -117,7 +117,7 @@ export default function RequirementsPage() {
                 </div>
                 <div>
                   <h1 className="text-2xl font-bold text-white">Requirements</h1>
-                  <p className="text-sm text-text-secondary-dark">
+                  <p className="text-sm text-slate-400">
                     {project?.name || 'Project'} - Manage requirements and user stories
                   </p>
                 </div>
@@ -138,13 +138,13 @@ export default function RequirementsPage() {
           {/* Search and Filters */}
           <div className="mb-6 space-y-4">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-text-secondary-dark" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
               <input
                 type="text"
                 placeholder="Search requirements..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-3 bg-surface-dark border border-white/10 rounded-lg text-white placeholder-text-muted-dark focus:outline-none focus:border-violet-500 transition-colors"
+                className="w-full pl-10 pr-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:border-violet-500 transition-colors"
               />
             </div>
 
@@ -152,7 +152,7 @@ export default function RequirementsPage() {
               <select
                 value={filters.type}
                 onChange={(e) => setFilters(prev => ({ ...prev, type: e.target.value }))}
-                className="px-4 py-2 bg-surface-dark border border-white/10 rounded-lg text-white focus:outline-none focus:border-violet-500"
+                className="px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-violet-500"
               >
                 <option value="">All Types</option>
                 <option value="Story">Story</option>
@@ -165,7 +165,7 @@ export default function RequirementsPage() {
               <select
                 value={filters.status}
                 onChange={(e) => setFilters(prev => ({ ...prev, status: e.target.value }))}
-                className="px-4 py-2 bg-surface-dark border border-white/10 rounded-lg text-white focus:outline-none focus:border-violet-500"
+                className="px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-violet-500"
               >
                 <option value="">All Statuses</option>
                 <option value="Open">Open</option>
@@ -177,7 +177,7 @@ export default function RequirementsPage() {
               <select
                 value={filters.priority}
                 onChange={(e) => setFilters(prev => ({ ...prev, priority: e.target.value }))}
-                className="px-4 py-2 bg-surface-dark border border-white/10 rounded-lg text-white focus:outline-none focus:border-violet-500"
+                className="px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-violet-500"
               >
                 <option value="">All Priorities</option>
                 <option value="Critical">Critical</option>
@@ -192,7 +192,7 @@ export default function RequirementsPage() {
           {loading && (
             <div className="text-center py-12">
               <div className="inline-block w-8 h-8 border-4 border-violet-500 border-t-transparent rounded-full animate-spin"></div>
-              <p className="text-text-secondary-dark mt-4">Loading requirements...</p>
+              <p className="text-slate-400 mt-4">Loading requirements...</p>
             </div>
           )}
 
@@ -206,13 +206,13 @@ export default function RequirementsPage() {
           {/* Empty State */}
           {!loading && !error && filteredRequirements.length === 0 && (
             <div className="text-center py-12">
-              <FileText className="w-16 h-16 text-text-muted-dark mx-auto mb-4" />
+              <FileText className="w-16 h-16 text-slate-600 mx-auto mb-4" />
               <h3 className="text-xl font-semibold text-white mb-2">
                 {searchTerm || filters.type || filters.status || filters.priority
                   ? 'No requirements match your filters'
                   : 'No requirements yet'}
               </h3>
-              <p className="text-text-secondary-dark mb-6">
+              <p className="text-slate-400 mb-6">
                 {searchTerm || filters.type || filters.status || filters.priority
                   ? 'Try adjusting your filters'
                   : 'Create your first requirement to get started'}
@@ -223,7 +223,7 @@ export default function RequirementsPage() {
           {/* Requirements Grid */}
           {!loading && !error && filteredRequirements.length > 0 && (
             <>
-              <div className="mb-4 text-sm text-text-secondary-dark">
+              <div className="mb-4 text-sm text-slate-400">
                 {filteredRequirements.length} {filteredRequirements.length === 1 ? 'requirement' : 'requirements'}
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

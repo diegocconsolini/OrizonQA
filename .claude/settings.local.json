@@ -35,7 +35,8 @@
       "WebFetch(domain:www.saasframe.io)",
       "Bash(cat:*)",
       "Bash(fuser:*)",
-      "Bash(chmod:*)"
+      "Bash(chmod:*)",
+      "Bash(./scripts/migrate-slate-colors.sh:*)"
     ],
     "deny": [],
     "ask": []
