@@ -56,7 +56,7 @@ export default function LandingPage() {
         <div className="container mx-auto px-6">
           <div className="flex items-center justify-between h-20">
             {/* Logo */}
-            <Logo variant="full" color="blue" size="2xl" background="dark" />
+            <Logo variant="full" color="blue" size="lg" background="dark" />
 
             {/* Nav Links */}
             <div className="flex items-center gap-6">
@@ -282,7 +282,7 @@ export default function LandingPage() {
       <footer className="border-t border-white/5 py-12 px-6 relative z-10">
         <div className="max-w-6xl mx-auto">
           <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-            <Logo variant="full" color="blue" size="3xl" background="dark" />
+            <Logo variant="full" color="blue" size="xl" background="dark" />
 
             <div className="flex items-center gap-8 text-sm text-text-secondary-dark">
               <Link href="/login" className="hover:text-white transition-colors">Sign In</Link>
