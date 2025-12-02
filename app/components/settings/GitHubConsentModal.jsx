@@ -40,8 +40,8 @@ export default function GitHubConsentModal({
   const requestingRepoAccess = scopes.includes('repo');
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-      <div className="relative w-full max-w-2xl bg-surface-dark border border-white/10 rounded-lg shadow-2xl">
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+      <div className="relative w-full max-w-2xl bg-surface-dark border border-white/10 rounded-lg shadow-2xl z-[10000]">
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-white/10">
           <div className="flex items-center gap-3">
