@@ -24,7 +24,8 @@
       "Bash(docker exec:*)",
       "Bash(node scripts/verify-migration.js:*)",
       "Bash(psql:*)",
-      "Bash(PGPASSWORD=orizon_pass psql:*)"
+      "Bash(PGPASSWORD=orizon_pass psql:*)",
+      "Bash(node:*)"
     ],
     "deny": [],
     "ask": []
