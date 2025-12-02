@@ -35,11 +35,18 @@ export default function LandingPage() {
 
   return (
     <div className="min-h-screen bg-bg-dark relative">
-      {/* GRADIENT BACKGROUND */}
+      {/* VIDEO BACKGROUND */}
       <div className="fixed inset-0 z-0 overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-bg-dark via-surface-dark/30 to-bg-dark" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,rgba(0,212,255,0.05),transparent_50%)]" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_80%,rgba(106,0,255,0.05),transparent_50%)]" />
+        <video
+          autoPlay
+          loop
+          muted
+          playsInline
+          className="absolute inset-0 w-full h-full object-cover opacity-40"
+        >
+          <source src="/videos/event-horizon.mp4" type="video/mp4" />
+        </video>
+        <div className="absolute inset-0 bg-gradient-to-br from-bg-dark/80 via-surface-dark/50 to-bg-dark/80" />
       </div>
 
       {/* NAVBAR */}
