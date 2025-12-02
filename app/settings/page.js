@@ -11,7 +11,7 @@
 
 import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Logo from '@/app/components/ui/Logo';
 import Button from '@/app/components/ui/Button';
 import Card from '@/app/components/ui/Card';
@@ -23,12 +23,23 @@ import GitHubConnectionSection from '@/app/components/settings/GitHubConnectionS
 export default function SettingsPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
+  const searchParams = useSearchParams();
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [showApiKey, setShowApiKey] = useState(false);
+
+  // Get active tab from URL or default to 'api-keys'
+  const activeTab = searchParams.get('tab') || 'api-keys';
+
+  // Handle tab change - update URL without full page reload
+  const handleTabChange = (newTab) => {
+    const params = new URLSearchParams(searchParams);
+    params.set('tab', newTab);
+    router.push(`/settings?${params.toString()}`, { scroll: false });
+  };
 
   // Form state
   const [claudeApiKey, setClaudeApiKey] = useState('');
@@ -164,7 +175,7 @@ export default function SettingsPage() {
           )}
 
           {/* Tabbed Interface */}
-          <Tabs defaultValue="api-keys" className="mb-6">
+          <Tabs value={activeTab} onChange={handleTabChange} className="mb-6">
             <TabList>
               <TabButton value="api-keys">
                 <Key className="w-4 h-4 mr-2" />
