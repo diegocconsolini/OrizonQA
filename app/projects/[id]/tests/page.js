@@ -57,8 +57,8 @@ export default function TestsPage() {
         throw new Error(data.error || 'Failed to fetch test cases');
       }
 
-      setTests(data.tests);
-      setFilteredTests(data.tests);
+      setTests(data.testCases || []);
+      setFilteredTests(data.testCases || []);
     } catch (err) {
       console.error('Error fetching tests:', err);
       setError(err.message);
