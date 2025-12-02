@@ -31,3 +31,4 @@ yarn-error.log*
 
 # Mocks and large files
 mocks/
+public/videos/
