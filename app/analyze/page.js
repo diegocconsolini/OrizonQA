@@ -41,6 +41,7 @@ import OutputSection from '@/app/components/output/OutputSection';
 // Git-first Components
 import { GitInputSection, PrivacyNotice, LocalCachePanel, CacheStatusBar, AIProviderStatus } from './components';
 import ConfigPresets from './components/ConfigPresets';
+import SmartConfigPanel from './components/SmartConfigPanel';
 
 // Hooks
 import useAnalysis from '@/app/hooks/useAnalysis';
