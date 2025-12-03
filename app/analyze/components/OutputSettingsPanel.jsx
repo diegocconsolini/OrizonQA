@@ -1,24 +1,22 @@
 'use client';
 
 /**
- * Output Settings Panel
+ * Output Settings Panel - Streamlined Version
  *
- * Comprehensive output configuration with:
- * - Format selection (12 formats with samples)
- * - Test framework selection (15 frameworks with samples)
- * - Context builder with presets
+ * Compact dropdown-based interface replacing the card-heavy design.
+ * Features:
+ * - Format dropdown with grouped categories
+ * - Framework dropdown with recommended options
+ * - Simple context text input
+ * - Optional advanced settings (collapsed by default)
  */
 
 import { useState, useMemo, useEffect } from 'react';
 import {
-  FileText, Globe, Braces, FileCode, Table, Trello, LayoutList,
-  Radar, Cloud, CheckSquare, Bot, Code, ChevronDown, ChevronRight,
-  Eye, Copy, Check, Rocket, Building, Server, Github, Star,
-  Lock, Shield, CheckCircle, Database, Layout, FileInput,
-  AlertCircle, AlertTriangle, ShieldCheck, Zap, Smile, X
+  ChevronDown, ChevronUp, Eye, Copy, Check, Settings2,
+  FileText, Code, Sparkles
 } from 'lucide-react';
 import Card from '@/app/components/ui/Card';
-import Button from '@/app/components/ui/Button';
 import {
   OUTPUT_FORMATS,
   FORMAT_CATEGORIES,
@@ -33,38 +31,11 @@ import {
   detectLanguagesFromFiles
 } from '@/lib/testFrameworks';
 import {
-  CONTEXT_PRESETS,
-  PROJECT_TYPES,
   PRIORITY_AREAS,
   TEST_STYLES,
-  TECH_STACK_SUGGESTIONS,
   getDefaultContext,
-  applyPreset,
   buildContextPrompt
 } from '@/lib/contextBuilder';
-
-// Icon mapping
-const ICONS = {
-  FileText, Globe, Braces, FileCode, Table, Trello, LayoutList,
-  Radar, Cloud, CheckSquare, Bot, Code, Plug: Server,
-  Database, Rocket, Building, Server, Github, Star, Lock,
-  Shield, CheckCircle, Layout, FileInput, AlertCircle,
-  AlertTriangle, ShieldCheck, Zap, Smile
-};
-
-// Color classes
-const COLOR_CLASSES = {
-  blue: 'text-blue-400 bg-blue-500/10 border-blue-500/30',
-  green: 'text-green-400 bg-green-500/10 border-green-500/30',
-  purple: 'text-purple-400 bg-purple-500/10 border-purple-500/30',
-  red: 'text-red-400 bg-red-500/10 border-red-500/30',
-  yellow: 'text-amber-400 bg-amber-500/10 border-amber-500/30',
-  orange: 'text-orange-400 bg-orange-500/10 border-orange-500/30',
-  cyan: 'text-cyan-400 bg-cyan-500/10 border-cyan-500/30',
-  indigo: 'text-indigo-400 bg-indigo-500/10 border-indigo-500/30',
-  brown: 'text-amber-600 bg-amber-600/10 border-amber-600/30',
-  gray: 'text-slate-400 bg-slate-500/10 border-slate-500/30'
-};
 
 export default function OutputSettingsPanel({
   selectedFiles = [],
@@ -72,15 +43,10 @@ export default function OutputSettingsPanel({
   setConfig,
   onOutputSettingsChange
 }) {
-  // Expanded sections
-  const [expandedSection, setExpandedSection] = useState('format');
-
-  // Preview states
-  const [showFormatPreview, setShowFormatPreview] = useState(false);
-  const [showFrameworkPreview, setShowFrameworkPreview] = useState(false);
+  // State
+  const [showAdvanced, setShowAdvanced] = useState(false);
+  const [showPreview, setShowPreview] = useState(null); // 'format' | 'framework' | null
   const [copied, setCopied] = useState(false);
-
-  // Context state
   const [context, setContext] = useState(getDefaultContext());
 
   // Detected languages from files
@@ -88,7 +54,7 @@ export default function OutputSettingsPanel({
     return detectLanguagesFromFiles(selectedFiles);
   }, [selectedFiles]);
 
-  // Recommended frameworks
+  // Recommended frameworks based on files
   const recommendedFrameworks = useMemo(() => {
     return getRecommendedFrameworks(selectedFiles);
   }, [selectedFiles]);
@@ -110,474 +76,270 @@ export default function OutputSettingsPanel({
     });
   }, [config.outputFormat, config.testFramework, context]);
 
-  // Handle format selection
-  const handleFormatSelect = (formatId) => {
-    setConfig(prev => ({ ...prev, outputFormat: formatId }));
+  // Handle format change
+  const handleFormatChange = (e) => {
+    setConfig(prev => ({ ...prev, outputFormat: e.target.value }));
   };
 
-  // Handle framework selection
-  const handleFrameworkSelect = (frameworkId) => {
-    setConfig(prev => ({ ...prev, testFramework: frameworkId }));
+  // Handle framework change
+  const handleFrameworkChange = (e) => {
+    setConfig(prev => ({ ...prev, testFramework: e.target.value }));
+  };
+
+  // Handle context change
+  const handleContextChange = (e) => {
+    setContext(prev => ({ ...prev, instructions: e.target.value }));
   };
 
   // Copy sample to clipboard
-  const handleCopySample = async (sample) => {
-    await navigator.clipboard.writeText(sample);
+  const handleCopy = async (text) => {
+    await navigator.clipboard.writeText(text);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
 
-  // Apply context preset
-  const handleApplyPreset = (presetId) => {
-    setContext(applyPreset(presetId, context));
+  // Toggle focus area
+  const toggleFocusArea = (areaId) => {
+    const current = context.priority || [];
+    const newPriority = current.includes(areaId)
+      ? current.filter(p => p !== areaId)
+      : [...current, areaId];
+    setContext(prev => ({ ...prev, priority: newPriority }));
   };
 
-  // Toggle section
-  const toggleSection = (section) => {
-    setExpandedSection(expandedSection === section ? null : section);
-  };
+  // Group frameworks by language for dropdown
+  const frameworkGroups = useMemo(() => {
+    const groups = {};
+    Object.values(TEST_FRAMEWORKS).forEach(fw => {
+      const lang = fw.language === 'any' ? 'universal' : fw.language;
+      if (!groups[lang]) groups[lang] = [];
+      groups[lang].push(fw);
+    });
+    return groups;
+  }, []);
 
-  // Render format selector
-  const renderFormatSelector = () => {
-    const isExpanded = expandedSection === 'format';
-
-    return (
-      <Card className="overflow-hidden">
-        <button
-          onClick={() => toggleSection('format')}
-          className="w-full p-4 flex items-center justify-between hover:bg-white/5 transition-colors"
-        >
-          <div className="flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-primary/10">
-              <FileText className="w-5 h-5 text-primary" />
-            </div>
-            <div className="text-left">
-              <h3 className="font-medium text-white">Output Format</h3>
-              <p className="text-sm text-text-secondary-dark">
-                {selectedFormat.name} ({selectedFormat.extension})
-              </p>
-            </div>
-          </div>
-          {isExpanded ? (
-            <ChevronDown className="w-5 h-5 text-text-secondary-dark" />
-          ) : (
-            <ChevronRight className="w-5 h-5 text-text-secondary-dark" />
-          )}
-        </button>
-
-        {isExpanded && (
-          <div className="p-4 pt-0 border-t border-white/10">
-            {/* Format categories */}
-            {Object.entries(FORMAT_CATEGORIES).map(([catId, category]) => (
-              <div key={catId} className="mb-4 last:mb-0">
-                <h4 className="text-xs font-medium text-text-secondary-dark uppercase tracking-wide mb-2">
-                  {category.label}
-                </h4>
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
-                  {getFormatsByCategory(catId).map(format => {
-                    const isSelected = format.id === config.outputFormat;
-                    const Icon = ICONS[format.icon] || FileText;
-
-                    return (
-                      <button
-                        key={format.id}
-                        onClick={() => handleFormatSelect(format.id)}
-                        className={`p-3 rounded-lg border-2 transition-all text-left ${
-                          isSelected
-                            ? 'border-primary bg-primary/10'
-                            : 'border-white/10 hover:border-white/20 hover:bg-white/5'
-                        }`}
-                      >
-                        <div className="flex items-center gap-2 mb-1">
-                          <Icon className={`w-4 h-4 ${isSelected ? 'text-primary' : 'text-white'}`} />
-                          <span className={`text-sm font-medium ${isSelected ? 'text-primary' : 'text-white'}`}>
-                            {format.name}
-                          </span>
-                        </div>
-                        <p className="text-xs text-text-secondary-dark line-clamp-1">
-                          {format.description}
-                        </p>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            ))}
-
-            {/* Format preview */}
-            <div className="mt-4 pt-4 border-t border-white/10">
-              <button
-                onClick={() => setShowFormatPreview(!showFormatPreview)}
-                className="flex items-center gap-2 text-sm text-primary hover:text-primary/80"
-              >
-                <Eye className="w-4 h-4" />
-                {showFormatPreview ? 'Hide' : 'Show'} Sample Output
-              </button>
-
-              {showFormatPreview && (
-                <div className="mt-3 relative">
-                  <pre className="p-4 bg-bg-dark rounded-lg text-xs text-text-secondary-dark overflow-x-auto max-h-64 overflow-y-auto">
-                    {selectedFormat.sample}
-                  </pre>
-                  <button
-                    onClick={() => handleCopySample(selectedFormat.sample)}
-                    className="absolute top-2 right-2 p-2 rounded bg-white/10 hover:bg-white/20 transition-colors"
-                  >
-                    {copied ? (
-                      <Check className="w-4 h-4 text-green-400" />
-                    ) : (
-                      <Copy className="w-4 h-4 text-white" />
-                    )}
-                  </button>
-                </div>
-              )}
-            </div>
-          </div>
-        )}
-      </Card>
-    );
-  };
-
-  // Render framework selector
-  const renderFrameworkSelector = () => {
-    const isExpanded = expandedSection === 'framework';
-
-    // Group frameworks by language
-    const frameworksByLanguage = useMemo(() => {
-      const grouped = {};
-      Object.values(TEST_FRAMEWORKS).forEach(fw => {
-        const lang = fw.language === 'any' ? 'any' : fw.language;
-        if (!grouped[lang]) grouped[lang] = [];
-        grouped[lang].push(fw);
-      });
-      return grouped;
-    }, []);
-
-    return (
-      <Card className="overflow-hidden">
-        <button
-          onClick={() => toggleSection('framework')}
-          className="w-full p-4 flex items-center justify-between hover:bg-white/5 transition-colors"
-        >
-          <div className="flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-green-500/10">
-              <Code className="w-5 h-5 text-green-400" />
-            </div>
-            <div className="text-left">
-              <h3 className="font-medium text-white">Test Framework</h3>
-              <p className="text-sm text-text-secondary-dark">
-                {selectedFramework.name}
-                {detectedLanguages.length > 0 && (
-                  <span className="ml-2 text-green-400">
-                    (detected: {detectedLanguages.join(', ')})
-                  </span>
-                )}
-              </p>
-            </div>
-          </div>
-          {isExpanded ? (
-            <ChevronDown className="w-5 h-5 text-text-secondary-dark" />
-          ) : (
-            <ChevronRight className="w-5 h-5 text-text-secondary-dark" />
-          )}
-        </button>
-
-        {isExpanded && (
-          <div className="p-4 pt-0 border-t border-white/10">
-            {/* Recommended frameworks */}
-            {recommendedFrameworks.length > 0 && recommendedFrameworks[0].id !== 'generic' && (
-              <div className="mb-4 p-3 bg-green-500/10 border border-green-500/20 rounded-lg">
-                <p className="text-sm text-green-400 mb-2">
-                  Recommended for your files:
-                </p>
-                <div className="flex flex-wrap gap-2">
-                  {recommendedFrameworks.slice(0, 4).map(fw => (
-                    <button
-                      key={fw.id}
-                      onClick={() => handleFrameworkSelect(fw.id)}
-                      className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
-                        fw.id === config.testFramework
-                          ? 'bg-green-500 text-white'
-                          : 'bg-white/10 text-white hover:bg-white/20'
-                      }`}
-                    >
-                      {fw.name}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* All frameworks by language */}
-            {Object.entries(frameworksByLanguage).map(([langId, frameworks]) => {
-              const lang = langId === 'any' ? null : FRAMEWORK_LANGUAGES[langId];
-              const langName = lang?.name || 'Universal';
-              const isDetected = detectedLanguages.includes(langId);
-
-              return (
-                <div key={langId} className="mb-4 last:mb-0">
-                  <h4 className={`text-xs font-medium uppercase tracking-wide mb-2 ${
-                    isDetected ? 'text-green-400' : 'text-text-secondary-dark'
-                  }`}>
-                    {langName}
-                    {isDetected && ' (detected)'}
-                  </h4>
-                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
-                    {frameworks.map(fw => {
-                      const isSelected = fw.id === config.testFramework;
-                      const colorClass = COLOR_CLASSES[fw.color] || COLOR_CLASSES.gray;
-
-                      return (
-                        <button
-                          key={fw.id}
-                          onClick={() => handleFrameworkSelect(fw.id)}
-                          className={`p-3 rounded-lg border-2 transition-all text-left ${
-                            isSelected
-                              ? 'border-primary bg-primary/10'
-                              : 'border-white/10 hover:border-white/20 hover:bg-white/5'
-                          }`}
-                        >
-                          <div className="flex items-center gap-2 mb-1">
-                            <div className={`w-2 h-2 rounded-full ${colorClass.split(' ')[1]}`} />
-                            <span className={`text-sm font-medium ${isSelected ? 'text-primary' : 'text-white'}`}>
-                              {fw.name}
-                            </span>
-                          </div>
-                          <p className="text-xs text-text-secondary-dark">
-                            {fw.type}
-                          </p>
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-              );
-            })}
-
-            {/* Framework preview */}
-            <div className="mt-4 pt-4 border-t border-white/10">
-              <button
-                onClick={() => setShowFrameworkPreview(!showFrameworkPreview)}
-                className="flex items-center gap-2 text-sm text-primary hover:text-primary/80"
-              >
-                <Eye className="w-4 h-4" />
-                {showFrameworkPreview ? 'Hide' : 'Show'} Syntax Sample
-              </button>
-
-              {showFrameworkPreview && (
-                <div className="mt-3 relative">
-                  <pre className="p-4 bg-bg-dark rounded-lg text-xs text-text-secondary-dark overflow-x-auto max-h-64 overflow-y-auto">
-                    {selectedFramework.sample}
-                  </pre>
-                  <button
-                    onClick={() => handleCopySample(selectedFramework.sample)}
-                    className="absolute top-2 right-2 p-2 rounded bg-white/10 hover:bg-white/20 transition-colors"
-                  >
-                    {copied ? (
-                      <Check className="w-4 h-4 text-green-400" />
-                    ) : (
-                      <Copy className="w-4 h-4 text-white" />
-                    )}
-                  </button>
-                </div>
-              )}
-            </div>
-          </div>
-        )}
-      </Card>
-    );
-  };
-
-  // Render context builder
-  const renderContextBuilder = () => {
-    const isExpanded = expandedSection === 'context';
-
-    return (
-      <Card className="overflow-hidden">
-        <button
-          onClick={() => toggleSection('context')}
-          className="w-full p-4 flex items-center justify-between hover:bg-white/5 transition-colors"
-        >
-          <div className="flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-purple-500/10">
-              <Star className="w-5 h-5 text-purple-400" />
-            </div>
-            <div className="text-left">
-              <h3 className="font-medium text-white">Analysis Context</h3>
-              <p className="text-sm text-text-secondary-dark">
-                {context.projectName || 'Configure project details'}
-              </p>
-            </div>
-          </div>
-          {isExpanded ? (
-            <ChevronDown className="w-5 h-5 text-text-secondary-dark" />
-          ) : (
-            <ChevronRight className="w-5 h-5 text-text-secondary-dark" />
-          )}
-        </button>
-
-        {isExpanded && (
-          <div className="p-4 pt-0 border-t border-white/10">
-            {/* Context presets */}
-            <div className="mb-4">
-              <h4 className="text-xs font-medium text-text-secondary-dark uppercase tracking-wide mb-2">
-                Quick Presets
-              </h4>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-                {Object.entries(CONTEXT_PRESETS).map(([presetId, preset]) => {
-                  const Icon = ICONS[preset.icon] || Star;
-
-                  return (
-                    <button
-                      key={presetId}
-                      onClick={() => handleApplyPreset(presetId)}
-                      className="p-3 rounded-lg border border-white/10 hover:border-primary/50 hover:bg-primary/5 transition-all text-left"
-                    >
-                      <div className="flex items-center gap-2 mb-1">
-                        <Icon className="w-4 h-4 text-primary" />
-                        <span className="text-sm font-medium text-white">{preset.name}</span>
-                      </div>
-                      <p className="text-xs text-text-secondary-dark">
-                        {preset.description}
-                      </p>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Project name */}
-            <div className="mb-4">
-              <label className="block text-sm text-text-secondary-dark mb-2">
-                Project Name (optional)
-              </label>
-              <input
-                type="text"
-                value={context.projectName}
-                onChange={(e) => setContext({ ...context, projectName: e.target.value })}
-                placeholder="My Project"
-                className="w-full bg-bg-dark border border-white/10 rounded-lg p-3 text-sm text-white
-                         focus:outline-none focus:border-primary/50"
-              />
-            </div>
-
-            {/* Project type */}
-            <div className="mb-4">
-              <label className="block text-sm text-text-secondary-dark mb-2">
-                Project Type
-              </label>
-              <select
-                value={context.projectType}
-                onChange={(e) => setContext({ ...context, projectType: e.target.value })}
-                className="w-full bg-bg-dark border border-white/10 rounded-lg p-3 text-sm text-white
-                         focus:outline-none focus:border-primary/50"
-              >
-                {PROJECT_TYPES.map(type => (
-                  <option key={type.id} value={type.id}>{type.label}</option>
-                ))}
-              </select>
-            </div>
-
-            {/* Focus areas */}
-            <div className="mb-4">
-              <label className="block text-sm text-text-secondary-dark mb-2">
-                Focus Areas
-              </label>
-              <div className="flex flex-wrap gap-2">
-                {PRIORITY_AREAS.map(area => {
-                  const isSelected = context.priority?.includes(area.id);
-                  const Icon = ICONS[area.icon] || Star;
-
-                  return (
-                    <button
-                      key={area.id}
-                      onClick={() => {
-                        const newPriority = isSelected
-                          ? context.priority.filter(p => p !== area.id)
-                          : [...(context.priority || []), area.id];
-                        setContext({ ...context, priority: newPriority });
-                      }}
-                      className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all flex items-center gap-1 ${
-                        isSelected
-                          ? 'bg-primary text-white'
-                          : 'bg-white/10 text-white hover:bg-white/20'
-                      }`}
-                    >
-                      <Icon className="w-3 h-3" />
-                      {area.label}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Test style */}
-            <div className="mb-4">
-              <label className="block text-sm text-text-secondary-dark mb-2">
-                Test Style
-              </label>
-              <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
-                {TEST_STYLES.map(style => (
-                  <button
-                    key={style.id}
-                    onClick={() => setContext({ ...context, testStyle: style.id })}
-                    className={`p-2 rounded-lg border transition-all text-center ${
-                      context.testStyle === style.id
-                        ? 'border-primary bg-primary/10 text-white'
-                        : 'border-white/10 hover:border-white/20 text-text-secondary-dark'
-                    }`}
-                  >
-                    <p className="text-xs font-medium">{style.label}</p>
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Coverage target */}
-            <div className="mb-4">
-              <label className="block text-sm text-text-secondary-dark mb-2">
-                Target Coverage: {context.coverageTarget}%
-              </label>
-              <input
-                type="range"
-                min="50"
-                max="100"
-                step="5"
-                value={context.coverageTarget}
-                onChange={(e) => setContext({ ...context, coverageTarget: parseInt(e.target.value) })}
-                className="w-full accent-primary"
-              />
-              <div className="flex justify-between text-xs text-text-secondary-dark mt-1">
-                <span>50%</span>
-                <span>100%</span>
-              </div>
-            </div>
-
-            {/* Additional instructions */}
-            <div>
-              <label className="block text-sm text-text-secondary-dark mb-2">
-                Additional Instructions
-              </label>
-              <textarea
-                value={context.instructions}
-                onChange={(e) => setContext({ ...context, instructions: e.target.value })}
-                placeholder="Any specific requirements, conventions, or focus areas..."
-                rows={3}
-                className="w-full bg-bg-dark border border-white/10 rounded-lg p-3 text-sm text-white
-                         focus:outline-none focus:border-primary/50 resize-none"
-              />
-            </div>
-          </div>
-        )}
-      </Card>
-    );
-  };
+  // Build recommended IDs for highlighting
+  const recommendedIds = useMemo(() => {
+    return new Set(recommendedFrameworks.map(f => f.id));
+  }, [recommendedFrameworks]);
 
   return (
-    <div className="space-y-4">
-      {renderFormatSelector()}
-      {renderFrameworkSelector()}
-      {renderContextBuilder()}
-    </div>
+    <Card className="p-6">
+      {/* Main Controls - 3 Column Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+        {/* Format Dropdown */}
+        <div>
+          <label className="block text-sm font-medium text-text-secondary-dark mb-2">
+            <FileText className="w-4 h-4 inline mr-1.5 -mt-0.5" />
+            Output Format
+          </label>
+          <select
+            value={config.outputFormat || 'markdown'}
+            onChange={handleFormatChange}
+            className="w-full bg-bg-dark border border-white/10 rounded-lg p-3 text-sm text-white
+                     focus:outline-none focus:border-primary/50 appearance-none cursor-pointer
+                     hover:border-white/20 transition-colors"
+            style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%239ca3af'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")`, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 0.75rem center', backgroundSize: '1rem' }}
+          >
+            {Object.entries(FORMAT_CATEGORIES).map(([catId, category]) => (
+              <optgroup key={catId} label={category.label}>
+                {getFormatsByCategory(catId).map(format => (
+                  <option key={format.id} value={format.id}>
+                    {format.name} ({format.extension})
+                  </option>
+                ))}
+              </optgroup>
+            ))}
+          </select>
+          {/* Preview link */}
+          <button
+            onClick={() => setShowPreview(showPreview === 'format' ? null : 'format')}
+            className="mt-1.5 text-xs text-primary hover:text-primary/80 flex items-center gap-1"
+          >
+            <Eye className="w-3 h-3" />
+            {showPreview === 'format' ? 'Hide' : 'Preview'} sample
+          </button>
+        </div>
+
+        {/* Framework Dropdown */}
+        <div>
+          <label className="block text-sm font-medium text-text-secondary-dark mb-2">
+            <Code className="w-4 h-4 inline mr-1.5 -mt-0.5" />
+            Test Framework
+            {detectedLanguages.length > 0 && (
+              <span className="ml-2 text-xs text-green-400">
+                ({detectedLanguages.join(', ')} detected)
+              </span>
+            )}
+          </label>
+          <select
+            value={config.testFramework || 'generic'}
+            onChange={handleFrameworkChange}
+            className="w-full bg-bg-dark border border-white/10 rounded-lg p-3 text-sm text-white
+                     focus:outline-none focus:border-primary/50 appearance-none cursor-pointer
+                     hover:border-white/20 transition-colors"
+            style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%239ca3af'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")`, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 0.75rem center', backgroundSize: '1rem' }}
+          >
+            {/* Recommended section if we have recommendations */}
+            {recommendedFrameworks.length > 0 && recommendedFrameworks[0].id !== 'generic' && (
+              <optgroup label="Recommended">
+                {recommendedFrameworks.slice(0, 3).map(fw => (
+                  <option key={`rec-${fw.id}`} value={fw.id}>
+                    {fw.name} (recommended)
+                  </option>
+                ))}
+              </optgroup>
+            )}
+            {/* All frameworks by language */}
+            {Object.entries(frameworkGroups).map(([lang, frameworks]) => {
+              const langName = lang === 'universal' ? 'Universal' : (FRAMEWORK_LANGUAGES[lang]?.name || lang);
+              return (
+                <optgroup key={lang} label={langName}>
+                  {frameworks.map(fw => (
+                    <option key={fw.id} value={fw.id}>
+                      {fw.name}
+                    </option>
+                  ))}
+                </optgroup>
+              );
+            })}
+          </select>
+          {/* Preview link */}
+          <button
+            onClick={() => setShowPreview(showPreview === 'framework' ? null : 'framework')}
+            className="mt-1.5 text-xs text-primary hover:text-primary/80 flex items-center gap-1"
+          >
+            <Eye className="w-3 h-3" />
+            {showPreview === 'framework' ? 'Hide' : 'Preview'} syntax
+          </button>
+        </div>
+
+        {/* Context Input */}
+        <div>
+          <label className="block text-sm font-medium text-text-secondary-dark mb-2">
+            <Sparkles className="w-4 h-4 inline mr-1.5 -mt-0.5" />
+            Context (optional)
+          </label>
+          <input
+            type="text"
+            value={context.instructions || ''}
+            onChange={handleContextChange}
+            placeholder="e.g. React app, auth system, e-commerce..."
+            className="w-full bg-bg-dark border border-white/10 rounded-lg p-3 text-sm text-white
+                     focus:outline-none focus:border-primary/50 placeholder:text-white/30
+                     hover:border-white/20 transition-colors"
+          />
+          <p className="mt-1.5 text-xs text-text-secondary-dark">
+            Helps generate more relevant test cases
+          </p>
+        </div>
+      </div>
+
+      {/* Preview Section */}
+      {showPreview && (
+        <div className="mb-4 p-4 bg-bg-dark rounded-lg border border-white/10">
+          <div className="flex items-center justify-between mb-2">
+            <h4 className="text-sm font-medium text-white">
+              {showPreview === 'format' ? `${selectedFormat.name} Sample` : `${selectedFramework.name} Syntax`}
+            </h4>
+            <button
+              onClick={() => handleCopy(showPreview === 'format' ? selectedFormat.sample : selectedFramework.sample)}
+              className="p-1.5 rounded hover:bg-white/10 transition-colors"
+            >
+              {copied ? (
+                <Check className="w-4 h-4 text-green-400" />
+              ) : (
+                <Copy className="w-4 h-4 text-text-secondary-dark" />
+              )}
+            </button>
+          </div>
+          <pre className="text-xs text-text-secondary-dark overflow-x-auto max-h-48 overflow-y-auto">
+            {showPreview === 'format' ? selectedFormat.sample : selectedFramework.sample}
+          </pre>
+        </div>
+      )}
+
+      {/* Advanced Options Toggle */}
+      <button
+        onClick={() => setShowAdvanced(!showAdvanced)}
+        className="flex items-center gap-2 text-sm text-text-secondary-dark hover:text-white transition-colors"
+      >
+        <Settings2 className="w-4 h-4" />
+        Advanced Options
+        {showAdvanced ? (
+          <ChevronUp className="w-4 h-4" />
+        ) : (
+          <ChevronDown className="w-4 h-4" />
+        )}
+      </button>
+
+      {/* Advanced Options Section */}
+      {showAdvanced && (
+        <div className="mt-4 pt-4 border-t border-white/10 space-y-4">
+          {/* Focus Areas */}
+          <div>
+            <label className="block text-sm font-medium text-text-secondary-dark mb-2">
+              Focus Areas
+            </label>
+            <div className="flex flex-wrap gap-2">
+              {PRIORITY_AREAS.slice(0, 8).map(area => {
+                const isSelected = context.priority?.includes(area.id);
+                return (
+                  <button
+                    key={area.id}
+                    onClick={() => toggleFocusArea(area.id)}
+                    className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
+                      isSelected
+                        ? 'bg-primary text-white'
+                        : 'bg-white/5 text-text-secondary-dark hover:bg-white/10 border border-white/10'
+                    }`}
+                  >
+                    {area.label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Test Style */}
+          <div>
+            <label className="block text-sm font-medium text-text-secondary-dark mb-2">
+              Test Style
+            </label>
+            <div className="flex flex-wrap gap-2">
+              {TEST_STYLES.map(style => (
+                <button
+                  key={style.id}
+                  onClick={() => setContext(prev => ({ ...prev, testStyle: style.id }))}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                    context.testStyle === style.id
+                      ? 'bg-primary text-white'
+                      : 'bg-white/5 text-text-secondary-dark hover:bg-white/10 border border-white/10'
+                  }`}
+                >
+                  {style.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Coverage Target */}
+          <div>
+            <label className="block text-sm font-medium text-text-secondary-dark mb-2">
+              Target Coverage: {context.coverageTarget || 80}%
+            </label>
+            <input
+              type="range"
+              min="50"
+              max="100"
+              step="5"
+              value={context.coverageTarget || 80}
+              onChange={(e) => setContext(prev => ({ ...prev, coverageTarget: parseInt(e.target.value) }))}
+              className="w-full max-w-xs accent-primary"
+            />
+          </div>
+        </div>
+      )}
+    </Card>
   );
 }
