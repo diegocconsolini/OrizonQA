@@ -262,10 +262,13 @@ export default function RepositorySelector({
               const isCached = isRepoCached(repo);
 
               return (
-                <button
+                <div
                   key={repo.id || repo.full_name}
                   onClick={() => onSelect(repo)}
-                  className={`w-full text-left p-4 transition-all duration-200 ${
+                  role="button"
+                  tabIndex={0}
+                  onKeyDown={(e) => e.key === 'Enter' && onSelect(repo)}
+                  className={`w-full text-left p-4 transition-all duration-200 cursor-pointer ${
                     isSelected
                       ? 'bg-primary/10 border-l-2 border-l-primary'
                       : 'hover:bg-white/5 border-l-2 border-l-transparent'
@@ -358,7 +361,7 @@ export default function RepositorySelector({
                       </div>
                     </div>
                   </div>
-                </button>
+                </div>
               );
             })}
           </div>
