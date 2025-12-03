@@ -6,7 +6,7 @@
  * Handles tab persistence via URL search params
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Button from '@/app/components/ui/Button';
@@ -57,6 +57,52 @@ export default function SettingsPageClient() {
     totalTokens: 0,
     lastAnalysis: null
   });
+
+  // Fetch models from API
+  const fetchModels = useCallback(async (providerType, baseUrl = '') => {
+    const key = providerType;
+    setLoadingModels(prev => ({ ...prev, [key]: true }));
+    setModelErrors(prev => ({ ...prev, [key]: '' }));
+
+    try {
+      const params = new URLSearchParams({ provider: providerType });
+      if (baseUrl) params.set('baseUrl', baseUrl);
+
+      const response = await fetch(`/api/ai/models?${params}`);
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || `HTTP ${response.status}`);
+      }
+
+      const { models } = await response.json();
+
+      if (providerType === 'anthropic') {
+        setClaudeModels(models);
+      } else if (providerType === 'lmstudio') {
+        setLmStudioModels(models);
+        setLmServerConnected(models.length > 0);
+      }
+
+      return models;
+    } catch (error) {
+      console.error(`Failed to fetch ${providerType} models:`, error);
+      setModelErrors(prev => ({ ...prev, [key]: error.message }));
+
+      if (providerType === 'lmstudio') {
+        setLmServerConnected(false);
+      }
+
+      return [];
+    } finally {
+      setLoadingModels(prev => ({ ...prev, [key]: false }));
+    }
+  }, []);
+
+  // Fetch Claude models on mount
+  useEffect(() => {
+    fetchModels('anthropic');
+  }, [fetchModels]);
 
   // Load user settings
   useEffect(() => {
@@ -286,116 +332,231 @@ export default function SettingsPageClient() {
                     </div>
                   </Card>
 
-                  {/* Claude API Key */}
-                  <Card className="p-6">
-                    <div className="flex items-start gap-3 mb-4">
-                      <Key className="w-5 h-5 text-primary mt-1" />
-                      <div>
-                        <h2 className="text-xl font-semibold text-white font-primary mb-2">
-                          Claude API Key
-                        </h2>
-                        <p className="text-sm text-text-secondary-dark font-secondary mb-4">
-                          Your API key is encrypted and stored securely. You can get one from{' '}
-                          <a
-                            href="https://console.anthropic.com/settings/keys"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-primary hover:text-primary-hover underline"
-                          >
-                            Anthropic Console
-                          </a>
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="relative">
-                      <input
-                        type={showApiKey ? 'text' : 'password'}
-                        value={claudeApiKey}
-                        onChange={(e) => setClaudeApiKey(e.target.value)}
-                        placeholder="sk-ant-..."
-                        className="w-full px-4 py-3 pr-12 bg-bg-dark border-2 border-white/10 rounded-lg text-white placeholder-text-secondary-dark focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary font-mono text-sm"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowApiKey(!showApiKey)}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-text-secondary-dark hover:text-white transition-colors"
-                      >
-                        {showApiKey ? (
-                          <EyeOff className="w-5 h-5" />
-                        ) : (
-                          <Eye className="w-5 h-5" />
-                        )}
-                      </button>
-                    </div>
-                  </Card>
-
-                  {/* Claude Model Selection - Only show when Claude is selected */}
+                  {/* Claude Settings - Only show when Claude is selected */}
                   {aiProvider === 'claude' && (
-                    <Card className="p-6">
-                      <div className="flex items-start gap-3 mb-4">
-                        <Zap className="w-5 h-5 text-primary mt-1" />
-                        <div>
-                          <h2 className="text-xl font-semibold text-white font-primary mb-2">
-                            Claude Model
-                          </h2>
-                          <p className="text-sm text-text-secondary-dark font-secondary mb-4">
-                            Select the Claude model to use for analysis
-                          </p>
-                        </div>
-                      </div>
-
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                        {claudeModels.map((model) => (
-                          <button
-                            key={model.id}
-                            type="button"
-                            onClick={() => setClaudeModel(model.id)}
-                            className={`p-4 rounded-xl border-2 transition-all duration-200 text-left ${
-                              claudeModel === model.id
-                                ? 'border-primary bg-primary/10'
-                                : 'border-white/10 hover:border-white/20 hover:bg-white/5'
-                            }`}
-                          >
-                            <div className="flex items-center justify-between mb-1">
-                              <span className={`font-semibold text-sm ${
-                                claudeModel === model.id ? 'text-primary' : 'text-white'
-                              }`}>{model.name}</span>
-                              {claudeModel === model.id && (
-                                <Check className="w-4 h-4 text-primary" />
-                              )}
-                            </div>
-                            <p className="text-xs text-text-secondary-dark">
-                              {model.description}
+                    <>
+                      {/* Claude API Key */}
+                      <Card className="p-6">
+                        <div className="flex items-start gap-3 mb-4">
+                          <Key className="w-5 h-5 text-primary mt-1" />
+                          <div>
+                            <h2 className="text-xl font-semibold text-white font-primary mb-2">
+                              Claude API Key
+                            </h2>
+                            <p className="text-sm text-text-secondary-dark font-secondary mb-4">
+                              Your API key is encrypted and stored securely. You can get one from{' '}
+                              <a
+                                href="https://console.anthropic.com/settings/keys"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-primary hover:text-primary-hover underline"
+                              >
+                                Anthropic Console
+                              </a>
                             </p>
+                          </div>
+                        </div>
+
+                        <div className="relative">
+                          <input
+                            type={showApiKey ? 'text' : 'password'}
+                            value={claudeApiKey}
+                            onChange={(e) => setClaudeApiKey(e.target.value)}
+                            placeholder="sk-ant-..."
+                            className="w-full px-4 py-3 pr-12 bg-bg-dark border-2 border-white/10 rounded-lg text-white placeholder-text-secondary-dark focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary font-mono text-sm"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setShowApiKey(!showApiKey)}
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-text-secondary-dark hover:text-white transition-colors"
+                          >
+                            {showApiKey ? (
+                              <EyeOff className="w-5 h-5" />
+                            ) : (
+                              <Eye className="w-5 h-5" />
+                            )}
                           </button>
-                        ))}
-                      </div>
-                    </Card>
+                        </div>
+                      </Card>
+
+                      {/* Claude Model Selection */}
+                      <Card className="p-6">
+                        <div className="flex items-start justify-between gap-3 mb-4">
+                          <div className="flex items-start gap-3">
+                            <Zap className="w-5 h-5 text-primary mt-1" />
+                            <div>
+                              <h2 className="text-xl font-semibold text-white font-primary mb-2">
+                                Claude Model
+                              </h2>
+                              <p className="text-sm text-text-secondary-dark font-secondary">
+                                Select the Claude model to use for analysis
+                              </p>
+                            </div>
+                          </div>
+                          <button
+                            onClick={() => fetchModels('anthropic')}
+                            disabled={loadingModels.anthropic}
+                            className="p-2 text-text-secondary-dark hover:text-white transition-colors disabled:opacity-50"
+                            title="Refresh models"
+                          >
+                            <RefreshCw className={`w-4 h-4 ${loadingModels.anthropic ? 'animate-spin' : ''}`} />
+                          </button>
+                        </div>
+
+                        {loadingModels.anthropic ? (
+                          <div className="flex items-center justify-center p-8">
+                            <Loader2 className="w-6 h-6 text-primary animate-spin" />
+                          </div>
+                        ) : claudeModels.length === 0 ? (
+                          <div className="p-4 bg-amber-500/10 border border-amber-500/20 rounded-lg flex items-start gap-2">
+                            <AlertCircle className="w-5 h-5 text-amber-400 flex-shrink-0 mt-0.5" />
+                            <p className="text-sm text-amber-400">
+                              No models loaded. Click refresh to load available models.
+                            </p>
+                          </div>
+                        ) : (
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            {claudeModels.map((model) => (
+                              <button
+                                key={model.id}
+                                type="button"
+                                onClick={() => setClaudeModel(model.id)}
+                                className={`p-4 rounded-xl border-2 transition-all duration-200 text-left ${
+                                  claudeModel === model.id
+                                    ? 'border-primary bg-primary/10'
+                                    : 'border-white/10 hover:border-white/20 hover:bg-white/5'
+                                }`}
+                              >
+                                <div className="flex items-center justify-between mb-1">
+                                  <span className={`font-semibold text-sm ${
+                                    claudeModel === model.id ? 'text-primary' : 'text-white'
+                                  }`}>{model.name}</span>
+                                  {claudeModel === model.id && (
+                                    <Check className="w-4 h-4 text-primary" />
+                                  )}
+                                </div>
+                                <p className="text-xs text-text-secondary-dark">
+                                  {model.description}
+                                </p>
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                        {modelErrors.anthropic && (
+                          <p className="text-xs text-red-400 mt-2">{modelErrors.anthropic}</p>
+                        )}
+                      </Card>
+                    </>
                   )}
 
-                  {/* LM Studio URL */}
-                  <Card className="p-6">
-                    <div className="flex items-start gap-3 mb-4">
-                      <Server className="w-5 h-5 text-accent mt-1" />
-                      <div>
-                        <h2 className="text-xl font-semibold text-white font-primary mb-2">
-                          LM Studio URL
-                        </h2>
-                        <p className="text-sm text-text-secondary-dark font-secondary mb-4">
-                          Optional: URL for your local LM Studio server
-                        </p>
-                      </div>
-                    </div>
+                  {/* LM Studio Settings - Only show when LM Studio is selected */}
+                  {aiProvider === 'lmstudio' && (
+                    <>
+                      {/* LM Studio URL */}
+                      <Card className="p-6">
+                        <div className="flex items-start gap-3 mb-4">
+                          <Server className="w-5 h-5 text-accent mt-1" />
+                          <div>
+                            <h2 className="text-xl font-semibold text-white font-primary mb-2">
+                              LM Studio Endpoint
+                            </h2>
+                            <p className="text-sm text-text-secondary-dark font-secondary mb-4">
+                              URL for your local LM Studio server
+                            </p>
+                          </div>
+                        </div>
 
-                    <input
-                      type="text"
-                      value={lmStudioUrl}
-                      onChange={(e) => setLmStudioUrl(e.target.value)}
-                      placeholder="http://localhost:1234"
-                      className="w-full px-4 py-3 bg-bg-dark border-2 border-white/10 rounded-lg text-white placeholder-text-secondary-dark focus:outline-none focus:ring-2 focus:ring-accent/30 focus:border-accent font-mono text-sm"
-                    />
-                  </Card>
+                        <div className="flex gap-2">
+                          <input
+                            type="text"
+                            value={lmStudioUrl}
+                            onChange={(e) => setLmStudioUrl(e.target.value)}
+                            placeholder="http://localhost:1234"
+                            className="flex-1 px-4 py-3 bg-bg-dark border-2 border-white/10 rounded-lg text-white placeholder-text-secondary-dark focus:outline-none focus:ring-2 focus:ring-accent/30 focus:border-accent font-mono text-sm"
+                          />
+                          <button
+                            onClick={() => fetchModels('lmstudio', lmStudioUrl)}
+                            disabled={loadingModels.lmstudio}
+                            className="px-4 py-3 bg-accent/10 border-2 border-accent/20 rounded-lg text-accent hover:bg-accent/20 transition-all disabled:opacity-50 flex items-center gap-2"
+                          >
+                            {loadingModels.lmstudio ? (
+                              <Loader2 className="w-4 h-4 animate-spin" />
+                            ) : (
+                              <RefreshCw className="w-4 h-4" />
+                            )}
+                            Connect
+                          </button>
+                        </div>
+                        {lmServerConnected && (
+                          <p className="text-xs text-green-400 mt-2 flex items-center gap-1">
+                            <div className="w-1.5 h-1.5 bg-green-400 rounded-full" />
+                            Connected - {lmStudioModels.length} model(s) available
+                          </p>
+                        )}
+                        {modelErrors.lmstudio && (
+                          <p className="text-xs text-red-400 mt-2">{modelErrors.lmstudio}</p>
+                        )}
+                      </Card>
+
+                      {/* LM Studio Model Selection */}
+                      <Card className="p-6">
+                        <div className="flex items-start justify-between gap-3 mb-4">
+                          <div className="flex items-start gap-3">
+                            <Cpu className="w-5 h-5 text-accent mt-1" />
+                            <div>
+                              <h2 className="text-xl font-semibold text-white font-primary mb-2">
+                                Default Model
+                              </h2>
+                              <p className="text-sm text-text-secondary-dark font-secondary">
+                                Select the model to use for analysis
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+
+                        {loadingModels.lmstudio ? (
+                          <div className="flex items-center justify-center p-8">
+                            <Loader2 className="w-6 h-6 text-accent animate-spin" />
+                          </div>
+                        ) : lmStudioModels.length === 0 ? (
+                          <div className="p-4 bg-amber-500/10 border border-amber-500/20 rounded-lg flex items-start gap-2">
+                            <AlertCircle className="w-5 h-5 text-amber-400 flex-shrink-0 mt-0.5" />
+                            <div className="text-sm text-amber-400">
+                              <p className="font-medium">No models available</p>
+                              <p className="mt-1">Enter your LM Studio URL and click Connect to load models.</p>
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="grid grid-cols-1 gap-3">
+                            {lmStudioModels.map((model) => (
+                              <button
+                                key={model.id}
+                                type="button"
+                                onClick={() => setLmStudioModel(model.id)}
+                                className={`p-4 rounded-xl border-2 transition-all duration-200 text-left ${
+                                  lmStudioModel === model.id
+                                    ? 'border-accent bg-accent/10'
+                                    : 'border-white/10 hover:border-white/20 hover:bg-white/5'
+                                }`}
+                              >
+                                <div className="flex items-center justify-between mb-1">
+                                  <span className={`font-semibold text-sm font-mono ${
+                                    lmStudioModel === model.id ? 'text-accent' : 'text-white'
+                                  }`}>{model.name}</span>
+                                  {lmStudioModel === model.id && (
+                                    <Check className="w-4 h-4 text-accent" />
+                                  )}
+                                </div>
+                                <p className="text-xs text-text-secondary-dark">
+                                  {model.description}
+                                </p>
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                      </Card>
+                    </>
+                  )}
 
                   {/* Save Button */}
                   <div className="flex justify-end">
