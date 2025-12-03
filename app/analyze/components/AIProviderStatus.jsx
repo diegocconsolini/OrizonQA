@@ -3,15 +3,22 @@
 /**
  * AI Provider Status Component
  *
- * Shows the current AI provider configuration status on the Analyze page.
- * Links to Settings for configuration changes.
- *
- * This replaces the full ApiKeyInput component on the Analyze page,
- * making Settings the single source of truth for AI configuration.
+ * Shows the current AI provider configuration on the Analyze page.
+ * Allows inline provider and model selection for quick changes.
+ * Changes are for the current session; Settings stores persistent defaults.
  */
 
-import { Settings, Check, AlertCircle, Cpu, ExternalLink } from 'lucide-react';
+import { useState } from 'react';
+import { Settings, Check, AlertCircle, Cpu, ExternalLink, ChevronDown, Zap } from 'lucide-react';
 import Link from 'next/link';
+
+// Available Claude models
+const claudeModels = [
+  { id: 'claude-sonnet-4-20250514', name: 'Claude Sonnet 4', description: 'Best balance of speed and quality' },
+  { id: 'claude-opus-4-20250514', name: 'Claude Opus 4', description: 'Most capable, slower' },
+  { id: 'claude-3-5-sonnet-20241022', name: 'Claude 3.5 Sonnet', description: 'Previous generation' },
+  { id: 'claude-3-5-haiku-20241022', name: 'Claude 3.5 Haiku', description: 'Fastest, most affordable' },
+];
 
 // Map model IDs to display names
 const modelDisplayNames = {
@@ -26,9 +33,14 @@ export default function AIProviderStatus({
   hasApiKey = false,
   lmStudioUrl = '',
   claudeModel = 'claude-sonnet-4-20250514',
-  isLoading = false
+  isLoading = false,
+  onProviderChange,
+  onModelChange,
+  onLmStudioUrlChange
 }) {
+  const [showModelDropdown, setShowModelDropdown] = useState(false);
   const isConfigured = provider === 'lmstudio' || hasApiKey;
+  const isEditable = Boolean(onProviderChange && onModelChange);
 
   if (isLoading) {
     return (
@@ -46,62 +58,174 @@ export default function AIProviderStatus({
 
   return (
     <div className="bg-surface-dark border border-white/10 rounded-xl p-6">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          {/* Provider Icon */}
-          <div className={`p-3 rounded-xl ${
-            isConfigured
-              ? 'bg-primary/10 text-primary'
-              : 'bg-amber-500/10 text-amber-500'
-          }`}>
-            {provider === 'lmstudio' ? (
-              <Cpu className="w-6 h-6" />
-            ) : (
-              <svg className="w-6 h-6" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
-              </svg>
-            )}
-          </div>
-
-          {/* Status Info */}
-          <div>
-            <div className="flex items-center gap-2">
-              <h3 className="text-base font-semibold text-white">
-                {provider === 'lmstudio' ? 'LM Studio' : 'Claude AI'}
-              </h3>
-              {isConfigured ? (
-                <span className="flex items-center gap-1 px-2 py-0.5 bg-primary/10 text-primary text-xs rounded-full">
-                  <Check className="w-3 h-3" />
-                  Ready
-                </span>
-              ) : (
-                <span className="flex items-center gap-1 px-2 py-0.5 bg-amber-500/10 text-amber-500 text-xs rounded-full">
-                  <AlertCircle className="w-3 h-3" />
-                  Not Configured
-                </span>
+      {/* Provider Selection */}
+      <div className="mb-6">
+        <h3 className="text-sm font-medium text-text-secondary-dark mb-3">AI Provider</h3>
+        <div className="grid grid-cols-2 gap-3">
+          <button
+            type="button"
+            onClick={() => isEditable && onProviderChange('claude')}
+            className={`p-4 rounded-xl border-2 transition-all duration-200 text-left ${
+              provider === 'claude'
+                ? 'border-primary bg-primary/10'
+                : 'border-white/10 hover:border-white/20 hover:bg-white/5'
+            } ${!isEditable ? 'cursor-default' : 'cursor-pointer'}`}
+          >
+            <div className="flex items-center gap-3 mb-2">
+              <div className={`p-2 rounded-lg ${
+                provider === 'claude' ? 'bg-primary/20' : 'bg-white/5'
+              }`}>
+                <svg className={`w-5 h-5 ${provider === 'claude' ? 'text-primary' : 'text-text-secondary-dark'}`} viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
+                </svg>
+              </div>
+              <span className={`font-semibold ${
+                provider === 'claude' ? 'text-primary' : 'text-white'
+              }`}>Claude AI</span>
+              {provider === 'claude' && (
+                <Check className="w-4 h-4 text-primary ml-auto" />
               )}
             </div>
-            <p className="text-sm text-text-secondary-dark mt-0.5">
-              {provider === 'lmstudio' ? (
-                lmStudioUrl ? `Connected to ${lmStudioUrl}` : 'Local LLM (no API key required)'
-              ) : (
-                hasApiKey
-                  ? `Using ${modelDisplayNames[claudeModel] || claudeModel}`
-                  : 'Configure API key in Settings to analyze'
-              )}
+            <p className="text-xs text-text-secondary-dark">
+              Anthropic's Claude API
             </p>
+            {provider === 'claude' && !hasApiKey && (
+              <p className="text-xs text-amber-400 mt-1">API key required</p>
+            )}
+          </button>
+
+          <button
+            type="button"
+            onClick={() => isEditable && onProviderChange('lmstudio')}
+            className={`p-4 rounded-xl border-2 transition-all duration-200 text-left ${
+              provider === 'lmstudio'
+                ? 'border-accent bg-accent/10'
+                : 'border-white/10 hover:border-white/20 hover:bg-white/5'
+            } ${!isEditable ? 'cursor-default' : 'cursor-pointer'}`}
+          >
+            <div className="flex items-center gap-3 mb-2">
+              <div className={`p-2 rounded-lg ${
+                provider === 'lmstudio' ? 'bg-accent/20' : 'bg-white/5'
+              }`}>
+                <Cpu className={`w-5 h-5 ${provider === 'lmstudio' ? 'text-accent' : 'text-text-secondary-dark'}`} />
+              </div>
+              <span className={`font-semibold ${
+                provider === 'lmstudio' ? 'text-accent' : 'text-white'
+              }`}>LM Studio</span>
+              {provider === 'lmstudio' && (
+                <Check className="w-4 h-4 text-accent ml-auto" />
+              )}
+            </div>
+            <p className="text-xs text-text-secondary-dark">
+              Local LLM (no API key)
+            </p>
+          </button>
+        </div>
+      </div>
+
+      {/* Model Selection - Claude only */}
+      {provider === 'claude' && (
+        <div className="mb-6">
+          <h3 className="text-sm font-medium text-text-secondary-dark mb-3">Claude Model</h3>
+          <div className="relative">
+            <button
+              type="button"
+              onClick={() => isEditable && setShowModelDropdown(!showModelDropdown)}
+              className={`w-full p-4 rounded-xl border-2 border-white/10 bg-white/5 text-left transition-all ${
+                isEditable ? 'hover:border-white/20 cursor-pointer' : 'cursor-default'
+              }`}
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <Zap className="w-5 h-5 text-primary" />
+                  <div>
+                    <p className="font-semibold text-white">
+                      {claudeModels.find(m => m.id === claudeModel)?.name || 'Claude Sonnet 4'}
+                    </p>
+                    <p className="text-xs text-text-secondary-dark">
+                      {claudeModels.find(m => m.id === claudeModel)?.description}
+                    </p>
+                  </div>
+                </div>
+                {isEditable && (
+                  <ChevronDown className={`w-5 h-5 text-text-secondary-dark transition-transform ${
+                    showModelDropdown ? 'rotate-180' : ''
+                  }`} />
+                )}
+              </div>
+            </button>
+
+            {/* Model Dropdown */}
+            {showModelDropdown && isEditable && (
+              <div className="absolute top-full left-0 right-0 mt-2 bg-surface-dark border border-white/10 rounded-xl shadow-xl z-50 overflow-hidden">
+                {claudeModels.map((model) => (
+                  <button
+                    key={model.id}
+                    type="button"
+                    onClick={() => {
+                      onModelChange(model.id);
+                      setShowModelDropdown(false);
+                    }}
+                    className={`w-full p-4 text-left transition-all hover:bg-white/5 ${
+                      claudeModel === model.id ? 'bg-primary/10' : ''
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className={`font-semibold ${
+                          claudeModel === model.id ? 'text-primary' : 'text-white'
+                        }`}>{model.name}</p>
+                        <p className="text-xs text-text-secondary-dark">{model.description}</p>
+                      </div>
+                      {claudeModel === model.id && (
+                        <Check className="w-4 h-4 text-primary" />
+                      )}
+                    </div>
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
         </div>
+      )}
 
-        {/* Settings Link */}
+      {/* LM Studio URL - LM Studio only */}
+      {provider === 'lmstudio' && onLmStudioUrlChange && (
+        <div className="mb-6">
+          <h3 className="text-sm font-medium text-text-secondary-dark mb-3">LM Studio URL</h3>
+          <input
+            type="text"
+            value={lmStudioUrl}
+            onChange={(e) => onLmStudioUrlChange(e.target.value)}
+            placeholder="http://localhost:1234"
+            className="w-full px-4 py-3 bg-white/5 border-2 border-white/10 rounded-lg text-white placeholder-text-secondary-dark focus:outline-none focus:ring-2 focus:ring-accent/30 focus:border-accent font-mono text-sm"
+          />
+        </div>
+      )}
+
+      {/* Status Bar */}
+      <div className="flex items-center justify-between p-3 bg-white/5 rounded-lg">
+        <div className="flex items-center gap-2">
+          {isConfigured ? (
+            <>
+              <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
+              <span className="text-sm text-green-400">Ready to analyze</span>
+            </>
+          ) : (
+            <>
+              <div className="w-2 h-2 bg-amber-400 rounded-full" />
+              <span className="text-sm text-amber-400">
+                {provider === 'claude' ? 'API key required' : 'Start LM Studio'}
+              </span>
+            </>
+          )}
+        </div>
         <Link
           href="/settings?tab=llm-config"
-          className="flex items-center gap-2 px-4 py-2 bg-white/5 border border-white/10
-                   rounded-lg text-sm text-white hover:bg-white/10 transition-all"
+          className="flex items-center gap-1 text-xs text-text-secondary-dark hover:text-white transition-colors"
         >
-          <Settings className="w-4 h-4" />
-          <span>Configure</span>
-          <ExternalLink className="w-3 h-3 text-text-secondary-dark" />
+          <Settings className="w-3 h-3" />
+          <span>Manage in Settings</span>
         </Link>
       </div>
 
@@ -112,7 +236,7 @@ export default function AIProviderStatus({
           <div>
             <p className="text-sm text-amber-400">
               {provider === 'claude'
-                ? 'You need to configure your Claude API key in Settings before analyzing code.'
+                ? 'Configure your Claude API key in Settings before analyzing code.'
                 : 'Make sure LM Studio is running on your local machine.'}
             </p>
             <Link

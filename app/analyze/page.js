@@ -417,13 +417,16 @@ function AnalyzePageContent() {
 
               {/* Configure Tab */}
               <TabPanel value="configure">
-                {/* AI Provider Status - Single source of truth from Settings */}
+                {/* AI Provider Status - Editable on this page */}
                 <AIProviderStatus
                   provider={provider}
                   hasApiKey={hasApiKey}
                   lmStudioUrl={lmStudioUrl}
                   claudeModel={claudeModel}
                   isLoading={!settingsLoaded}
+                  onProviderChange={setProvider}
+                  onModelChange={setClaudeModel}
+                  onLmStudioUrlChange={setLmStudioUrl}
                 />
 
                 {/* Config Presets - Quick selection */}
