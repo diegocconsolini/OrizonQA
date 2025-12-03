@@ -29,6 +29,7 @@ import GitHub from 'next-auth/providers/github';
 import { authConfig } from '@/auth.config';
 import { query } from '@/lib/db';
 import bcrypt from 'bcryptjs';
+import { createConnection } from '@/lib/db-oauth-connections';
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   ...authConfig,
@@ -121,16 +122,13 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       return authConfig.callbacks.authorized({ auth, request });
     },
     async jwt({ token, user, account, profile }) {
-      // For GitHub OAuth, we need to look up the database user ID and store the access token
+      // For GitHub OAuth, we need to look up the database user ID and securely store the access token
       if (account?.provider === 'github' && user?.email) {
         try {
           const email = user.email.toLowerCase();
 
-          // Store GitHub access token for later revocation on logout
-          if (account.access_token) {
-            token.accessToken = account.access_token;
-            token.provider = 'github';
-          }
+          // Mark provider type (no token in JWT for security)
+          token.provider = 'github';
 
           // Check if user exists
           let result = await query(
@@ -154,6 +152,33 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             token.id = String(result.rows[0].id);
             token.email = result.rows[0].email;
             token.name = result.rows[0].full_name || user.name;
+
+            // Store GitHub access token securely in database (encrypted)
+            // This replaces storing it in the JWT
+            if (account.access_token) {
+              try {
+                await createConnection({
+                  userId: parseInt(result.rows[0].id, 10),
+                  provider: 'github_auth',
+                  providerUserId: String(profile?.id || user.id),
+                  providerUsername: profile?.login || email.split('@')[0],
+                  accessToken: account.access_token,
+                  refreshToken: account.refresh_token || null,
+                  tokenExpiresAt: account.expires_at
+                    ? new Date(account.expires_at * 1000)
+                    : null,
+                  scopes: ['read:user', 'user:email'],
+                  metadata: {
+                    purpose: 'authentication',
+                    createdAt: new Date().toISOString(),
+                  },
+                });
+                console.log('GitHub auth token stored securely for user:', email);
+              } catch (dbError) {
+                // Log but don't fail login if token storage fails
+                console.error('Failed to store GitHub token:', dbError.message);
+              }
+            }
           }
         } catch (error) {
           console.error('JWT callback error for GitHub user:', error);
