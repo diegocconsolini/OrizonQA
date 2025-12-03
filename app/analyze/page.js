@@ -21,7 +21,6 @@
  */
 
 import { useState, useEffect, useCallback, Suspense } from 'react';
-import dynamic from 'next/dynamic';
 import { useSession } from 'next-auth/react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { Loader2, Sparkles, Settings, Shield } from 'lucide-react';
@@ -40,11 +39,8 @@ import ConfigSection from '@/app/components/config/ConfigSection';
 import OutputSection from '@/app/components/output/OutputSection';
 
 // Git-first Components
-import { GitInputSection, PrivacyNotice, LocalCachePanel, CacheStatusBar } from './components';
+import { GitInputSection, PrivacyNotice, LocalCachePanel, CacheStatusBar, AIProviderStatus } from './components';
 import ConfigPresets from './components/ConfigPresets';
-
-// Disable SSR for ApiKeyInput to prevent hydration mismatch
-const ApiKeyInput = dynamic(() => import('@/app/components/config/ApiKeyInput'), { ssr: false });
 
 // Hooks
 import useAnalysis from '@/app/hooks/useAnalysis';
@@ -215,14 +211,11 @@ function AnalyzePageContent() {
   });
   const [activePreset, setActivePreset] = useState(null);
 
-  // API states
+  // API states (loaded from Settings - single source of truth)
   const [provider, setProvider] = useState('claude');
   const [apiKey, setApiKey] = useState('');
   const [lmStudioUrl, setLmStudioUrl] = useState('http://localhost:1234');
-  const [selectedModel, setSelectedModel] = useState('');
-  const [usingSavedKey, setUsingSavedKey] = useState(false);
-  const [savedKeyAvailable, setSavedKeyAvailable] = useState(false);
-  const [savedApiKey, setSavedApiKey] = useState('');
+  const [hasApiKey, setHasApiKey] = useState(false);
   const model = 'claude-sonnet-4-20250514';
 
   // Custom hooks for analysis and file upload
@@ -295,8 +288,7 @@ function AnalyzePageContent() {
       return;
     }
 
-    const modelToUse = provider === 'lmstudio' && selectedModel ? selectedModel : model;
-    await analyzeCodebase(content, apiKey, config, modelToUse, provider, lmStudioUrl);
+    await analyzeCodebase(content, apiKey, config, model, provider, lmStudioUrl);
   };
 
   // Clear all inputs
@@ -311,7 +303,7 @@ function AnalyzePageContent() {
   const canAnalyze = (provider === 'lmstudio' || apiKey) &&
                      (codeInput.trim() || uploadedFiles.length > 0 || selectedFiles.length > 0);
 
-  // Load user settings
+  // Load user settings (single source of truth from Settings page)
   useEffect(() => {
     async function loadUserSettings() {
       if (status === 'loading' || !session || settingsLoaded) return;
@@ -321,12 +313,11 @@ function AnalyzePageContent() {
         if (response.ok) {
           const data = await response.json();
           if (data.claudeApiKey) {
-            setSavedApiKey(data.claudeApiKey);
             setApiKey(data.claudeApiKey);
-            setUsingSavedKey(true);
-            setSavedKeyAvailable(true);
+            setHasApiKey(true);
           }
           if (data.lmStudioUrl) setLmStudioUrl(data.lmStudioUrl);
+          if (data.aiProvider) setProvider(data.aiProvider);
         }
       } catch (error) {
         console.error('Error loading user settings:', error);
@@ -337,13 +328,6 @@ function AnalyzePageContent() {
 
     loadUserSettings();
   }, [session, status, settingsLoaded]);
-
-  // Handle switching back to saved key
-  useEffect(() => {
-    if (usingSavedKey && savedApiKey) {
-      setApiKey(savedApiKey);
-    }
-  }, [usingSavedKey, savedApiKey]);
 
   return (
     <AppLayout>
@@ -432,32 +416,26 @@ function AnalyzePageContent() {
 
               {/* Configure Tab */}
               <TabPanel value="configure">
-                {/* Config Presets - Quick selection */}
-                <ConfigPresets
-                  config={config}
-                  setConfig={setConfig}
-                  activePreset={activePreset}
-                  setActivePreset={setActivePreset}
+                {/* AI Provider Status - Single source of truth from Settings */}
+                <AIProviderStatus
+                  provider={provider}
+                  hasApiKey={hasApiKey}
+                  lmStudioUrl={lmStudioUrl}
+                  isLoading={!settingsLoaded}
                 />
+
+                {/* Config Presets - Quick selection */}
+                <div className="mt-6">
+                  <ConfigPresets
+                    config={config}
+                    setConfig={setConfig}
+                    activePreset={activePreset}
+                    setActivePreset={setActivePreset}
+                  />
+                </div>
 
                 {/* Analysis Options - Detailed configuration */}
                 <ConfigSection config={config} setConfig={setConfig} />
-
-                {/* AI Provider - Clear separation */}
-                <ApiKeyInput
-                  provider={provider}
-                  setProvider={setProvider}
-                  apiKey={apiKey}
-                  setApiKey={setApiKey}
-                  lmStudioUrl={lmStudioUrl}
-                  setLmStudioUrl={setLmStudioUrl}
-                  selectedModel={selectedModel}
-                  setSelectedModel={setSelectedModel}
-                  model={model}
-                  usingSavedKey={usingSavedKey}
-                  setUsingSavedKey={setUsingSavedKey}
-                  savedKeyAvailable={savedKeyAvailable}
-                />
               </TabPanel>
 
               {/* Results Tab */}

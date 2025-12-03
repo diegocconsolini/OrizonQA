@@ -13,3 +13,4 @@ export { default as GitInputSection } from './GitInputSection';
 export { default as CodeEditor, MultiFileEditor } from './CodeEditor';
 export { default as LocalCachePanel } from './LocalCachePanel';
 export { default as CacheStatusBar } from './CacheStatusBar';
+export { default as AIProviderStatus } from './AIProviderStatus';

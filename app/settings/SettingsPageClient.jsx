@@ -39,7 +39,8 @@ export default function SettingsPageClient() {
 
   // Form state
   const [claudeApiKey, setClaudeApiKey] = useState('');
-  const [lmStudioUrl, setLmStudioUrl] = useState('http://192.168.2.101:1234');
+  const [lmStudioUrl, setLmStudioUrl] = useState('http://localhost:1234');
+  const [aiProvider, setAiProvider] = useState('claude');
 
   // Usage stats
   const [usageStats, setUsageStats] = useState({
