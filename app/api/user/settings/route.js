@@ -74,7 +74,7 @@ export async function GET() {
 
     // Get user settings from database
     const result = await query(
-      'SELECT claude_api_key_encrypted, lmstudio_url FROM users WHERE id = $1',
+      'SELECT claude_api_key_encrypted, lmstudio_url, ai_provider FROM users WHERE id = $1',
       [userId]
     );
 
@@ -93,6 +93,7 @@ export async function GET() {
     return NextResponse.json({
       claudeApiKey: claudeApiKey || '',
       lmStudioUrl: user.lmstudio_url || '',
+      aiProvider: user.ai_provider || 'claude',
     });
   } catch (error) {
     console.error('Settings GET error:', error);
@@ -121,7 +122,7 @@ export async function POST(request) {
 
     const userId = session.user.id;
     const body = await request.json();
-    const { claudeApiKey, lmStudioUrl } = body;
+    const { claudeApiKey, lmStudioUrl, aiProvider } = body;
 
     // Encrypt API key if provided
     const encryptedApiKey = claudeApiKey ? encrypt(claudeApiKey) : null;
@@ -131,9 +132,10 @@ export async function POST(request) {
       `UPDATE users
        SET claude_api_key_encrypted = $1,
            lmstudio_url = $2,
+           ai_provider = $3,
            updated_at = NOW()
-       WHERE id = $3`,
-      [encryptedApiKey, lmStudioUrl || null, userId]
+       WHERE id = $4`,
+      [encryptedApiKey, lmStudioUrl || null, aiProvider || 'claude', userId]
     );
 
     return NextResponse.json({
