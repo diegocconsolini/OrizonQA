@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import { prepareContent, formatChunkContent } from '@/lib/contentPreparer';
-import { buildPrompt, parseResponse } from '@/lib/promptBuilder';
+import { buildPrompt, buildChunkPrompt, buildSynthesisPrompt, parseResponse } from '@/lib/promptBuilder';
 import { saveAnalysis } from '@/lib/db';
 import crypto from 'crypto';
 
@@ -252,70 +252,6 @@ async function callAI(prompt, config, apiKey, provider, lmStudioUrl) {
     text: data.content[0].text,
     usage: data.usage
   };
-}
-
-/**
- * Build prompt for a single chunk analysis
- */
-function buildChunkPrompt(content, config, chunkIndex, totalChunks, chunkDetail) {
-  const context = `
-## MULTI-PASS ANALYSIS - BATCH ${chunkIndex + 1} OF ${totalChunks}
-
-This is batch ${chunkIndex + 1} of ${totalChunks} in a comprehensive codebase analysis.
-This batch contains ${chunkDetail.files} files from: ${chunkDetail.summary}
-
-IMPORTANT INSTRUCTIONS:
-1. Analyze ALL files in this batch thoroughly
-2. Generate complete user stories, test cases, and acceptance criteria for these files
-3. Your output will be combined with other batches - ensure it can stand alone
-4. Use consistent formatting for easy merging
-
----
-
-`;
-
-  return buildPrompt(context + content, config);
-}
-
-/**
- * Build synthesis prompt to combine chunk results
- */
-function buildSynthesisPrompt(chunkResults, config) {
-  let prompt = `# ANALYSIS SYNTHESIS
-
-You have analyzed a codebase in ${chunkResults.length} batches. Below are the results from each batch.
-Your task is to synthesize these into a unified, comprehensive QA analysis.
-
-## Instructions:
-1. Combine all user stories, removing duplicates while preserving unique ones
-2. Merge test cases, grouping related tests by feature/module
-3. Consolidate acceptance criteria by feature area
-4. Ensure consistent numbering and formatting throughout
-5. Remove redundant or overlapping content
-6. The final output should be a complete, professional QA document
-
-`;
-
-  // Add each chunk's results
-  for (const chunk of chunkResults) {
-    prompt += `\n---\n## BATCH ${chunk.index + 1}: ${chunk.summary}\n`;
-    prompt += `Files analyzed: ${chunk.files.length}\n\n`;
-    prompt += chunk.result;
-    prompt += '\n';
-  }
-
-  prompt += `\n---\n\n## NOW SYNTHESIZE THE ABOVE INTO A UNIFIED DOCUMENT\n\n`;
-
-  // Add format instructions
-  if (config.outputFormat === 'json') {
-    prompt += 'Output the synthesized result as valid JSON with sections: userStories, testCases, acceptanceCriteria.\n';
-  } else if (config.outputFormat === 'jira') {
-    prompt += 'Format the output for Jira import with proper issue types and fields.\n';
-  } else {
-    prompt += 'Use clear Markdown formatting with proper headings and bullet points.\n';
-  }
-
-  return prompt;
 }
 
 // CORS support
