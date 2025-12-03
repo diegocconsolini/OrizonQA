@@ -187,11 +187,6 @@ export default function Dashboard() {
     return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
   };
 
-  // Generate sparkline data from daily usage
-  const getSparklineData = () => {
-    if (!analytics?.dailyUsage || analytics.dailyUsage.length === 0) return [];
-    return analytics.dailyUsage.map(d => d.count);
-  };
 
   if (status === 'loading') {
     return (
@@ -235,9 +230,8 @@ export default function Dashboard() {
               title="Total Analyses"
               value={analytics?.summary?.totalAnalyses || 0}
               change={analytics?.summary?.analysesChange}
-              icon={<Activity className="w-5 h-5" />}
+              icon={<Activity className="w-4 h-4" />}
               color="primary"
-              sparklineData={getSparklineData()}
               loading={loading}
             />
             <KPICard
