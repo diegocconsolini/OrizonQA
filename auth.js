@@ -122,14 +122,30 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       // For GitHub OAuth, we need to look up the database user ID
       if (account?.provider === 'github' && user?.email) {
         try {
-          const result = await query(
-            'SELECT id FROM users WHERE email = $1',
-            [user.email.toLowerCase()]
+          const email = user.email.toLowerCase();
+
+          // Check if user exists
+          let result = await query(
+            'SELECT id, email, full_name FROM users WHERE email = $1',
+            [email]
           );
+
+          // If user doesn't exist yet (signIn callback runs after jwt in some cases)
+          // We create the user here as well to ensure token always has correct ID
+          if (result.rows.length === 0) {
+            console.log('JWT: Creating new GitHub user:', email);
+            result = await query(`
+              INSERT INTO users (email, full_name, email_verified, is_active, created_at)
+              VALUES ($1, $2, true, true, NOW())
+              ON CONFLICT (email) DO UPDATE SET last_login = NOW()
+              RETURNING id, email, full_name
+            `, [email, user.name || email.split('@')[0]]);
+          }
+
           if (result.rows.length > 0) {
             token.id = String(result.rows[0].id);
-            token.email = user.email;
-            token.name = user.name;
+            token.email = result.rows[0].email;
+            token.name = result.rows[0].full_name || user.name;
           }
         } catch (error) {
           console.error('JWT callback error for GitHub user:', error);
