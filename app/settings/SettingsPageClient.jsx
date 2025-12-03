@@ -13,7 +13,7 @@ import Button from '@/app/components/ui/Button';
 import Card from '@/app/components/ui/Card';
 import { Tabs, TabList, TabButton, TabPanels, TabPanel } from '@/app/components/ui/Tabs';
 import AppLayout from '@/app/components/layout/AppLayout';
-import { Settings as SettingsIcon, Key, Server, Save, Loader2, Check, Eye, EyeOff, User, BarChart3, Zap, Calendar, Github } from 'lucide-react';
+import { Settings as SettingsIcon, Key, Server, Save, Loader2, Check, Eye, EyeOff, User, BarChart3, Zap, Calendar, Github, Cpu } from 'lucide-react';
 import GitHubConnectionSection from '@/app/components/settings/GitHubConnectionSection';
 
 export default function SettingsPageClient() {
@@ -72,6 +72,9 @@ export default function SettingsPageClient() {
         if (settingsData.lmStudioUrl) {
           setLmStudioUrl(settingsData.lmStudioUrl);
         }
+        if (settingsData.aiProvider) {
+          setAiProvider(settingsData.aiProvider);
+        }
 
         // Load usage stats
         const analysesResponse = await fetch('/api/user/analyses?limit=1');
@@ -109,6 +112,7 @@ export default function SettingsPageClient() {
         body: JSON.stringify({
           claudeApiKey: claudeApiKey.trim() || null,
           lmStudioUrl: lmStudioUrl.trim() || null,
+          aiProvider: aiProvider,
         }),
       });
 
@@ -196,6 +200,79 @@ export default function SettingsPageClient() {
               {/* API Keys Tab */}
               <TabPanel value="api-keys">
                 <div className="space-y-6">
+                  {/* AI Provider Selection */}
+                  <Card className="p-6">
+                    <div className="flex items-start gap-3 mb-4">
+                      <Zap className="w-5 h-5 text-primary mt-1" />
+                      <div>
+                        <h2 className="text-xl font-semibold text-white font-primary mb-2">
+                          Default AI Provider
+                        </h2>
+                        <p className="text-sm text-text-secondary-dark font-secondary mb-4">
+                          Choose which AI provider to use for code analysis
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <button
+                        type="button"
+                        onClick={() => setAiProvider('claude')}
+                        className={`p-4 rounded-xl border-2 transition-all duration-200 text-left ${
+                          aiProvider === 'claude'
+                            ? 'border-primary bg-primary/10'
+                            : 'border-white/10 hover:border-white/20 hover:bg-white/5'
+                        }`}
+                      >
+                        <div className="flex items-center gap-3 mb-2">
+                          <div className={`p-2 rounded-lg ${
+                            aiProvider === 'claude' ? 'bg-primary/20' : 'bg-white/5'
+                          }`}>
+                            <svg className="w-5 h-5 text-primary" viewBox="0 0 24 24" fill="currentColor">
+                              <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
+                            </svg>
+                          </div>
+                          <span className={`font-semibold ${
+                            aiProvider === 'claude' ? 'text-primary' : 'text-white'
+                          }`}>Claude AI</span>
+                          {aiProvider === 'claude' && (
+                            <Check className="w-4 h-4 text-primary ml-auto" />
+                          )}
+                        </div>
+                        <p className="text-xs text-text-secondary-dark">
+                          Anthropic's Claude API (requires API key)
+                        </p>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => setAiProvider('lmstudio')}
+                        className={`p-4 rounded-xl border-2 transition-all duration-200 text-left ${
+                          aiProvider === 'lmstudio'
+                            ? 'border-accent bg-accent/10'
+                            : 'border-white/10 hover:border-white/20 hover:bg-white/5'
+                        }`}
+                      >
+                        <div className="flex items-center gap-3 mb-2">
+                          <div className={`p-2 rounded-lg ${
+                            aiProvider === 'lmstudio' ? 'bg-accent/20' : 'bg-white/5'
+                          }`}>
+                            <Cpu className={`w-5 h-5 ${aiProvider === 'lmstudio' ? 'text-accent' : 'text-text-secondary-dark'}`} />
+                          </div>
+                          <span className={`font-semibold ${
+                            aiProvider === 'lmstudio' ? 'text-accent' : 'text-white'
+                          }`}>LM Studio</span>
+                          {aiProvider === 'lmstudio' && (
+                            <Check className="w-4 h-4 text-accent ml-auto" />
+                          )}
+                        </div>
+                        <p className="text-xs text-text-secondary-dark">
+                          Local LLM (no API key required)
+                        </p>
+                      </button>
+                    </div>
+                  </Card>
+
                   {/* Claude API Key */}
                   <Card className="p-6">
                     <div className="flex items-start gap-3 mb-4">
