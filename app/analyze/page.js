@@ -43,6 +43,8 @@ import { GitInputSection, PrivacyNotice, LocalCachePanel, CacheStatusBar, AIProv
 import ConfigPresets from './components/ConfigPresets';
 import SmartConfigPanel from './components/SmartConfigPanel';
 import OutputSettingsPanel from './components/OutputSettingsPanel';
+import AnalysisPlanIndicator from './components/AnalysisPlanIndicator';
+import AnalysisProgress from './components/AnalysisProgress';
 
 // Hooks
 import useAnalysis from '@/app/hooks/useAnalysis';
@@ -231,9 +233,12 @@ function AnalyzePageContent() {
     results,
     tokenUsage,
     analyzeCodebase,
+    analyzeFiles,
     clearResults,
     setError,
-    setSuccess
+    setSuccess,
+    progress: analysisProgress,
+    analysisStartTime
   } = useAnalysis();
 
   const {
@@ -267,35 +272,41 @@ function AnalyzePageContent() {
   const estimatedTokens = Math.ceil(getInputContent().length / 4);
   const isTruncated = getInputContent().length > 100000;
 
-  // Handle analysis
+  // Handle analysis - uses multi-pass for files (100% coverage)
   const handleAnalyze = async () => {
-    let content = '';
+    const model = provider === 'lmstudio' ? lmStudioModel : claudeModel;
 
-    // Get content based on input mode
+    // Git mode - use multi-pass analysis for 100% file coverage
     if (selectedFiles.length > 0 && selectedRepo) {
-      // Fetch actual file contents from GitHub
       setSuccess('Fetching selected files...');
       const files = await getFilesForAnalysis();
       if (files.length === 0) {
         setError('Failed to fetch file contents');
         return;
       }
-      content = files.map(f => `=== FILE: ${f.path} ===\n${f.content}`).join('\n\n');
-      setSuccess('');
-    } else if (codeInput.trim()) {
-      content = codeInput;
-    } else if (uploadedFiles.length > 0) {
-      content = uploadedFiles.map(f => `=== FILE: ${f.name} ===\n${f.content}`).join('\n\n');
-    }
+      setSuccess('Starting multi-pass analysis...');
 
-    if (!content.trim()) {
-      setError('Please provide code to analyze');
+      // Use the new multi-pass endpoint for files
+      await analyzeFiles(files, apiKey, config, model, provider, lmStudioUrl);
       return;
     }
 
-    // Use the correct model based on provider
-    const model = provider === 'lmstudio' ? lmStudioModel : claudeModel;
-    await analyzeCodebase(content, apiKey, config, model, provider, lmStudioUrl);
+    // Paste mode - use single-pass analysis
+    if (codeInput.trim()) {
+      await analyzeCodebase(codeInput, apiKey, config, model, provider, lmStudioUrl);
+      return;
+    }
+
+    // Upload mode - use multi-pass if many files, otherwise single-pass
+    if (uploadedFiles.length > 0) {
+      const files = uploadedFiles.map(f => ({ path: f.name, content: f.content }));
+
+      // Use multi-pass for uploaded files too (100% coverage)
+      await analyzeFiles(files, apiKey, config, model, provider, lmStudioUrl);
+      return;
+    }
+
+    setError('Please provide code to analyze');
   };
 
   // Clear all inputs
