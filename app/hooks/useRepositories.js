@@ -67,7 +67,7 @@ export default function useRepositories() {
   }, []);
 
   /**
-   * Fetch repositories from GitHub via OAuth
+   * Fetch all repositories from GitHub via OAuth (with pagination)
    */
   const fetchRepositories = useCallback(async (options = {}) => {
     if (!connection) {
@@ -79,26 +79,48 @@ export default function useRepositories() {
       setLoading(true);
       setError(null);
 
-      const params = new URLSearchParams({
-        connectionId: connection.id.toString(),
-        page: (options.page || 1).toString(),
-        perPage: (options.perPage || 50).toString(),
-        sort: options.sort || 'updated',
-        visibility: options.visibility || 'all'
-      });
+      const perPage = 100; // Max allowed by GitHub API
+      let page = 1;
+      let allRepos = [];
+      let hasMore = true;
 
-      const response = await fetch(`/api/oauth/github/repositories?${params}`);
+      // Fetch all pages
+      while (hasMore) {
+        const params = new URLSearchParams({
+          connectionId: connection.id.toString(),
+          page: page.toString(),
+          perPage: perPage.toString(),
+          sort: options.sort || 'updated',
+          visibility: options.visibility || 'all'
+        });
 
-      if (!response.ok) {
-        throw new Error('Failed to fetch repositories');
+        const response = await fetch(`/api/oauth/github/repositories?${params}`);
+
+        if (!response.ok) {
+          throw new Error('Failed to fetch repositories');
+        }
+
+        const data = await response.json();
+        const repos = data.repositories || [];
+
+        allRepos = [...allRepos, ...repos];
+
+        // If we got fewer than perPage, we've reached the end
+        if (repos.length < perPage) {
+          hasMore = false;
+        } else {
+          page++;
+        }
+
+        // Safety limit to prevent infinite loops (max 1000 repos)
+        if (allRepos.length >= 1000) {
+          hasMore = false;
+        }
       }
-
-      const data = await response.json();
-      const repos = data.repositories || [];
 
       // Mark which repos are cached
       const reposWithCacheStatus = await Promise.all(
-        repos.map(async (repo) => ({
+        allRepos.map(async (repo) => ({
           ...repo,
           isCached: await isRepoCached(repo.owner, repo.name)
         }))
