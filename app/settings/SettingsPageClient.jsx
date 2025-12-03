@@ -1173,6 +1173,79 @@ export default function SettingsPageClient() {
                   </div>
                 )}
 
+                {/* Set Password Modal (for OAuth users) */}
+                {showSetPasswordModal && (
+                  <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+                    <Card className="w-full max-w-md p-6 relative">
+                      <button
+                        onClick={() => setShowSetPasswordModal(false)}
+                        className="absolute top-4 right-4 text-text-secondary-dark hover:text-white"
+                      >
+                        <X className="w-5 h-5" />
+                      </button>
+
+                      <h3 className="text-xl font-bold text-white mb-2">Set Password</h3>
+                      <p className="text-sm text-text-secondary-dark mb-6">
+                        Set a password to enable email/password sign-in as an alternative to GitHub.
+                      </p>
+
+                      {passwordError && (
+                        <div className="mb-4 p-3 bg-red-500/10 border border-red-500/20 rounded-lg">
+                          <p className="text-sm text-red-400">{passwordError}</p>
+                        </div>
+                      )}
+
+                      <div className="space-y-4">
+                        <div>
+                          <label className="block text-sm text-text-secondary-dark mb-2">New Password</label>
+                          <input
+                            type="password"
+                            value={passwordForm.newPassword}
+                            onChange={(e) => setPasswordForm(prev => ({ ...prev, newPassword: e.target.value }))}
+                            className="w-full px-4 py-3 bg-bg-dark border-2 border-white/10 rounded-lg text-white placeholder-text-secondary-dark focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
+                          />
+                          <p className="text-xs text-text-secondary-dark mt-1">
+                            Min 8 characters, uppercase, lowercase, number, special character
+                          </p>
+                        </div>
+
+                        <div>
+                          <label className="block text-sm text-text-secondary-dark mb-2">Confirm Password</label>
+                          <input
+                            type="password"
+                            value={passwordForm.confirmPassword}
+                            onChange={(e) => setPasswordForm(prev => ({ ...prev, confirmPassword: e.target.value }))}
+                            className="w-full px-4 py-3 bg-bg-dark border-2 border-white/10 rounded-lg text-white placeholder-text-secondary-dark focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="flex gap-3 mt-6">
+                        <Button
+                          variant="ghost"
+                          onClick={() => setShowSetPasswordModal(false)}
+                          className="flex-1"
+                        >
+                          Cancel
+                        </Button>
+                        <Button
+                          variant="primary"
+                          onClick={handleSetPassword}
+                          disabled={savingPassword}
+                          className="flex-1"
+                        >
+                          {savingPassword ? (
+                            <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                          ) : (
+                            <Check className="w-4 h-4 mr-2" />
+                          )}
+                          Set Password
+                        </Button>
+                      </div>
+                    </Card>
+                  </div>
+                )}
+
                 {/* Delete Account Modal */}
                 {showDeleteModal && (
                   <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
