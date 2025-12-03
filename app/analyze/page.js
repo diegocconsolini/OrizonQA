@@ -20,7 +20,7 @@
  * NO code is ever uploaded to ORIZON servers.
  */
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, Suspense } from 'react';
 import dynamic from 'next/dynamic';
 import { useSession } from 'next-auth/react';
 import { useSearchParams, useRouter } from 'next/navigation';
@@ -52,7 +52,8 @@ import useFileUpload from '@/app/hooks/useFileUpload';
 import useRepositories from '@/app/hooks/useRepositories';
 import useIndexedDB from '@/app/hooks/useIndexedDB';
 
-export default function AnalyzePage() {
+// Inner component that uses useSearchParams (must be wrapped in Suspense)
+function AnalyzePageContent() {
   const { data: session, status } = useSession();
   const userId = session?.user?.id || 'anonymous';
   const searchParams = useSearchParams();
@@ -573,9 +574,8 @@ export default function AnalyzePage() {
             totalSize={cacheTotals.size}
             formatStorageSize={formatStorageSize}
             onViewCache={() => {
-              // Switch to Local Cache tab (index 3)
-              const tabButtons = document.querySelectorAll('[role="tab"]');
-              if (tabButtons[3]) tabButtons[3].click();
+              // Switch to Local Cache tab
+              handleTabChange('cache');
             }}
             onClearAll={handleClearAllCache}
             isLoading={cacheLoading}
@@ -583,5 +583,29 @@ export default function AnalyzePage() {
         </div>
       </div>
     </AppLayout>
+  );
+}
+
+// Loading fallback for Suspense
+function AnalyzePageLoading() {
+  return (
+    <AppLayout>
+      <div className="w-full">
+        <main className="p-4 md:p-6 lg:p-8">
+          <div className="flex items-center justify-center h-64">
+            <Loader2 className="w-8 h-8 animate-spin text-primary" />
+          </div>
+        </main>
+      </div>
+    </AppLayout>
+  );
+}
+
+// Default export wraps the content component with Suspense for useSearchParams
+export default function AnalyzePage() {
+  return (
+    <Suspense fallback={<AnalyzePageLoading />}>
+      <AnalyzePageContent />
+    </Suspense>
   );
 }
