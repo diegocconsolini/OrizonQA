@@ -60,14 +60,15 @@ export default function Logo({
     }
 
     return (
-      <div className={`relative inline-block ${className}`} style={{ width: heightPx, height: heightPx }} {...props}>
-        <Image
-          src={iconPath}
-          alt="ORIZON Gargantua"
-          fill
-          className="object-contain"
-        />
-      </div>
+      <Image
+        src={iconPath}
+        alt="ORIZON Gargantua"
+        width={heightPx}
+        height={heightPx}
+        className={`object-contain ${className}`}
+        priority
+        {...props}
+      />
     );
   }
 
@@ -90,14 +91,15 @@ export default function Logo({
     }
 
     return (
-      <div className={`relative inline-block ${className}`} style={{ width: widthPx, height: heightPx }} {...props}>
-        <Image
-          src={logoPath}
-          alt="ORIZON"
-          fill
-          className="object-contain object-left"
-        />
-      </div>
+      <Image
+        src={logoPath}
+        alt="ORIZON"
+        width={widthPx}
+        height={heightPx}
+        className={`object-contain object-left ${className}`}
+        priority
+        {...props}
+      />
     );
   }
 

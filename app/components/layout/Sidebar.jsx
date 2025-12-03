@@ -108,20 +108,19 @@ export default function Sidebar({ collapsed = false, onToggle }) {
         collapsed ? 'w-20' : 'w-64'
       }`}
     >
-      {/* Logo Section */}
-      <div className="flex flex-col items-center justify-center px-4 py-4 border-b border-white/10">
-        {!collapsed && (
+      {/* Logo Section - Fixed height to prevent layout shift */}
+      <div className={`flex flex-col items-center justify-center px-4 border-b border-white/10 ${
+        collapsed ? 'h-[72px]' : 'h-[100px]'
+      }`}>
+        {!collapsed ? (
           <div className="flex flex-col gap-2 items-center">
             <Logo variant="full" color="blue" size="md" background="dark" />
             <p className="text-sm text-text-secondary-dark font-medium font-secondary tracking-wide uppercase text-center">
               AI-Powered QA Analysis
             </p>
           </div>
-        )}
-        {collapsed && (
-          <div className="w-full flex justify-center">
-            <Logo variant="icon" color="blue" size="sm" background="dark" />
-          </div>
+        ) : (
+          <Logo variant="icon" color="blue" size="sm" background="dark" />
         )}
       </div>
 
