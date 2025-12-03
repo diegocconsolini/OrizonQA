@@ -7,13 +7,13 @@
  */
 
 import { useState, useEffect, useCallback } from 'react';
-import { useSession } from 'next-auth/react';
+import { useSession, signOut } from 'next-auth/react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Button from '@/app/components/ui/Button';
 import Card from '@/app/components/ui/Card';
 import { Tabs, TabList, TabButton, TabPanels, TabPanel } from '@/app/components/ui/Tabs';
 import AppLayout from '@/app/components/layout/AppLayout';
-import { Settings as SettingsIcon, Key, Server, Save, Loader2, Check, Eye, EyeOff, User, BarChart3, Zap, Calendar, Github, Cpu, RefreshCw, ChevronDown, AlertCircle } from 'lucide-react';
+import { Settings as SettingsIcon, Key, Server, Save, Loader2, Check, Eye, EyeOff, User, BarChart3, Zap, Calendar, Github, Cpu, RefreshCw, ChevronDown, AlertCircle, Lock, Trash2, X, Pencil } from 'lucide-react';
 import GitHubConnectionSection from '@/app/components/settings/GitHubConnectionSection';
 
 export default function SettingsPageClient() {
@@ -60,6 +60,20 @@ export default function SettingsPageClient() {
     totalTokens: 0,
     lastAnalysis: null
   });
+
+  // Account management state
+  const [profile, setProfile] = useState({ fullName: '', email: '', createdAt: null });
+  const [editingName, setEditingName] = useState(false);
+  const [newName, setNewName] = useState('');
+  const [savingName, setSavingName] = useState(false);
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [passwordForm, setPasswordForm] = useState({ currentPassword: '', newPassword: '', confirmPassword: '' });
+  const [savingPassword, setSavingPassword] = useState(false);
+  const [passwordError, setPasswordError] = useState('');
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deletePassword, setDeletePassword] = useState('');
+  const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState('');
 
   // Fetch models from API
   const fetchModels = useCallback(async (providerType, baseUrl = '') => {
@@ -186,6 +200,17 @@ export default function SettingsPageClient() {
             lastAnalysis: analysesData.analyses?.[0]?.created_at || null
           });
         }
+
+        // Load profile
+        const profileResponse = await fetch('/api/user/profile');
+        if (profileResponse.ok) {
+          const profileData = await profileResponse.json();
+          setProfile({
+            fullName: profileData.fullName || '',
+            email: profileData.email || '',
+            createdAt: profileData.createdAt
+          });
+        }
       } catch (err) {
         console.error('Error loading settings:', err);
         setError('Failed to load settings');
@@ -233,6 +258,120 @@ export default function SettingsPageClient() {
       setError(err.message || 'Failed to save settings');
     } finally {
       setSaving(false);
+    }
+  };
+
+  // Update profile name
+  const handleSaveName = async () => {
+    if (!newName.trim() || newName.trim().length < 2) {
+      setError('Name must be at least 2 characters');
+      return;
+    }
+
+    setSavingName(true);
+    setError('');
+
+    try {
+      const response = await fetch('/api/user/profile', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ fullName: newName.trim() }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to update name');
+      }
+
+      setProfile(prev => ({ ...prev, fullName: newName.trim() }));
+      setEditingName(false);
+      setSuccess('Name updated successfully!');
+      setTimeout(() => setSuccess(''), 3000);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setSavingName(false);
+    }
+  };
+
+  // Change password
+  const handleChangePassword = async () => {
+    setPasswordError('');
+
+    if (!passwordForm.currentPassword || !passwordForm.newPassword || !passwordForm.confirmPassword) {
+      setPasswordError('All fields are required');
+      return;
+    }
+
+    if (passwordForm.newPassword !== passwordForm.confirmPassword) {
+      setPasswordError('New passwords do not match');
+      return;
+    }
+
+    if (passwordForm.newPassword.length < 8) {
+      setPasswordError('Password must be at least 8 characters');
+      return;
+    }
+
+    setSavingPassword(true);
+
+    try {
+      const response = await fetch('/api/user/profile', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          currentPassword: passwordForm.currentPassword,
+          newPassword: passwordForm.newPassword,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to change password');
+      }
+
+      setShowPasswordModal(false);
+      setPasswordForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
+      setSuccess('Password changed successfully!');
+      setTimeout(() => setSuccess(''), 3000);
+    } catch (err) {
+      setPasswordError(err.message);
+    } finally {
+      setSavingPassword(false);
+    }
+  };
+
+  // Delete account
+  const handleDeleteAccount = async () => {
+    if (!deletePassword) {
+      setDeleteError('Password is required');
+      return;
+    }
+
+    setDeleting(true);
+    setDeleteError('');
+
+    try {
+      const response = await fetch('/api/user/delete', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password: deletePassword }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to delete account');
+      }
+
+      // Sign out and redirect to home
+      await signOut({ callbackUrl: '/' });
+    } catch (err) {
+      setDeleteError(err.message);
+    } finally {
+      setDeleting(false);
     }
   };
 
