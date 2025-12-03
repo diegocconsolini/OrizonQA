@@ -39,7 +39,8 @@
       "Bash(./scripts/migrate-slate-colors.sh:*)",
       "Bash(find:*)",
       "WebFetch(domain:docs.github.com)",
-      "WebFetch(domain:localhost)"
+      "WebFetch(domain:localhost)",
+      "Bash(xargs:*)"
     ],
     "deny": [],
     "ask": []
