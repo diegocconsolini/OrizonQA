@@ -62,11 +62,12 @@ export default function SettingsPageClient() {
   });
 
   // Account management state
-  const [profile, setProfile] = useState({ fullName: '', email: '', createdAt: null });
+  const [profile, setProfile] = useState({ fullName: '', email: '', createdAt: null, hasPassword: true });
   const [editingName, setEditingName] = useState(false);
   const [newName, setNewName] = useState('');
   const [savingName, setSavingName] = useState(false);
   const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [showSetPasswordModal, setShowSetPasswordModal] = useState(false);
   const [passwordForm, setPasswordForm] = useState({ currentPassword: '', newPassword: '', confirmPassword: '' });
   const [savingPassword, setSavingPassword] = useState(false);
   const [passwordError, setPasswordError] = useState('');
@@ -208,7 +209,8 @@ export default function SettingsPageClient() {
           setProfile({
             fullName: profileData.fullName || '',
             email: profileData.email || '',
-            createdAt: profileData.createdAt
+            createdAt: profileData.createdAt,
+            hasPassword: profileData.hasPassword
           });
         }
       } catch (err) {
@@ -295,7 +297,7 @@ export default function SettingsPageClient() {
     }
   };
 
-  // Change password
+  // Change password (for users with existing password)
   const handleChangePassword = async () => {
     setPasswordError('');
 
@@ -336,6 +338,55 @@ export default function SettingsPageClient() {
       setPasswordForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
       setSuccess('Password changed successfully!');
       setTimeout(() => setSuccess(''), 3000);
+    } catch (err) {
+      setPasswordError(err.message);
+    } finally {
+      setSavingPassword(false);
+    }
+  };
+
+  // Set password (for OAuth users without password)
+  const handleSetPassword = async () => {
+    setPasswordError('');
+
+    if (!passwordForm.newPassword || !passwordForm.confirmPassword) {
+      setPasswordError('All fields are required');
+      return;
+    }
+
+    if (passwordForm.newPassword !== passwordForm.confirmPassword) {
+      setPasswordError('Passwords do not match');
+      return;
+    }
+
+    if (passwordForm.newPassword.length < 8) {
+      setPasswordError('Password must be at least 8 characters');
+      return;
+    }
+
+    setSavingPassword(true);
+
+    try {
+      const response = await fetch('/api/user/profile', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          newPassword: passwordForm.newPassword,
+          setPassword: true,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to set password');
+      }
+
+      setShowSetPasswordModal(false);
+      setPasswordForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
+      setProfile(prev => ({ ...prev, hasPassword: true }));
+      setSuccess('Password set successfully! You can now sign in with email and password.');
+      setTimeout(() => setSuccess(''), 5000);
     } catch (err) {
       setPasswordError(err.message);
     } finally {
@@ -950,7 +1001,7 @@ export default function SettingsPageClient() {
                     </div>
                   </Card>
 
-                  {/* Change Password */}
+                  {/* Password Section */}
                   <Card className="p-6">
                     <div className="flex items-start gap-3 mb-4">
                       <Lock className="w-5 h-5 text-primary mt-1" />
@@ -958,23 +1009,53 @@ export default function SettingsPageClient() {
                         <h2 className="text-xl font-semibold text-white font-primary mb-1">
                           Password
                         </h2>
-                        <p className="text-sm text-text-secondary-dark font-secondary">
-                          Change your password to keep your account secure
-                        </p>
+                        {profile.hasPassword ? (
+                          <p className="text-sm text-text-secondary-dark font-secondary">
+                            Change your password to keep your account secure
+                          </p>
+                        ) : (
+                          <p className="text-sm text-text-secondary-dark font-secondary">
+                            You signed up with GitHub. Set a password to also sign in with email.
+                          </p>
+                        )}
                       </div>
                     </div>
 
-                    <Button
-                      variant="secondary"
-                      onClick={() => {
-                        setShowPasswordModal(true);
-                        setPasswordError('');
-                        setPasswordForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
-                      }}
-                    >
-                      <Lock className="w-4 h-4 mr-2" />
-                      Change Password
-                    </Button>
+                    {!profile.hasPassword && (
+                      <div className="p-4 bg-amber-500/5 border border-amber-500/20 rounded-lg mb-4 flex items-start gap-3">
+                        <Github className="w-5 h-5 text-amber-400 flex-shrink-0 mt-0.5" />
+                        <div className="text-sm text-amber-300 font-secondary">
+                          <p className="font-medium">GitHub account</p>
+                          <p className="mt-1">You're currently signed in via GitHub OAuth. You can set a local password to enable email/password sign-in as an alternative.</p>
+                        </div>
+                      </div>
+                    )}
+
+                    {profile.hasPassword ? (
+                      <Button
+                        variant="secondary"
+                        onClick={() => {
+                          setShowPasswordModal(true);
+                          setPasswordError('');
+                          setPasswordForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
+                        }}
+                      >
+                        <Lock className="w-4 h-4 mr-2" />
+                        Change Password
+                      </Button>
+                    ) : (
+                      <Button
+                        variant="primary"
+                        onClick={() => {
+                          setShowSetPasswordModal(true);
+                          setPasswordError('');
+                          setPasswordForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
+                        }}
+                      >
+                        <Lock className="w-4 h-4 mr-2" />
+                        Set Password
+                      </Button>
+                    )}
                   </Card>
 
                   {/* Danger Zone */}

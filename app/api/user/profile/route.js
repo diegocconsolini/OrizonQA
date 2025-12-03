@@ -57,11 +57,12 @@ export async function GET(request) {
 
 /**
  * PATCH /api/user/profile
- * Update user profile (name) or change password
+ * Update user profile (name) or change/set password
  *
  * Body options:
  * - { fullName: string } - Update display name
- * - { currentPassword, newPassword } - Change password
+ * - { currentPassword, newPassword } - Change password (for users with existing password)
+ * - { newPassword, setPassword: true } - Set password (for OAuth users without password)
  */
 export async function PATCH(request) {
   const context = getRequestContext(request);
@@ -74,7 +75,7 @@ export async function PATCH(request) {
     }
 
     const body = await request.json();
-    const { fullName, currentPassword, newPassword } = body;
+    const { fullName, currentPassword, newPassword, setPassword } = body;
     const userId = session.user.id;
 
     // Update name
@@ -108,7 +109,61 @@ export async function PATCH(request) {
       });
     }
 
-    // Change password
+    // Set password for OAuth users (no current password required)
+    if (setPassword && newPassword) {
+      // Get current user to check they don't have a password
+      const userResult = await query(
+        'SELECT password_hash FROM users WHERE id = $1',
+        [userId]
+      );
+
+      if (userResult.rows.length === 0) {
+        return NextResponse.json({ error: 'User not found' }, { status: 404 });
+      }
+
+      // Only allow setting password if user doesn't have one (OAuth user)
+      if (userResult.rows[0].password_hash) {
+        return NextResponse.json(
+          { error: 'Password already set. Use change password instead.' },
+          { status: 400 }
+        );
+      }
+
+      // Validate password strength
+      const passwordErrors = validatePassword(newPassword);
+      if (passwordErrors.length > 0) {
+        return NextResponse.json(
+          { error: 'Password does not meet requirements', details: passwordErrors },
+          { status: 400 }
+        );
+      }
+
+      // Hash and set password
+      const newPasswordHash = await bcrypt.hash(newPassword, 10);
+
+      await query(
+        'UPDATE users SET password_hash = $1, updated_at = NOW() WHERE id = $2',
+        [newPasswordHash, userId]
+      );
+
+      await logAudit({
+        userId,
+        userEmail: session.user.email,
+        action: 'PASSWORD_SET',
+        resourceType: 'user',
+        resourceId: userId.toString(),
+        success: true,
+        metadata: { method: 'oauth_user_set_password' },
+        ...context
+      });
+
+      return NextResponse.json({
+        success: true,
+        message: 'Password set successfully. You can now sign in with email and password.'
+      });
+    }
+
+    // Change password (requires current password)
     if (currentPassword && newPassword) {
       // Get current password hash
       const userResult = await query(
@@ -118,6 +173,14 @@ export async function PATCH(request) {
 
       if (userResult.rows.length === 0) {
         return NextResponse.json({ error: 'User not found' }, { status: 404 });
+      }
+
+      // Check if user has a password to change
+      if (!userResult.rows[0].password_hash) {
+        return NextResponse.json(
+          { error: 'No password set. Use set password instead.' },
+          { status: 400 }
+        );
       }
 
       // Verify current password
