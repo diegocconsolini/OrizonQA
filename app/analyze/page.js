@@ -471,6 +471,7 @@ function AnalyzePageContent() {
                 <AIProviderStatus
                   provider={provider}
                   hasApiKey={hasApiKey}
+                  apiKey={apiKey}
                   lmStudioUrl={lmStudioUrl}
                   claudeModel={claudeModel}
                   lmStudioModel={lmStudioModel}
