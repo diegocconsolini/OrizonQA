@@ -30,7 +30,7 @@ export async function GET(request) {
     }
 
     const result = await query(
-      'SELECT id, email, full_name, created_at, email_verified, last_login FROM users WHERE id = $1',
+      'SELECT id, email, full_name, created_at, email_verified, last_login, password_hash FROM users WHERE id = $1',
       [session.user.id]
     );
 
@@ -46,7 +46,8 @@ export async function GET(request) {
       fullName: user.full_name,
       createdAt: user.created_at,
       emailVerified: user.email_verified,
-      lastLogin: user.last_login
+      lastLogin: user.last_login,
+      hasPassword: !!user.password_hash
     });
   } catch (error) {
     console.error('Profile GET error:', error);
