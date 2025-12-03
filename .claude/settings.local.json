@@ -37,7 +37,8 @@
       "Bash(fuser:*)",
       "Bash(chmod:*)",
       "Bash(./scripts/migrate-slate-colors.sh:*)",
-      "Bash(find:*)"
+      "Bash(find:*)",
+      "WebFetch(domain:docs.github.com)"
     ],
     "deny": [],
     "ask": []
