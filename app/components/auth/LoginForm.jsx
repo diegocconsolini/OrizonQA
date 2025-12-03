@@ -124,8 +124,11 @@ export default function LoginForm() {
   // Handle GitHub OAuth (basic access - public info only)
   const handleGitHubSignIn = async () => {
     try {
+      // If "Remember me" is checked, allow auto-login with same account
+      // If not checked, force GitHub to show account selection
       await signIn('github', {
         callbackUrl: '/dashboard',
+        prompt: rememberMe ? undefined : 'consent',
       });
     } catch (err) {
       console.error('GitHub sign in error:', err);

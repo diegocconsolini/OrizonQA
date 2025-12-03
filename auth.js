@@ -40,8 +40,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       authorization: {
         params: {
           scope: 'read:user user:email',
-          // Always show GitHub login page so users can choose a different account
-          prompt: 'consent',
+          // prompt is controlled per-login via the "Remember me" checkbox
+          // When unchecked, 'consent' is passed to show account selection
         },
       },
       profile(profile) {
@@ -121,10 +121,16 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       return authConfig.callbacks.authorized({ auth, request });
     },
     async jwt({ token, user, account, profile }) {
-      // For GitHub OAuth, we need to look up the database user ID
+      // For GitHub OAuth, we need to look up the database user ID and store the access token
       if (account?.provider === 'github' && user?.email) {
         try {
           const email = user.email.toLowerCase();
+
+          // Store GitHub access token for later revocation on logout
+          if (account.access_token) {
+            token.accessToken = account.access_token;
+            token.provider = 'github';
+          }
 
           // Check if user exists
           let result = await query(
@@ -157,6 +163,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         token.id = user.id;
         token.email = user.email;
         token.name = user.name;
+        token.provider = 'credentials';
       }
       return token;
     },
