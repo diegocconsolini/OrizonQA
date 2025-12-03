@@ -290,7 +290,7 @@ export default function OutputSettingsPanel({
                     onClick={() => toggleFocusArea(area.id)}
                     className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
                       isSelected
-                        ? 'bg-primary text-white'
+                        ? 'bg-primary/20 text-primary border border-primary'
                         : 'bg-white/5 text-text-secondary-dark hover:bg-white/10 border border-white/10'
                     }`}
                   >
@@ -313,7 +313,7 @@ export default function OutputSettingsPanel({
                   onClick={() => setContext(prev => ({ ...prev, testStyle: style.id }))}
                   className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
                     context.testStyle === style.id
-                      ? 'bg-primary text-white'
+                      ? 'bg-primary/20 text-primary border border-primary'
                       : 'bg-white/5 text-text-secondary-dark hover:bg-white/10 border border-white/10'
                   }`}
                 >
