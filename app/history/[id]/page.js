@@ -23,7 +23,11 @@ import {
   Activity,
   Github,
   Upload,
-  FileText
+  FileText,
+  Share2,
+  Link as LinkIcon,
+  Check,
+  X
 } from 'lucide-react';
 
 export default function AnalysisDetailPage() {
@@ -34,6 +38,10 @@ export default function AnalysisDetailPage() {
   const [analysis, setAnalysis] = useState(null);
   const [error, setError] = useState('');
   const [deleting, setDeleting] = useState(false);
+  const [showShareModal, setShowShareModal] = useState(false);
+  const [sharingStatus, setSharingStatus] = useState({ isShared: false, shareUrl: null });
+  const [sharingLoading, setSharingLoading] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   // Load analysis
   useEffect(() => {
@@ -134,6 +142,57 @@ export default function AnalysisDetailPage() {
 
     sessionStorage.setItem('runAgainData', JSON.stringify(runAgainData));
     router.push('/analyze?runAgain=true');
+  };
+
+  // Load sharing status when modal opens
+  const loadSharingStatus = async () => {
+    try {
+      setSharingLoading(true);
+      const response = await fetch(`/api/user/analyses/${params.id}/share`);
+      if (response.ok) {
+        const data = await response.json();
+        setSharingStatus(data);
+      }
+    } catch (err) {
+      console.error('Error loading sharing status:', err);
+    } finally {
+      setSharingLoading(false);
+    }
+  };
+
+  // Toggle sharing
+  const handleToggleSharing = async (enable) => {
+    try {
+      setSharingLoading(true);
+      const response = await fetch(`/api/user/analyses/${params.id}/share`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ enable }),
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setSharingStatus(data);
+      }
+    } catch (err) {
+      console.error('Error toggling sharing:', err);
+    } finally {
+      setSharingLoading(false);
+    }
+  };
+
+  // Copy share link
+  const handleCopyLink = async () => {
+    if (sharingStatus.shareUrl) {
+      await navigator.clipboard.writeText(sharingStatus.shareUrl);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
+  };
+
+  // Open share modal
+  const openShareModal = () => {
+    setShowShareModal(true);
+    loadSharingStatus();
   };
 
   // Get input icon
@@ -262,6 +321,10 @@ export default function AnalysisDetailPage() {
                 <RefreshCw className="w-4 h-4 mr-2" />
                 Run Again
               </Button>
+              <Button variant="secondary" onClick={openShareModal}>
+                <Share2 className="w-4 h-4 mr-2" />
+                Share
+              </Button>
               <Button variant="secondary" onClick={handleDownload}>
                 <Download className="w-4 h-4 mr-2" />
                 Download
@@ -308,6 +371,83 @@ export default function AnalysisDetailPage() {
 
         {/* Results */}
         {analysis.results && <OutputSection results={analysis.results} />}
+
+        {/* Share Modal */}
+        {showShareModal && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+            <Card className="w-full max-w-md p-6 relative">
+              <button
+                onClick={() => setShowShareModal(false)}
+                className="absolute top-4 right-4 text-text-secondary-dark hover:text-white"
+              >
+                <X className="w-5 h-5" />
+              </button>
+
+              <h3 className="text-xl font-bold text-white mb-4">Share Analysis</h3>
+
+              {sharingLoading ? (
+                <div className="flex items-center justify-center py-8">
+                  <Loader2 className="w-6 h-6 text-primary animate-spin" />
+                </div>
+              ) : (
+                <>
+                  <div className="mb-6">
+                    <label className="flex items-center justify-between cursor-pointer">
+                      <div>
+                        <span className="text-white font-medium">Enable public sharing</span>
+                        <p className="text-sm text-text-secondary-dark mt-1">
+                          Anyone with the link can view this analysis
+                        </p>
+                      </div>
+                      <button
+                        onClick={() => handleToggleSharing(!sharingStatus.isShared)}
+                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                          sharingStatus.isShared ? 'bg-primary' : 'bg-white/20'
+                        }`}
+                      >
+                        <span
+                          className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                            sharingStatus.isShared ? 'translate-x-6' : 'translate-x-1'
+                          }`}
+                        />
+                      </button>
+                    </label>
+                  </div>
+
+                  {sharingStatus.isShared && sharingStatus.shareUrl && (
+                    <div className="space-y-4">
+                      <div>
+                        <label className="block text-sm text-text-secondary-dark mb-2">
+                          Share link
+                        </label>
+                        <div className="flex gap-2">
+                          <input
+                            type="text"
+                            readOnly
+                            value={sharingStatus.shareUrl}
+                            className="flex-1 bg-bg-dark border border-white/10 rounded-lg px-3 py-2 text-sm text-white"
+                          />
+                          <Button variant="secondary" onClick={handleCopyLink}>
+                            {copied ? (
+                              <Check className="w-4 h-4 text-green-400" />
+                            ) : (
+                              <LinkIcon className="w-4 h-4" />
+                            )}
+                          </Button>
+                        </div>
+                      </div>
+
+                      <p className="text-xs text-text-secondary-dark">
+                        This link allows anyone to view the analysis results.
+                        They cannot edit or delete the analysis.
+                      </p>
+                    </div>
+                  )}
+                </>
+              )}
+            </Card>
+          </div>
+        )}
       </div>
     </AppLayout>
   );
