@@ -225,7 +225,7 @@ export default function Dashboard() {
           </div>
 
           {/* KPI Cards */}
-          <div ref={kpiCardsRef} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          <div ref={kpiCardsRef} className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
             <KPICard
               title="Total Analyses"
               value={analytics?.summary?.totalAnalyses || 0}
@@ -238,21 +238,21 @@ export default function Dashboard() {
               title="Total Tokens"
               value={analytics?.summary?.totalTokens || 0}
               change={analytics?.summary?.tokensChange}
-              icon={<Zap className="w-5 h-5" />}
+              icon={<Zap className="w-4 h-4" />}
               color="quantum"
               loading={loading}
             />
             <KPICard
               title="Avg Tokens/Analysis"
               value={analytics?.summary?.avgTokensPerAnalysis || 0}
-              icon={<BarChart3 className="w-5 h-5" />}
+              icon={<BarChart3 className="w-4 h-4" />}
               color="accent"
               loading={loading}
             />
             <KPICard
               title="Last Analysis"
               value={formatTimeAgo(analytics?.summary?.lastAnalysisAt)}
-              icon={<Clock className="w-5 h-5" />}
+              icon={<Clock className="w-4 h-4" />}
               color="success"
               loading={loading}
               animateValue={false}
