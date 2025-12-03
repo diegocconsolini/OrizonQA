@@ -27,8 +27,8 @@ export default function SettingsPageClient() {
   const [success, setSuccess] = useState('');
   const [showApiKey, setShowApiKey] = useState(false);
 
-  // Get active tab from URL or default to 'api-keys'
-  const activeTab = searchParams.get('tab') || 'api-keys';
+  // Get active tab from URL or default to 'llm-config'
+  const activeTab = searchParams.get('tab') || 'llm-config';
 
   // Handle tab change - update URL without full page reload
   const handleTabChange = (newTab) => {
@@ -41,6 +41,15 @@ export default function SettingsPageClient() {
   const [claudeApiKey, setClaudeApiKey] = useState('');
   const [lmStudioUrl, setLmStudioUrl] = useState('http://localhost:1234');
   const [aiProvider, setAiProvider] = useState('claude');
+  const [claudeModel, setClaudeModel] = useState('claude-sonnet-4-20250514');
+
+  // Available Claude models
+  const claudeModels = [
+    { id: 'claude-sonnet-4-20250514', name: 'Claude Sonnet 4', description: 'Latest, best balance of speed and quality' },
+    { id: 'claude-opus-4-20250514', name: 'Claude Opus 4', description: 'Most capable, slower' },
+    { id: 'claude-3-5-sonnet-20241022', name: 'Claude 3.5 Sonnet', description: 'Previous generation' },
+    { id: 'claude-3-5-haiku-20241022', name: 'Claude 3.5 Haiku', description: 'Fastest, most affordable' },
+  ];
 
   // Usage stats
   const [usageStats, setUsageStats] = useState({
@@ -74,6 +83,9 @@ export default function SettingsPageClient() {
         }
         if (settingsData.aiProvider) {
           setAiProvider(settingsData.aiProvider);
+        }
+        if (settingsData.claudeModel) {
+          setClaudeModel(settingsData.claudeModel);
         }
 
         // Load usage stats
@@ -178,9 +190,9 @@ export default function SettingsPageClient() {
           {/* Tabbed Interface */}
           <Tabs value={activeTab} onChange={handleTabChange} className="mb-6">
             <TabList>
-              <TabButton value="api-keys">
-                <Key className="w-4 h-4 mr-2" />
-                API Keys
+              <TabButton value="llm-config">
+                <Cpu className="w-4 h-4 mr-2" />
+                LLM Config
               </TabButton>
               <TabButton value="github">
                 <Github className="w-4 h-4 mr-2" />
@@ -197,8 +209,8 @@ export default function SettingsPageClient() {
             </TabList>
 
             <TabPanels>
-              {/* API Keys Tab */}
-              <TabPanel value="api-keys">
+              {/* LLM Config Tab */}
+              <TabPanel value="llm-config">
                 <div className="space-y-6">
                   {/* AI Provider Selection */}
                   <Card className="p-6">
