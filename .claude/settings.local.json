@@ -40,7 +40,8 @@
       "Bash(find:*)",
       "WebFetch(domain:docs.github.com)",
       "WebFetch(domain:localhost)",
-      "Bash(xargs:*)"
+      "Bash(xargs:*)",
+      "Bash(ps:*)"
     ],
     "deny": [],
     "ask": []
