@@ -13,7 +13,7 @@ import Button from '@/app/components/ui/Button';
 import Card from '@/app/components/ui/Card';
 import { Tabs, TabList, TabButton, TabPanels, TabPanel } from '@/app/components/ui/Tabs';
 import AppLayout from '@/app/components/layout/AppLayout';
-import { Settings as SettingsIcon, Key, Server, Save, Loader2, Check, Eye, EyeOff, User, BarChart3, Zap, Calendar, Github, Cpu } from 'lucide-react';
+import { Settings as SettingsIcon, Key, Server, Save, Loader2, Check, Eye, EyeOff, User, BarChart3, Zap, Calendar, Github, Cpu, RefreshCw, ChevronDown, AlertCircle } from 'lucide-react';
 import GitHubConnectionSection from '@/app/components/settings/GitHubConnectionSection';
 
 export default function SettingsPageClient() {
@@ -42,14 +42,14 @@ export default function SettingsPageClient() {
   const [lmStudioUrl, setLmStudioUrl] = useState('http://localhost:1234');
   const [aiProvider, setAiProvider] = useState('claude');
   const [claudeModel, setClaudeModel] = useState('claude-sonnet-4-20250514');
+  const [lmStudioModel, setLmStudioModel] = useState('');
 
-  // Available Claude models
-  const claudeModels = [
-    { id: 'claude-sonnet-4-20250514', name: 'Claude Sonnet 4', description: 'Latest, best balance of speed and quality' },
-    { id: 'claude-opus-4-20250514', name: 'Claude Opus 4', description: 'Most capable, slower' },
-    { id: 'claude-3-5-sonnet-20241022', name: 'Claude 3.5 Sonnet', description: 'Previous generation' },
-    { id: 'claude-3-5-haiku-20241022', name: 'Claude 3.5 Haiku', description: 'Fastest, most affordable' },
-  ];
+  // Model lists (fetched from API)
+  const [claudeModels, setClaudeModels] = useState([]);
+  const [lmStudioModels, setLmStudioModels] = useState([]);
+  const [loadingModels, setLoadingModels] = useState({});
+  const [modelErrors, setModelErrors] = useState({});
+  const [lmServerConnected, setLmServerConnected] = useState(false);
 
   // Usage stats
   const [usageStats, setUsageStats] = useState({
