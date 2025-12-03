@@ -236,6 +236,7 @@ export default function useRepositories() {
 
   /**
    * Fetch file contents for selected files
+   * Uses authenticated API endpoint for private repos, falls back to raw.githubusercontent.com for public
    */
   const fetchFileContents = useCallback(async (owner, name, branch, filePaths) => {
     try {
@@ -256,35 +257,87 @@ export default function useRepositories() {
         path.includes('Makefile')
       );
 
-      const contents = await Promise.all(
-        codeFiles.map(async (filePath) => {
-          try {
-            const response = await fetch(
-              `https://raw.githubusercontent.com/${owner}/${name}/${branch}/${filePath}`
-            );
+      if (codeFiles.length === 0) {
+        return [];
+      }
 
-            if (!response.ok) return null;
+      let validContents = [];
 
-            const content = await response.text();
+      // Use authenticated API if we have a connection (required for private repos)
+      if (connection?.id) {
+        try {
+          const response = await fetch('/api/oauth/github/content', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              connectionId: connection.id,
+              owner,
+              repo: name,
+              branch,
+              paths: codeFiles
+            })
+          });
 
-            // Skip files that are too large (>500KB)
-            if (content.length > 500000) return null;
-
-            return {
-              path: filePath,
-              name: filePath.split('/').pop(),
-              content,
-              size: content.length,
-              branch
-            };
-          } catch (err) {
-            console.error(`Failed to fetch ${filePath}:`, err);
-            return null;
+          if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(errorData.error || 'Failed to fetch file contents');
           }
-        })
-      );
 
-      const validContents = contents.filter(Boolean);
+          const data = await response.json();
+
+          // Transform response to expected format
+          validContents = data.files
+            .filter(file => file.content && file.content.length <= 500000) // Skip >500KB
+            .map(file => ({
+              path: file.path,
+              name: file.path.split('/').pop(),
+              content: file.content,
+              size: file.size || file.content.length,
+              branch
+            }));
+
+          // Log any failed files
+          if (data.failed?.length > 0) {
+            console.warn('Some files failed to fetch:', data.failed);
+          }
+        } catch (err) {
+          console.error('Authenticated fetch failed, trying public API:', err);
+          // Fall through to public API for public repos
+        }
+      }
+
+      // Fallback to public raw.githubusercontent.com (only works for public repos)
+      if (validContents.length === 0) {
+        const contents = await Promise.all(
+          codeFiles.map(async (filePath) => {
+            try {
+              const response = await fetch(
+                `https://raw.githubusercontent.com/${owner}/${name}/${branch}/${filePath}`
+              );
+
+              if (!response.ok) return null;
+
+              const content = await response.text();
+
+              // Skip files that are too large (>500KB)
+              if (content.length > 500000) return null;
+
+              return {
+                path: filePath,
+                name: filePath.split('/').pop(),
+                content,
+                size: content.length,
+                branch
+              };
+            } catch (err) {
+              console.error(`Failed to fetch ${filePath}:`, err);
+              return null;
+            }
+          })
+        );
+
+        validContents = contents.filter(Boolean);
+      }
 
       // Cache to IndexedDB
       if (validContents.length > 0) {
@@ -303,7 +356,7 @@ export default function useRepositories() {
     } finally {
       setLoadingFiles(false);
     }
-  }, [cacheRepository]);
+  }, [connection, cacheRepository]);
 
   /**
    * Select a repository

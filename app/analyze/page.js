@@ -200,7 +200,7 @@ export default function AnalyzePage() {
   // API states
   const [provider, setProvider] = useState('claude');
   const [apiKey, setApiKey] = useState('');
-  const [lmStudioUrl, setLmStudioUrl] = useState('http://192.168.2.101:1234');
+  const [lmStudioUrl, setLmStudioUrl] = useState('http://localhost:1234');
   const [selectedModel, setSelectedModel] = useState('');
   const [usingSavedKey, setUsingSavedKey] = useState(false);
   const [savedKeyAvailable, setSavedKeyAvailable] = useState(false);

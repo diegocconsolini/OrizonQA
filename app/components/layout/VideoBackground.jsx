@@ -25,6 +25,7 @@ export default function VideoBackground() {
       <video
         autoPlay
         muted
+        loop
         playsInline
         className="absolute inset-0 w-full h-full object-cover opacity-30"
       >
