@@ -50,6 +50,9 @@ export default function SettingsPageClient() {
   const [loadingModels, setLoadingModels] = useState({});
   const [modelErrors, setModelErrors] = useState({});
   const [lmServerConnected, setLmServerConnected] = useState(false);
+  const [claudeKeyValidated, setClaudeKeyValidated] = useState(false);
+  const [validatingClaudeKey, setValidatingClaudeKey] = useState(false);
+  const [claudeKeyError, setClaudeKeyError] = useState('');
 
   // Usage stats
   const [usageStats, setUsageStats] = useState({
@@ -99,10 +102,41 @@ export default function SettingsPageClient() {
     }
   }, []);
 
-  // Fetch Claude models on mount
-  useEffect(() => {
-    fetchModels('anthropic');
-  }, [fetchModels]);
+  // Validate Claude API key and fetch models
+  const validateClaudeApiKey = useCallback(async () => {
+    if (!claudeApiKey.trim()) {
+      setClaudeKeyError('Please enter an API key');
+      return;
+    }
+
+    setValidatingClaudeKey(true);
+    setClaudeKeyError('');
+    setClaudeKeyValidated(false);
+
+    try {
+      // Use the models endpoint with the API key to validate
+      const response = await fetch('/api/ai/models?provider=anthropic', {
+        headers: {
+          'X-Claude-Api-Key': claudeApiKey.trim()
+        }
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Invalid API key');
+      }
+
+      const { models } = await response.json();
+      setClaudeModels(models);
+      setClaudeKeyValidated(true);
+    } catch (error) {
+      console.error('Claude API key validation failed:', error);
+      setClaudeKeyError(error.message || 'Failed to validate API key');
+      setClaudeKeyValidated(false);
+    } finally {
+      setValidatingClaudeKey(false);
+    }
+  }, [claudeApiKey]);
 
   // Load user settings
   useEffect(() => {
@@ -366,26 +400,53 @@ export default function SettingsPageClient() {
                           </div>
                         </div>
 
-                        <div className="relative">
-                          <input
-                            type={showApiKey ? 'text' : 'password'}
-                            value={claudeApiKey}
-                            onChange={(e) => setClaudeApiKey(e.target.value)}
-                            placeholder="sk-ant-..."
-                            className="w-full px-4 py-3 pr-12 bg-bg-dark border-2 border-white/10 rounded-lg text-white placeholder-text-secondary-dark focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary font-mono text-sm"
-                          />
+                        <div className="flex gap-2">
+                          <div className="relative flex-1">
+                            <input
+                              type={showApiKey ? 'text' : 'password'}
+                              value={claudeApiKey}
+                              onChange={(e) => {
+                                setClaudeApiKey(e.target.value);
+                                setClaudeKeyValidated(false);
+                                setClaudeKeyError('');
+                              }}
+                              placeholder="sk-ant-..."
+                              className="w-full px-4 py-3 pr-12 bg-bg-dark border-2 border-white/10 rounded-lg text-white placeholder-text-secondary-dark focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary font-mono text-sm"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => setShowApiKey(!showApiKey)}
+                              className="absolute right-3 top-1/2 -translate-y-1/2 text-text-secondary-dark hover:text-white transition-colors"
+                            >
+                              {showApiKey ? (
+                                <EyeOff className="w-5 h-5" />
+                              ) : (
+                                <Eye className="w-5 h-5" />
+                              )}
+                            </button>
+                          </div>
                           <button
-                            type="button"
-                            onClick={() => setShowApiKey(!showApiKey)}
-                            className="absolute right-3 top-1/2 -translate-y-1/2 text-text-secondary-dark hover:text-white transition-colors"
+                            onClick={validateClaudeApiKey}
+                            disabled={validatingClaudeKey || !claudeApiKey.trim()}
+                            className="px-4 py-3 bg-primary/10 border-2 border-primary/20 rounded-lg text-primary hover:bg-primary/20 transition-all disabled:opacity-50 flex items-center gap-2"
                           >
-                            {showApiKey ? (
-                              <EyeOff className="w-5 h-5" />
+                            {validatingClaudeKey ? (
+                              <Loader2 className="w-4 h-4 animate-spin" />
                             ) : (
-                              <Eye className="w-5 h-5" />
+                              <RefreshCw className="w-4 h-4" />
                             )}
+                            Validate
                           </button>
                         </div>
+                        {claudeKeyValidated && (
+                          <p className="text-xs text-green-400 mt-2 flex items-center gap-1">
+                            <div className="w-1.5 h-1.5 bg-green-400 rounded-full" />
+                            API key validated - {claudeModels.length} model(s) available
+                          </p>
+                        )}
+                        {claudeKeyError && (
+                          <p className="text-xs text-red-400 mt-2">{claudeKeyError}</p>
+                        )}
                       </Card>
 
                       {/* Claude Model Selection */}
