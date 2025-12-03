@@ -50,8 +50,19 @@ export async function POST(request) {
 
     const { connectionId, owner, repo, branch = 'main', paths } = body;
 
+    // Debug log
+    console.log('[GitHub Content API] Request:', {
+      connectionId,
+      owner,
+      repo,
+      branch,
+      pathsLength: Array.isArray(paths) ? paths.length : 'NOT_ARRAY',
+      pathsType: typeof paths
+    });
+
     // Validate required parameters
     if (!connectionId || !owner || !repo || !Array.isArray(paths)) {
+      console.log('[GitHub Content API] Validation failed: missing params');
       return NextResponse.json(
         { error: 'Missing required parameters: connectionId, owner, repo, paths[]' },
         { status: 400 }
@@ -66,6 +77,7 @@ export async function POST(request) {
     }
 
     if (paths.length > MAX_BATCH_SIZE) {
+      console.log('[GitHub Content API] Too many files:', paths.length);
       return NextResponse.json(
         { error: `Maximum ${MAX_BATCH_SIZE} files per request` },
         { status: 400 }
