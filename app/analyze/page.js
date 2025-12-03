@@ -494,36 +494,117 @@ function AnalyzePageContent() {
             </TabPanels>
           </Tabs>
 
-          {/* Action Buttons */}
+          {/* Action Buttons - Context-aware based on active tab */}
           <div className="flex gap-4 mb-6">
-            <Button
-              variant="primary"
-              size="lg"
-              onClick={handleAnalyze}
-              disabled={!canAnalyze || loading}
-              className="flex-1"
-            >
-              {loading ? (
-                <>
-                  <Loader2 className="animate-spin" size={20} />
-                  <span>Analyzing...</span>
-                </>
-              ) : (
-                <>
-                  <Sparkles size={20} />
-                  <span>Analyze Code</span>
-                </>
-              )}
-            </Button>
+            {activeTab === 'input' && (
+              <>
+                {/* Quick Analyze - uses default settings */}
+                <Button
+                  variant="secondary"
+                  size="lg"
+                  onClick={handleAnalyze}
+                  disabled={!canAnalyze || loading}
+                  className="flex items-center gap-2"
+                >
+                  {loading ? (
+                    <>
+                      <Loader2 className="animate-spin w-4 h-4" />
+                      <span>Analyzing...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Zap className="w-4 h-4" />
+                      <span>Quick Analyze</span>
+                    </>
+                  )}
+                </Button>
 
-            <Button
-              variant="secondary"
-              size="lg"
-              onClick={clearAll}
-              disabled={loading}
-            >
-              Clear All
-            </Button>
+                {/* Next: Configure - main action to proceed */}
+                <Button
+                  variant="primary"
+                  size="lg"
+                  onClick={() => handleTabChange('configure')}
+                  disabled={!(codeInput.trim() || uploadedFiles.length > 0 || selectedFiles.length > 0)}
+                  className="flex-1 flex items-center justify-center gap-2"
+                >
+                  <Settings className="w-4 h-4" />
+                  <span>Next: Configure</span>
+                  <ArrowRight className="w-4 h-4" />
+                </Button>
+              </>
+            )}
+
+            {activeTab === 'configure' && (
+              <>
+                {/* Back to Input */}
+                <Button
+                  variant="ghost"
+                  size="lg"
+                  onClick={() => handleTabChange('input')}
+                  disabled={loading}
+                >
+                  Back to Input
+                </Button>
+
+                {/* Analyze Code - main action */}
+                <Button
+                  variant="primary"
+                  size="lg"
+                  onClick={handleAnalyze}
+                  disabled={!canAnalyze || loading}
+                  className="flex-1 flex items-center justify-center gap-2"
+                >
+                  {loading ? (
+                    <>
+                      <Loader2 className="animate-spin w-4 h-4" />
+                      <span>Analyzing...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="w-4 h-4" />
+                      <span>Analyze Code</span>
+                    </>
+                  )}
+                </Button>
+              </>
+            )}
+
+            {activeTab === 'results' && (
+              <>
+                {/* New Analysis */}
+                <Button
+                  variant="secondary"
+                  size="lg"
+                  onClick={clearAll}
+                  disabled={loading}
+                >
+                  New Analysis
+                </Button>
+
+                {/* Re-analyze with different settings */}
+                <Button
+                  variant="primary"
+                  size="lg"
+                  onClick={() => handleTabChange('configure')}
+                  className="flex-1 flex items-center justify-center gap-2"
+                >
+                  <Settings className="w-4 h-4" />
+                  <span>Adjust & Re-analyze</span>
+                </Button>
+              </>
+            )}
+
+            {activeTab === 'cache' && (
+              <Button
+                variant="primary"
+                size="lg"
+                onClick={() => handleTabChange('input')}
+                className="flex items-center gap-2"
+              >
+                <ArrowRight className="w-4 h-4" />
+                <span>Start Analysis</span>
+              </Button>
+            )}
           </div>
 
           {/* Token Usage Display */}
