@@ -1,15 +1,17 @@
 'use client';
 
 /**
- * Dashboard Page - Analytics Dashboard
+ * Dashboard Page - Analytics Dashboard (Enhanced Version)
  *
  * Shows user analytics, usage statistics, and recent analyses.
- * Inspired by Agent Control Tower dashboard design with GSAP animations.
+ * Features interactive charts, activity heatmap, and drill-down details.
+ * Inspired by Agent Control Tower dashboard design.
  *
  * Features:
- * - KPI cards with animated counters
- * - Interactive donut charts for provider/input type distribution
- * - Usage over time bar chart
+ * - KPI cards with animated counters and glow effects
+ * - Interactive donut charts with flip card drill-down
+ * - Activity heatmap showing usage patterns
+ * - Usage over time chart with metric toggle
  * - Recent analyses list
  * - Period selector (7d, 30d, 90d, all)
  */
@@ -31,7 +33,8 @@ import {
   DonutChart,
   UsageChart,
   RecentAnalysesList,
-  PeriodSelector
+  PeriodSelector,
+  ActivityHeatmap
 } from '@/app/components/dashboard';
 
 // UI Components
@@ -49,6 +52,7 @@ export default function Dashboard() {
   // Refs for GSAP animations
   const kpiCardsRef = useRef(null);
   const chartsRef = useRef(null);
+  const heatmapRef = useRef(null);
   const particlesRef = useRef(null);
 
   // Fetch analytics data
@@ -118,12 +122,27 @@ export default function Dashboard() {
       );
     }
 
+    // Animate heatmap section
+    if (heatmapRef.current) {
+      gsap.fromTo(
+        heatmapRef.current,
+        { y: 30, opacity: 0 },
+        {
+          y: 0,
+          opacity: 1,
+          duration: 0.5,
+          ease: 'power3.out',
+          delay: 0.5,
+        }
+      );
+    }
+
     // Create floating particles
     if (particlesRef.current) {
       const particles = particlesRef.current;
       particles.innerHTML = ''; // Clear existing particles
 
-      for (let i = 0; i < 15; i++) {
+      for (let i = 0; i < 20; i++) {
         const particle = document.createElement('div');
         particle.className = 'absolute rounded-full pointer-events-none';
         particle.style.width = `${Math.random() * 4 + 2}px`;
@@ -246,27 +265,38 @@ export default function Dashboard() {
             />
           </div>
 
-          {/* Charts Row */}
+          {/* Charts Row - Donut Charts */}
           <div ref={chartsRef} className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
             <DonutChart
               title="Provider Distribution"
               data={analytics?.byProvider || []}
               centerLabel="Providers"
               loading={loading}
+              showDrillDown={true}
             />
             <DonutChart
               title="Input Type Distribution"
               data={analytics?.byInputType || []}
               centerLabel="Types"
               loading={loading}
+              showDrillDown={true}
             />
           </div>
 
-          {/* Usage Chart */}
+          {/* Usage Chart - Full Width */}
           <div className="mb-8">
             <UsageChart
               title={`Usage Over Time (Last ${period === 'all' ? 'All Time' : period + ' days'})`}
               data={analytics?.dailyUsage || []}
+              loading={loading}
+            />
+          </div>
+
+          {/* Activity Heatmap */}
+          <div ref={heatmapRef} className="mb-8">
+            <ActivityHeatmap
+              title="Activity Heatmap"
+              data={analytics?.heatmapData || []}
               loading={loading}
             />
           </div>
@@ -277,7 +307,7 @@ export default function Dashboard() {
             loading={loading}
           />
 
-          {/* Quick Actions */}
+          {/* Quick Actions - Empty State */}
           {!loading && analytics?.summary?.totalAnalyses === 0 && (
             <div className="mt-8 p-8 bg-primary/5 border border-primary/20 rounded-2xl text-center">
               <Sparkles className="w-12 h-12 text-primary mx-auto mb-4" />

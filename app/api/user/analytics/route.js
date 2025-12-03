@@ -95,11 +95,15 @@ export async function GET(request) {
 
     const lastAnalysisAt = lastAnalysisResult.rows[0]?.created_at || null;
 
-    // Get breakdown by provider
+    // Get breakdown by provider WITH tokens
     const byProviderResult = await query(`
       SELECT
         provider,
-        COUNT(*) as count
+        COUNT(*) as count,
+        COALESCE(SUM(
+          COALESCE((token_usage->>'input_tokens')::int, 0) +
+          COALESCE((token_usage->>'output_tokens')::int, 0)
+        ), 0) as tokens
       FROM analyses
       WHERE user_id = $1 ${dateFilter}
       GROUP BY provider
@@ -110,15 +114,20 @@ export async function GET(request) {
     const byProvider = byProviderResult.rows.map(row => ({
       name: row.provider === 'claude' ? 'Claude' : 'LM Studio',
       count: parseInt(row.count),
+      tokens: parseInt(row.tokens),
       percentage: totalForProvider > 0 ? Math.round((parseInt(row.count) / totalForProvider) * 100) : 0,
       color: row.provider === 'claude' ? '#00D4FF' : '#FF9500'
     }));
 
-    // Get breakdown by input type
+    // Get breakdown by input type WITH tokens
     const byInputTypeResult = await query(`
       SELECT
         input_type,
-        COUNT(*) as count
+        COUNT(*) as count,
+        COALESCE(SUM(
+          COALESCE((token_usage->>'input_tokens')::int, 0) +
+          COALESCE((token_usage->>'output_tokens')::int, 0)
+        ), 0) as tokens
       FROM analyses
       WHERE user_id = $1 ${dateFilter}
       GROUP BY input_type
@@ -140,6 +149,7 @@ export async function GET(request) {
     const byInputType = byInputTypeResult.rows.map(row => ({
       name: inputTypeNames[row.input_type] || row.input_type,
       count: parseInt(row.count),
+      tokens: parseInt(row.tokens),
       percentage: totalForInputType > 0 ? Math.round((parseInt(row.count) / totalForInputType) * 100) : 0,
       color: inputTypeColors[row.input_type] || '#888888'
     }));
@@ -163,6 +173,24 @@ export async function GET(request) {
       date: row.date,
       count: parseInt(row.count),
       tokens: parseInt(row.tokens)
+    }));
+
+    // Get activity heatmap data (day of week x hour)
+    const heatmapResult = await query(`
+      SELECT
+        EXTRACT(DOW FROM created_at) as day,
+        EXTRACT(HOUR FROM created_at) as hour,
+        COUNT(*) as count
+      FROM analyses
+      WHERE user_id = $1 ${dateFilter}
+      GROUP BY EXTRACT(DOW FROM created_at), EXTRACT(HOUR FROM created_at)
+      ORDER BY day, hour
+    `, [userId]);
+
+    const heatmapData = heatmapResult.rows.map(row => ({
+      day: parseInt(row.day),
+      hour: parseInt(row.hour),
+      count: parseInt(row.count)
     }));
 
     // Get recent analyses
@@ -207,6 +235,7 @@ export async function GET(request) {
       byProvider,
       byInputType,
       dailyUsage,
+      heatmapData,
       recentAnalyses
     });
 
