@@ -217,6 +217,7 @@ function AnalyzePageContent() {
   const [lmStudioUrl, setLmStudioUrl] = useState('http://localhost:1234');
   const [hasApiKey, setHasApiKey] = useState(false);
   const [claudeModel, setClaudeModel] = useState('claude-sonnet-4-20250514');
+  const [lmStudioModel, setLmStudioModel] = useState('');
 
   // Custom hooks for analysis and file upload
   const {
