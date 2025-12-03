@@ -114,7 +114,41 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     })
   ],
   callbacks: {
-    ...authConfig.callbacks,
+    async authorized({ auth, request }) {
+      // Use the base config's authorized callback
+      return authConfig.callbacks.authorized({ auth, request });
+    },
+    async jwt({ token, user, account, profile }) {
+      // For GitHub OAuth, we need to look up the database user ID
+      if (account?.provider === 'github' && user?.email) {
+        try {
+          const result = await query(
+            'SELECT id FROM users WHERE email = $1',
+            [user.email.toLowerCase()]
+          );
+          if (result.rows.length > 0) {
+            token.id = String(result.rows[0].id);
+            token.email = user.email;
+            token.name = user.name;
+          }
+        } catch (error) {
+          console.error('JWT callback error for GitHub user:', error);
+        }
+      } else if (user) {
+        // Credentials provider - user.id is already correct
+        token.id = user.id;
+        token.email = user.email;
+        token.name = user.name;
+      }
+      return token;
+    },
+    async session({ session, token }) {
+      // Add user ID to session from token
+      if (token && session.user) {
+        session.user.id = token.id;
+      }
+      return session;
+    },
     async signIn({ user, account, profile }) {
       // Handle GitHub OAuth sign in
       if (account?.provider === 'github') {
