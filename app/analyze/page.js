@@ -338,6 +338,48 @@ function AnalyzePageContent() {
     loadUserSettings();
   }, [session, status, settingsLoaded]);
 
+  // Handle "Run Again" from history page
+  useEffect(() => {
+    const isRunAgain = searchParams.get('runAgain') === 'true';
+    if (!isRunAgain) return;
+
+    const runAgainDataStr = sessionStorage.getItem('runAgainData');
+    if (!runAgainDataStr) return;
+
+    try {
+      const runAgainData = JSON.parse(runAgainDataStr);
+
+      // Apply saved config
+      if (runAgainData.config) {
+        setConfig(prev => ({ ...prev, ...runAgainData.config }));
+      }
+
+      // Apply provider/model if different from saved settings
+      if (runAgainData.provider) {
+        setProvider(runAgainData.provider);
+      }
+      if (runAgainData.model) {
+        if (runAgainData.provider === 'lmstudio') {
+          setLmStudioModel(runAgainData.model);
+        } else {
+          setClaudeModel(runAgainData.model);
+        }
+      }
+
+      // Show success message about config applied
+      setSuccess('Configuration from previous analysis loaded. Select input and click Analyze.');
+
+      // Clear sessionStorage and URL param
+      sessionStorage.removeItem('runAgainData');
+      router.replace('/analyze?tab=input', { scroll: false });
+
+      // Clear success after 5 seconds
+      setTimeout(() => setSuccess(''), 5000);
+    } catch (error) {
+      console.error('Error loading run again data:', error);
+    }
+  }, [searchParams]);
+
   return (
     <AppLayout>
       <div className="w-full">

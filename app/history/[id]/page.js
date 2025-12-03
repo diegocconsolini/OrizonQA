@@ -118,6 +118,24 @@ export default function AnalysisDetailPage() {
     URL.revokeObjectURL(url);
   };
 
+  // Run Again - navigate to analyze page with pre-filled config
+  const handleRunAgain = () => {
+    if (!analysis) return;
+
+    // Store analysis data in sessionStorage for the analyze page to pick up
+    const runAgainData = {
+      config: analysis.config,
+      provider: analysis.provider,
+      model: analysis.model,
+      inputType: analysis.input_type,
+      githubUrl: analysis.github_url,
+      githubBranch: analysis.github_branch,
+    };
+
+    sessionStorage.setItem('runAgainData', JSON.stringify(runAgainData));
+    router.push('/analyze?runAgain=true');
+  };
+
   // Get input icon
   const getInputIcon = (type) => {
     switch (type) {
@@ -240,6 +258,10 @@ export default function AnalysisDetailPage() {
 
             {/* Action Buttons */}
             <div className="flex gap-2">
+              <Button variant="primary" onClick={handleRunAgain}>
+                <RefreshCw className="w-4 h-4 mr-2" />
+                Run Again
+              </Button>
               <Button variant="secondary" onClick={handleDownload}>
                 <Download className="w-4 h-4 mr-2" />
                 Download
