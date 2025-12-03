@@ -125,6 +125,7 @@ export default function SettingsPageClient() {
           claudeApiKey: claudeApiKey.trim() || null,
           lmStudioUrl: lmStudioUrl.trim() || null,
           aiProvider: aiProvider,
+          claudeModel: claudeModel,
         }),
       });
 
@@ -328,6 +329,50 @@ export default function SettingsPageClient() {
                       </button>
                     </div>
                   </Card>
+
+                  {/* Claude Model Selection - Only show when Claude is selected */}
+                  {aiProvider === 'claude' && (
+                    <Card className="p-6">
+                      <div className="flex items-start gap-3 mb-4">
+                        <Zap className="w-5 h-5 text-primary mt-1" />
+                        <div>
+                          <h2 className="text-xl font-semibold text-white font-primary mb-2">
+                            Claude Model
+                          </h2>
+                          <p className="text-sm text-text-secondary-dark font-secondary mb-4">
+                            Select the Claude model to use for analysis
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        {claudeModels.map((model) => (
+                          <button
+                            key={model.id}
+                            type="button"
+                            onClick={() => setClaudeModel(model.id)}
+                            className={`p-4 rounded-xl border-2 transition-all duration-200 text-left ${
+                              claudeModel === model.id
+                                ? 'border-primary bg-primary/10'
+                                : 'border-white/10 hover:border-white/20 hover:bg-white/5'
+                            }`}
+                          >
+                            <div className="flex items-center justify-between mb-1">
+                              <span className={`font-semibold text-sm ${
+                                claudeModel === model.id ? 'text-primary' : 'text-white'
+                              }`}>{model.name}</span>
+                              {claudeModel === model.id && (
+                                <Check className="w-4 h-4 text-primary" />
+                              )}
+                            </div>
+                            <p className="text-xs text-text-secondary-dark">
+                              {model.description}
+                            </p>
+                          </button>
+                        ))}
+                      </div>
+                    </Card>
+                  )}
 
                   {/* LM Studio URL */}
                   <Card className="p-6">

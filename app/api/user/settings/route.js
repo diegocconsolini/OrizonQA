@@ -74,7 +74,7 @@ export async function GET() {
 
     // Get user settings from database
     const result = await query(
-      'SELECT claude_api_key_encrypted, lmstudio_url, ai_provider FROM users WHERE id = $1',
+      'SELECT claude_api_key_encrypted, lmstudio_url, ai_provider, claude_model FROM users WHERE id = $1',
       [userId]
     );
 
@@ -94,6 +94,7 @@ export async function GET() {
       claudeApiKey: claudeApiKey || '',
       lmStudioUrl: user.lmstudio_url || '',
       aiProvider: user.ai_provider || 'claude',
+      claudeModel: user.claude_model || 'claude-sonnet-4-20250514',
     });
   } catch (error) {
     console.error('Settings GET error:', error);
@@ -122,7 +123,7 @@ export async function POST(request) {
 
     const userId = session.user.id;
     const body = await request.json();
-    const { claudeApiKey, lmStudioUrl, aiProvider } = body;
+    const { claudeApiKey, lmStudioUrl, aiProvider, claudeModel } = body;
 
     // Encrypt API key if provided
     const encryptedApiKey = claudeApiKey ? encrypt(claudeApiKey) : null;
@@ -133,9 +134,10 @@ export async function POST(request) {
        SET claude_api_key_encrypted = $1,
            lmstudio_url = $2,
            ai_provider = $3,
+           claude_model = $4,
            updated_at = NOW()
-       WHERE id = $4`,
-      [encryptedApiKey, lmStudioUrl || null, aiProvider || 'claude', userId]
+       WHERE id = $5`,
+      [encryptedApiKey, lmStudioUrl || null, aiProvider || 'claude', claudeModel || 'claude-sonnet-4-20250514', userId]
     );
 
     return NextResponse.json({
