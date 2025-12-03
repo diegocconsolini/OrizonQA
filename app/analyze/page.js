@@ -23,7 +23,7 @@
 import { useState, useEffect, useCallback, Suspense } from 'react';
 import { useSession } from 'next-auth/react';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { Loader2, Sparkles, Settings, Shield } from 'lucide-react';
+import { Loader2, Sparkles, Settings, Shield, Zap, ArrowRight } from 'lucide-react';
 
 // UI Components
 import {
