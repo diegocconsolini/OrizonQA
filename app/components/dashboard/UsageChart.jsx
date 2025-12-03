@@ -127,8 +127,8 @@ export default function UsageChart({
           </div>
         </div>
 
-        {/* Chart */}
-        <div ref={chartRef} className="h-56 flex items-end justify-between gap-2 px-2">
+        {/* Chart - overflow-hidden prevents hover scale from overflowing */}
+        <div ref={chartRef} className="h-56 flex items-end justify-between gap-2 px-2 overflow-hidden">
           {data.map((item, i) => {
             const value = getValue(item);
             const height = (value / maxValue) * 100;
@@ -137,20 +137,20 @@ export default function UsageChart({
             return (
               <div
                 key={i}
-                className="flex-1 flex flex-col items-center gap-2"
+                className="flex-1 flex flex-col items-center gap-2 min-w-0"
                 onMouseEnter={() => setHoveredIndex(i)}
                 onMouseLeave={() => setHoveredIndex(null)}
               >
-                <div className="w-full relative" style={{ height: '180px' }}>
+                <div className="w-full relative overflow-visible" style={{ height: '180px' }}>
                   {/* Background bar (shows max height reference) */}
                   <div
                     className="absolute bottom-0 w-full rounded-t-lg bg-white/5 transition-all"
                     style={{ height: '100%' }}
                   />
 
-                  {/* Actual bar */}
+                  {/* Actual bar - subtle hover effect that doesn't overflow */}
                   <div
-                    className={`chart-bar absolute bottom-0 w-full rounded-t-lg transition-all cursor-pointer ${
+                    className={`chart-bar absolute bottom-0 left-[5%] w-[90%] rounded-t-lg transition-all cursor-pointer ${
                       metric === 'count'
                         ? 'bg-gradient-to-t from-primary to-primary/60'
                         : 'bg-gradient-to-t from-quantum to-quantum/60'
@@ -159,10 +159,11 @@ export default function UsageChart({
                       height: `${Math.max(height, 2)}%`,
                       boxShadow: isHovered
                         ? metric === 'count'
-                          ? '0 0 20px rgba(0, 212, 255, 0.5)'
-                          : '0 0 20px rgba(106, 0, 255, 0.5)'
+                          ? '0 0 15px rgba(0, 212, 255, 0.4)'
+                          : '0 0 15px rgba(106, 0, 255, 0.4)'
                         : 'none',
-                      transform: isHovered ? 'scaleX(1.1)' : 'scaleX(1)',
+                      left: isHovered ? '0%' : '5%',
+                      width: isHovered ? '100%' : '90%',
                     }}
                   >
                     {/* Tooltip */}
