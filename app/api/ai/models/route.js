@@ -8,15 +8,19 @@ import { NextResponse } from 'next/server';
  *
  * Query params:
  * - provider: 'anthropic' | 'lmstudio' | 'ollama'
- * - apiKey: API key for Anthropic (optional)
  * - baseUrl: Custom endpoint URL (optional)
+ *
+ * Headers:
+ * - X-Claude-Api-Key: API key for Anthropic (required for anthropic provider)
  */
 export async function GET(request) {
   try {
     const { searchParams } = new URL(request.url);
     const provider = searchParams.get('provider');
-    const apiKey = searchParams.get('apiKey');
     const baseUrl = searchParams.get('baseUrl');
+
+    // Get API key from header for security (not query params)
+    const apiKey = request.headers.get('X-Claude-Api-Key');
 
     if (!provider) {
       return NextResponse.json(
@@ -29,6 +33,12 @@ export async function GET(request) {
 
     switch (provider) {
       case 'anthropic':
+        if (!apiKey) {
+          return NextResponse.json(
+            { error: 'API key is required for Anthropic' },
+            { status: 400 }
+          );
+        }
         models = await fetchAnthropicModels(apiKey);
         break;
       case 'lmstudio':
@@ -55,18 +65,59 @@ export async function GET(request) {
 }
 
 /**
- * Fetch Anthropic models
- * Returns static list since Anthropic doesn't have a models endpoint
+ * Fetch Anthropic models via the Models API
+ * https://docs.anthropic.com/en/api/models-list
  */
 async function fetchAnthropicModels(apiKey) {
-  // Anthropic models - updated list as of 2025
-  return [
-    { id: 'claude-sonnet-4-20250514', name: 'Claude Sonnet 4', description: 'Latest Sonnet, best balance' },
-    { id: 'claude-opus-4-20250514', name: 'Claude Opus 4', description: 'Most capable model' },
-    { id: 'claude-3-7-sonnet-20250219', name: 'Claude 3.7 Sonnet', description: 'Extended thinking' },
-    { id: 'claude-3-5-sonnet-20241022', name: 'Claude 3.5 Sonnet', description: 'Previous generation' },
-    { id: 'claude-3-5-haiku-20241022', name: 'Claude 3.5 Haiku', description: 'Fastest model' },
-  ];
+  try {
+    const response = await fetch('https://api.anthropic.com/v1/models', {
+      method: 'GET',
+      headers: {
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      if (response.status === 401) {
+        throw new Error('Invalid API key');
+      }
+      throw new Error(errorData.error?.message || `Anthropic API returned ${response.status}`);
+    }
+
+    const data = await response.json();
+    const models = data.data || [];
+
+    // Filter to only chat models (exclude embedding, etc.) and sort by created_at desc
+    const chatModels = models
+      .filter(model => model.type === 'model' && model.id.includes('claude'))
+      .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+      .map(model => ({
+        id: model.id,
+        name: model.display_name || model.id,
+        description: formatModelDescription(model),
+      }));
+
+    return chatModels;
+  } catch (error) {
+    console.error('Failed to fetch Anthropic models:', error);
+    throw new Error(error.message || 'Failed to validate API key with Anthropic');
+  }
+}
+
+/**
+ * Format model description from model metadata
+ */
+function formatModelDescription(model) {
+  if (model.id.includes('opus')) return 'Most capable model';
+  if (model.id.includes('sonnet-4-5')) return 'Latest Sonnet with enhanced capabilities';
+  if (model.id.includes('sonnet-4')) return 'High performance, balanced';
+  if (model.id.includes('3-7-sonnet')) return 'Extended thinking model';
+  if (model.id.includes('3-5-sonnet')) return 'Previous generation Sonnet';
+  if (model.id.includes('haiku')) return 'Fastest, most efficient';
+  return 'Claude model';
 }
 
 /**

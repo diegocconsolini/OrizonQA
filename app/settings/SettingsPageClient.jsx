@@ -449,40 +449,43 @@ export default function SettingsPageClient() {
                         )}
                       </Card>
 
-                      {/* Claude Model Selection */}
+                      {/* Claude Model Selection - Only show after key is validated */}
                       <Card className="p-6">
                         <div className="flex items-start justify-between gap-3 mb-4">
                           <div className="flex items-start gap-3">
                             <Zap className="w-5 h-5 text-primary mt-1" />
                             <div>
                               <h2 className="text-xl font-semibold text-white font-primary mb-2">
-                                Claude Model
+                                Default Model
                               </h2>
                               <p className="text-sm text-text-secondary-dark font-secondary">
                                 Select the Claude model to use for analysis
                               </p>
                             </div>
                           </div>
-                          <button
-                            onClick={() => fetchModels('anthropic')}
-                            disabled={loadingModels.anthropic}
-                            className="p-2 text-text-secondary-dark hover:text-white transition-colors disabled:opacity-50"
-                            title="Refresh models"
-                          >
-                            <RefreshCw className={`w-4 h-4 ${loadingModels.anthropic ? 'animate-spin' : ''}`} />
-                          </button>
+                          {claudeKeyValidated && (
+                            <button
+                              onClick={validateClaudeApiKey}
+                              disabled={validatingClaudeKey}
+                              className="p-2 text-text-secondary-dark hover:text-white transition-colors disabled:opacity-50"
+                              title="Refresh models"
+                            >
+                              <RefreshCw className={`w-4 h-4 ${validatingClaudeKey ? 'animate-spin' : ''}`} />
+                            </button>
+                          )}
                         </div>
 
-                        {loadingModels.anthropic ? (
+                        {validatingClaudeKey ? (
                           <div className="flex items-center justify-center p-8">
                             <Loader2 className="w-6 h-6 text-primary animate-spin" />
                           </div>
-                        ) : claudeModels.length === 0 ? (
+                        ) : !claudeKeyValidated ? (
                           <div className="p-4 bg-amber-500/10 border border-amber-500/20 rounded-lg flex items-start gap-2">
                             <AlertCircle className="w-5 h-5 text-amber-400 flex-shrink-0 mt-0.5" />
-                            <p className="text-sm text-amber-400">
-                              No models loaded. Click refresh to load available models.
-                            </p>
+                            <div className="text-sm text-amber-400">
+                              <p className="font-medium">No models available</p>
+                              <p className="mt-1">Enter your Claude API key above and click Validate to load available models.</p>
+                            </div>
                           </div>
                         ) : (
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -511,9 +514,6 @@ export default function SettingsPageClient() {
                               </button>
                             ))}
                           </div>
-                        )}
-                        {modelErrors.anthropic && (
-                          <p className="text-xs text-red-400 mt-2">{modelErrors.anthropic}</p>
                         )}
                       </Card>
                     </>
