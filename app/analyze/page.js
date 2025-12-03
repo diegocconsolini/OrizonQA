@@ -329,7 +329,7 @@ export default function AnalyzePage() {
 
   return (
     <AppLayout>
-      <div className="max-w-[1600px] mx-auto">
+      <div className="w-full">
         <main className="p-4 md:p-6 lg:p-8">
           {/* Page Header */}
           <div className="mb-6">

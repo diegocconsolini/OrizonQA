@@ -72,7 +72,7 @@ export default function GitInputSection({
 }) {
   const [inputMode, setInputMode] = useState('github'); // github, paste, upload
   const [isDragging, setIsDragging] = useState(false);
-  const [showRepoSelector, setShowRepoSelector] = useState(!selectedRepo);
+  const [showRepoSelector, setShowRepoSelector] = useState(true); // Always start expanded
 
   const handleDrop = (e) => {
     e.preventDefault();
@@ -85,9 +85,9 @@ export default function GitInputSection({
   };
 
   return (
-    <div className="bg-surface-dark rounded-2xl overflow-hidden">
+    <div className="bg-surface-dark border border-white/10 rounded-xl overflow-hidden">
       {/* Input Mode Tabs */}
-      <div className="flex items-center gap-2 p-3 border-b border-white/10 bg-bg-dark/30">
+      <div className="flex items-center gap-2 p-4 border-b border-white/10 bg-bg-dark/50">
         <button
           onClick={() => setInputMode('github')}
           className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
@@ -133,20 +133,20 @@ export default function GitInputSection({
       </div>
 
       {/* Content based on input mode */}
-      <div className="p-4">
+      <div className="p-6">
         {/* GitHub Repository Mode */}
         {inputMode === 'github' && (
-          <div className="space-y-4">
+          <div className="space-y-6">
             {!isConnected ? (
               // Not connected state
-              <div className="text-center py-12">
-                <div className="p-4 bg-white/5 rounded-2xl inline-block mb-4">
-                  <Github className="w-12 h-12 text-text-secondary-dark" />
+              <div className="text-center py-16">
+                <div className="p-5 bg-white/5 rounded-2xl inline-block mb-5">
+                  <Github className="w-14 h-14 text-text-secondary-dark" />
                 </div>
-                <h3 className="text-lg font-semibold text-white mb-2">
+                <h3 className="text-xl font-semibold text-white mb-3">
                   Connect GitHub to Get Started
                 </h3>
-                <p className="text-sm text-text-secondary-dark max-w-md mx-auto mb-6">
+                <p className="text-sm text-text-secondary-dark max-w-lg mx-auto mb-8">
                   Connect your GitHub account to browse and select repositories for analysis.
                   Your code stays local - we never upload it to our servers.
                 </p>
@@ -161,74 +161,78 @@ export default function GitInputSection({
               </div>
             ) : (
               // Connected - show repo browser
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                {/* Repository Selection */}
-                <div className="space-y-3">
-                  {/* Selected repo header */}
-                  {selectedRepo && !showRepoSelector && (
-                    <div className="p-3 bg-primary/5 border border-primary/20 rounded-lg flex items-center justify-between">
-                      <div className="flex items-center gap-3">
+              <>
+                {/* Selected repo header - shown when repo is selected */}
+                {selectedRepo && (
+                  <div className="p-4 bg-primary/5 border border-primary/20 rounded-xl flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                      <div className="p-2 bg-primary/10 rounded-lg">
                         <Code className="w-5 h-5 text-primary" />
-                        <div>
-                          <p className="text-sm font-medium text-white">
-                            {selectedRepo.full_name || `${selectedRepo.owner}/${selectedRepo.name}`}
-                          </p>
-                          <p className="text-xs text-text-secondary-dark">
-                            {selectedRepo.description || 'No description'}
-                          </p>
-                        </div>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <BranchSelector
-                          branches={branches}
-                          selectedBranch={selectedBranch}
-                          onChangeBranch={onChangeBranch}
-                        />
-                        <button
-                          onClick={() => setShowRepoSelector(true)}
-                          className="text-xs text-primary hover:text-primary/80 font-medium"
-                        >
-                          Change
-                        </button>
+                      <div>
+                        <p className="text-base font-medium text-white">
+                          {selectedRepo.full_name || `${selectedRepo.owner}/${selectedRepo.name}`}
+                        </p>
+                        <p className="text-sm text-text-secondary-dark mt-0.5">
+                          {selectedRepo.description || 'No description'}
+                        </p>
                       </div>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <BranchSelector
+                        branches={branches}
+                        selectedBranch={selectedBranch}
+                        onChangeBranch={onChangeBranch}
+                      />
+                      <button
+                        onClick={() => setShowRepoSelector(!showRepoSelector)}
+                        className="px-3 py-1.5 text-sm text-primary hover:bg-primary/10 rounded-lg font-medium transition-colors"
+                      >
+                        {showRepoSelector ? 'Hide Repos' : 'Change Repo'}
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {/* Main content grid */}
+                <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+                  {/* Repository Selection - Left side */}
+                  {(showRepoSelector || !selectedRepo) && (
+                    <div className="min-h-[400px]">
+                      <RepositorySelector
+                        repositories={repositories}
+                        selectedRepo={selectedRepo}
+                        onSelect={(repo) => {
+                          onSelectRepo(repo);
+                          // Keep selector open for better UX
+                        }}
+                        onRefresh={onRefreshRepos}
+                        loading={reposLoading}
+                        isConnected={isConnected}
+                        cachedRepos={cachedRepos}
+                        error={reposError}
+                      />
                     </div>
                   )}
 
-                  {/* Repository Selector */}
-                  {(showRepoSelector || !selectedRepo) && (
-                    <RepositorySelector
-                      repositories={repositories}
+                  {/* File Selection - Right side (or full width if repo selector hidden) */}
+                  <div className={`min-h-[400px] ${!showRepoSelector && selectedRepo ? 'xl:col-span-2' : ''}`}>
+                    <FileFolderPicker
+                      fileTree={fileTree}
+                      selectedFiles={selectedFiles}
+                      onToggleFile={onToggleFile}
+                      onSelectAllCodeFiles={onSelectAllCodeFiles}
+                      onSelectByPattern={onSelectByPattern}
+                      onClearSelection={onClearSelection}
+                      onSaveToCache={onSaveToCache}
+                      isSavingCache={isSavingCache}
+                      cachedFiles={cachedFiles}
+                      loading={filesLoading}
                       selectedRepo={selectedRepo}
-                      onSelect={(repo) => {
-                        onSelectRepo(repo);
-                        setShowRepoSelector(false);
-                      }}
-                      onRefresh={onRefreshRepos}
-                      loading={reposLoading}
-                      isConnected={isConnected}
-                      cachedRepos={cachedRepos}
-                      error={reposError}
                     />
-                  )}
+                  </div>
                 </div>
-
-                {/* File Selection */}
-                <div>
-                  <FileFolderPicker
-                    fileTree={fileTree}
-                    selectedFiles={selectedFiles}
-                    onToggleFile={onToggleFile}
-                    onSelectAllCodeFiles={onSelectAllCodeFiles}
-                    onSelectByPattern={onSelectByPattern}
-                    onClearSelection={onClearSelection}
-                    onSaveToCache={onSaveToCache}
-                    isSavingCache={isSavingCache}
-                    cachedFiles={cachedFiles}
-                    loading={filesLoading}
-                    selectedRepo={selectedRepo}
-                  />
-                </div>
-              </div>
+              </>
             )}
           </div>
         )}
@@ -249,7 +253,7 @@ def hello():
 === FILE: utils.py ===
 def helper():
     pass`}
-              className="w-full h-80 bg-bg-dark border border-white/10 rounded-xl p-4
+              className="w-full h-[500px] bg-bg-dark border border-white/10 rounded-xl p-5
                        text-sm font-mono text-white placeholder-text-secondary-dark
                        resize-none focus:outline-none focus:border-primary/50
                        focus:ring-2 focus:ring-primary/20 transition-all"
