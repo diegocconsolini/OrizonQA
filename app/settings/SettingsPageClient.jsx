@@ -133,6 +133,14 @@ export default function SettingsPageClient() {
         if (settingsData.claudeModel) {
           setClaudeModel(settingsData.claudeModel);
         }
+        if (settingsData.lmStudioModel) {
+          setLmStudioModel(settingsData.lmStudioModel);
+        }
+
+        // Auto-connect to LM Studio if provider is lmstudio and we have a URL
+        if (settingsData.aiProvider === 'lmstudio' && settingsData.lmStudioUrl) {
+          fetchModels('lmstudio', settingsData.lmStudioUrl);
+        }
 
         // Load usage stats
         const analysesResponse = await fetch('/api/user/analyses?limit=1');
@@ -172,6 +180,7 @@ export default function SettingsPageClient() {
           lmStudioUrl: lmStudioUrl.trim() || null,
           aiProvider: aiProvider,
           claudeModel: claudeModel,
+          lmStudioModel: lmStudioModel || null,
         }),
       });
 

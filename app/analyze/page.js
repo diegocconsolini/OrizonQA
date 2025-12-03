@@ -322,6 +322,7 @@ function AnalyzePageContent() {
           if (data.lmStudioUrl) setLmStudioUrl(data.lmStudioUrl);
           if (data.aiProvider) setProvider(data.aiProvider);
           if (data.claudeModel) setClaudeModel(data.claudeModel);
+          if (data.lmStudioModel) setLmStudioModel(data.lmStudioModel);
         }
       } catch (error) {
         console.error('Error loading user settings:', error);
