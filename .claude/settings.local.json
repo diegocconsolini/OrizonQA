@@ -38,7 +38,8 @@
       "Bash(chmod:*)",
       "Bash(./scripts/migrate-slate-colors.sh:*)",
       "Bash(find:*)",
-      "WebFetch(domain:docs.github.com)"
+      "WebFetch(domain:docs.github.com)",
+      "WebFetch(domain:localhost)"
     ],
     "deny": [],
     "ask": []
