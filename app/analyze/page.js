@@ -289,7 +289,9 @@ function AnalyzePageContent() {
       return;
     }
 
-    await analyzeCodebase(content, apiKey, config, claudeModel, provider, lmStudioUrl);
+    // Use the correct model based on provider
+    const model = provider === 'lmstudio' ? lmStudioModel : claudeModel;
+    await analyzeCodebase(content, apiKey, config, model, provider, lmStudioUrl);
   };
 
   // Clear all inputs
@@ -424,10 +426,12 @@ function AnalyzePageContent() {
                   hasApiKey={hasApiKey}
                   lmStudioUrl={lmStudioUrl}
                   claudeModel={claudeModel}
+                  lmStudioModel={lmStudioModel}
                   isLoading={!settingsLoaded}
                   onProviderChange={setProvider}
                   onModelChange={setClaudeModel}
                   onLmStudioUrlChange={setLmStudioUrl}
+                  onLmStudioModelChange={setLmStudioModel}
                 />
 
                 {/* Config Presets - Quick selection */}
