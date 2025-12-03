@@ -474,6 +474,27 @@ function AnalyzePageContent() {
                   isSavingCache={isSavingCache}
                   cachedFiles={cachedFilePaths}
                 />
+
+                {/* Analysis Plan Indicator - Shows when files are selected */}
+                {selectedFiles.length > 0 && !analysisLoading && (
+                  <div className="mt-6">
+                    <AnalysisPlanIndicator
+                      selectedFilePaths={selectedFiles}
+                      config={config}
+                    />
+                  </div>
+                )}
+
+                {/* Analysis Progress - Shows during analysis */}
+                {analysisLoading && analysisProgress && (
+                  <div className="mt-6">
+                    <AnalysisProgress
+                      progress={analysisProgress}
+                      startTime={analysisStartTime}
+                      error={error}
+                    />
+                  </div>
+                )}
               </TabPanel>
 
               {/* Configure Tab */}

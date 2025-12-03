@@ -5,6 +5,42 @@ import { FileCode, Layers, Clock, DollarSign, CheckCircle2, ChevronRight } from 
 import { getAnalysisPlan } from '@/lib/contentPreparer';
 import { estimateTime } from '@/lib/analysisOrchestrator';
 
+// Average file size estimate when content isn't available
+const AVG_FILE_SIZE = 5000; // ~5KB average
+const CHUNK_SIZE = 80000;
+
+/**
+ * Estimate analysis plan from file paths only (before content is fetched)
+ */
+function estimatePlanFromPaths(filePaths) {
+  const estimatedTotalSize = filePaths.length * AVG_FILE_SIZE;
+  const estimatedChunks = Math.ceil(estimatedTotalSize / CHUNK_SIZE);
+  const estimatedTokens = Math.ceil(estimatedTotalSize / 4);
+
+  // Rough cost estimate (Claude Sonnet pricing)
+  const inputCost = (estimatedTokens / 1000000) * 3.00;
+  const outputCost = ((4000 * estimatedChunks) / 1000000) * 15.00;
+  const totalCost = inputCost + outputCost;
+
+  return {
+    totalFiles: filePaths.length,
+    totalSize: formatBytes(estimatedTotalSize),
+    coverage: '100%',
+    strategy: estimatedChunks > 1 ? 'multi' : 'single',
+    passes: estimatedChunks > 1 ? estimatedChunks + 1 : 1,
+    chunks: [],
+    estimatedTokens,
+    estimatedCost: `~$${totalCost.toFixed(2)}`,
+    isEstimate: true
+  };
+}
+
+function formatBytes(bytes) {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
+}
+
 /**
  * Analysis Plan Indicator
  *
@@ -14,12 +50,24 @@ import { estimateTime } from '@/lib/analysisOrchestrator';
  * - Number of API passes
  * - Chunk breakdown
  * - Estimated cost and time
+ *
+ * Accepts either:
+ * - files: Array of {path, content} objects (exact calculation)
+ * - selectedFilePaths: Array of file path strings (estimate)
  */
-export default function AnalysisPlanIndicator({ files = [], config = {} }) {
+export default function AnalysisPlanIndicator({ files = [], selectedFilePaths = [], config = {} }) {
   const plan = useMemo(() => {
-    if (!files || files.length === 0) return null;
-    return getAnalysisPlan(files, config);
-  }, [files, config]);
+    // If we have files with content, use exact calculation
+    if (files && files.length > 0 && files[0]?.content !== undefined) {
+      return getAnalysisPlan(files, config);
+    }
+
+    // If we only have paths, use estimates
+    const paths = selectedFilePaths.length > 0 ? selectedFilePaths : files.map(f => f.path || f);
+    if (paths.length === 0) return null;
+
+    return estimatePlanFromPaths(paths);
+  }, [files, selectedFilePaths, config]);
 
   const timeEstimate = useMemo(() => {
     if (!plan) return null;
@@ -37,11 +85,16 @@ export default function AnalysisPlanIndicator({ files = [], config = {} }) {
   return (
     <div className="bg-slate-800 border border-slate-700 rounded-lg overflow-hidden">
       {/* Header */}
-      <div className="bg-slate-700/50 px-4 py-3 border-b border-slate-600">
+      <div className="bg-slate-700/50 px-4 py-3 border-b border-slate-600 flex items-center justify-between">
         <h3 className="text-white font-medium flex items-center gap-2">
           <Layers className="w-4 h-4 text-blue-400" />
           Analysis Plan
         </h3>
+        {plan.isEstimate && (
+          <span className="text-xs text-slate-400 bg-slate-600/50 px-2 py-1 rounded">
+            Estimated
+          </span>
+        )}
       </div>
 
       {/* Main Stats */}
