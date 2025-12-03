@@ -40,6 +40,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       authorization: {
         params: {
           scope: 'read:user user:email',
+          // Always show GitHub login page so users can choose a different account
+          prompt: 'consent',
         },
       },
       profile(profile) {
