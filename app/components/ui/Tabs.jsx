@@ -29,10 +29,18 @@ export function Tabs({
   children,
   className = '',
 }) {
-  const [activeTab, setActiveTab] = useState(value || defaultValue || 0);
+  // Support both controlled (value + onChange) and uncontrolled (defaultValue) modes
+  const [internalActiveTab, setInternalActiveTab] = useState(defaultValue || 0);
+
+  // Use external value if provided (controlled mode)
+  const activeTab = value !== undefined ? value : internalActiveTab;
 
   const handleTabChange = (newValue) => {
-    setActiveTab(newValue);
+    if (value === undefined) {
+      // Uncontrolled mode - update internal state
+      setInternalActiveTab(newValue);
+    }
+    // Always call onChange if provided
     if (onChange) onChange(newValue);
   };
 

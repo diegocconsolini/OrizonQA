@@ -23,6 +23,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import dynamic from 'next/dynamic';
 import { useSession } from 'next-auth/react';
+import { useSearchParams, useRouter } from 'next/navigation';
 import { Loader2, Sparkles, Settings, Shield } from 'lucide-react';
 
 // UI Components
@@ -54,7 +55,23 @@ import useIndexedDB from '@/app/hooks/useIndexedDB';
 export default function AnalyzePage() {
   const { data: session, status } = useSession();
   const userId = session?.user?.id || 'anonymous';
+  const searchParams = useSearchParams();
+  const router = useRouter();
   const [settingsLoaded, setSettingsLoaded] = useState(false);
+
+  // Tab state with URL persistence
+  const validTabs = ['input', 'configure', 'results', 'cache'];
+  const tabFromUrl = searchParams.get('tab');
+  const initialTab = validTabs.includes(tabFromUrl) ? tabFromUrl : 'input';
+  const [activeTab, setActiveTab] = useState(initialTab);
+
+  // Update URL when tab changes
+  const handleTabChange = useCallback((newTab) => {
+    setActiveTab(newTab);
+    const params = new URLSearchParams(searchParams.toString());
+    params.set('tab', newTab);
+    router.replace(`/analyze?${params.toString()}`, { scroll: false });
+  }, [searchParams, router]);
 
   // Git/Repository state from hooks
   const {
@@ -367,17 +384,17 @@ export default function AnalyzePage() {
           {success && <Alert type="success" message={success} />}
 
           {/* Main Tabs */}
-          <Tabs defaultValue={0} className="mb-6">
+          <Tabs value={activeTab} onChange={handleTabChange} className="mb-6">
             <TabList>
-              <TabButton>Input</TabButton>
-              <TabButton>Configure</TabButton>
-              <TabButton>Results</TabButton>
-              <TabButton>Local Cache</TabButton>
+              <TabButton value="input">Input</TabButton>
+              <TabButton value="configure">Configure</TabButton>
+              <TabButton value="results">Results</TabButton>
+              <TabButton value="cache">Local Cache</TabButton>
             </TabList>
 
-            <TabPanels>
+            <TabPanels className="mt-6">
               {/* Input Tab - Git-First */}
-              <TabPanel>
+              <TabPanel value="input">
                 <GitInputSection
                   isConnected={isConnected}
                   repositories={repositories}
@@ -413,7 +430,7 @@ export default function AnalyzePage() {
               </TabPanel>
 
               {/* Configure Tab */}
-              <TabPanel>
+              <TabPanel value="configure">
                 {/* Config Presets - Quick selection */}
                 <ConfigPresets
                   config={config}
@@ -443,7 +460,7 @@ export default function AnalyzePage() {
               </TabPanel>
 
               {/* Results Tab */}
-              <TabPanel>
+              <TabPanel value="results">
                 {results ? (
                   <OutputSection results={results} />
                 ) : (
@@ -456,7 +473,7 @@ export default function AnalyzePage() {
               </TabPanel>
 
               {/* Privacy Tab - Now shows Local Cache Panel */}
-              <TabPanel>
+              <TabPanel value="cache">
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                   {/* Local Cache Panel */}
                   <LocalCachePanel
