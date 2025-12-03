@@ -216,7 +216,7 @@ function AnalyzePageContent() {
   const [apiKey, setApiKey] = useState('');
   const [lmStudioUrl, setLmStudioUrl] = useState('http://localhost:1234');
   const [hasApiKey, setHasApiKey] = useState(false);
-  const model = 'claude-sonnet-4-20250514';
+  const [claudeModel, setClaudeModel] = useState('claude-sonnet-4-20250514');
 
   // Custom hooks for analysis and file upload
   const {
@@ -288,7 +288,7 @@ function AnalyzePageContent() {
       return;
     }
 
-    await analyzeCodebase(content, apiKey, config, model, provider, lmStudioUrl);
+    await analyzeCodebase(content, apiKey, config, claudeModel, provider, lmStudioUrl);
   };
 
   // Clear all inputs
@@ -318,6 +318,7 @@ function AnalyzePageContent() {
           }
           if (data.lmStudioUrl) setLmStudioUrl(data.lmStudioUrl);
           if (data.aiProvider) setProvider(data.aiProvider);
+          if (data.claudeModel) setClaudeModel(data.claudeModel);
         }
       } catch (error) {
         console.error('Error loading user settings:', error);
@@ -421,6 +422,7 @@ function AnalyzePageContent() {
                   provider={provider}
                   hasApiKey={hasApiKey}
                   lmStudioUrl={lmStudioUrl}
+                  claudeModel={claudeModel}
                   isLoading={!settingsLoaded}
                 />
 

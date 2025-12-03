@@ -13,10 +13,19 @@
 import { Settings, Check, AlertCircle, Cpu, ExternalLink } from 'lucide-react';
 import Link from 'next/link';
 
+// Map model IDs to display names
+const modelDisplayNames = {
+  'claude-sonnet-4-20250514': 'Sonnet 4',
+  'claude-opus-4-20250514': 'Opus 4',
+  'claude-3-5-sonnet-20241022': '3.5 Sonnet',
+  'claude-3-5-haiku-20241022': '3.5 Haiku',
+};
+
 export default function AIProviderStatus({
   provider = 'claude',
   hasApiKey = false,
   lmStudioUrl = '',
+  claudeModel = 'claude-sonnet-4-20250514',
   isLoading = false
 }) {
   const isConfigured = provider === 'lmstudio' || hasApiKey;
@@ -76,7 +85,9 @@ export default function AIProviderStatus({
               {provider === 'lmstudio' ? (
                 lmStudioUrl ? `Connected to ${lmStudioUrl}` : 'Local LLM (no API key required)'
               ) : (
-                hasApiKey ? 'API key configured in Settings' : 'Configure API key in Settings to analyze'
+                hasApiKey
+                  ? `Using ${modelDisplayNames[claudeModel] || claudeModel}`
+                  : 'Configure API key in Settings to analyze'
               )}
             </p>
           </div>
@@ -84,7 +95,7 @@ export default function AIProviderStatus({
 
         {/* Settings Link */}
         <Link
-          href="/settings?tab=integrations"
+          href="/settings?tab=llm-config"
           className="flex items-center gap-2 px-4 py-2 bg-white/5 border border-white/10
                    rounded-lg text-sm text-white hover:bg-white/10 transition-all"
         >
@@ -105,7 +116,7 @@ export default function AIProviderStatus({
                 : 'Make sure LM Studio is running on your local machine.'}
             </p>
             <Link
-              href="/settings?tab=integrations"
+              href="/settings?tab=llm-config"
               className="inline-flex items-center gap-1 text-sm text-primary hover:underline mt-1"
             >
               Go to Settings
