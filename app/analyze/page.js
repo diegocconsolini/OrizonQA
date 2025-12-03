@@ -211,6 +211,7 @@ function AnalyzePageContent() {
     additionalContext: ''
   });
   const [activePreset, setActivePreset] = useState(null);
+  const [smartConfig, setSmartConfig] = useState(null);
 
   // API states (loaded from Settings - single source of truth)
   const [provider, setProvider] = useState('claude');
@@ -436,18 +437,59 @@ function AnalyzePageContent() {
                   onLmStudioModelChange={setLmStudioModel}
                 />
 
-                {/* Config Presets - Quick selection */}
+                {/* Smart Configuration Panel - File Classification & Goal-based Config */}
                 <div className="mt-6">
-                  <ConfigPresets
+                  <SmartConfigPanel
+                    selectedFiles={selectedFiles}
                     config={config}
                     setConfig={setConfig}
-                    activePreset={activePreset}
-                    setActivePreset={setActivePreset}
+                    onSmartConfigChange={setSmartConfig}
                   />
                 </div>
 
-                {/* Analysis Options - Detailed configuration */}
-                <ConfigSection config={config} setConfig={setConfig} />
+                {/* Global Output Settings */}
+                <div className="mt-6 grid md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm text-text-secondary-dark mb-2">Output Format</label>
+                    <select
+                      value={config.outputFormat}
+                      onChange={(e) => setConfig({ ...config, outputFormat: e.target.value })}
+                      className="w-full bg-bg-dark border border-white/10 rounded-xl p-3 text-sm text-white
+                               focus:outline-none focus:border-primary/50"
+                    >
+                      <option value="markdown">Markdown</option>
+                      <option value="json">JSON</option>
+                      <option value="jira">Jira Format</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm text-text-secondary-dark mb-2">Test Framework</label>
+                    <select
+                      value={config.testFramework}
+                      onChange={(e) => setConfig({ ...config, testFramework: e.target.value })}
+                      className="w-full bg-bg-dark border border-white/10 rounded-xl p-3 text-sm text-white
+                               focus:outline-none focus:border-primary/50"
+                    >
+                      <option value="generic">Generic</option>
+                      <option value="jest">Jest</option>
+                      <option value="pytest">Pytest</option>
+                      <option value="junit">JUnit</option>
+                    </select>
+                  </div>
+                </div>
+
+                {/* Additional Context */}
+                <div className="mt-4">
+                  <label className="block text-sm text-text-secondary-dark mb-2">Additional Context</label>
+                  <input
+                    type="text"
+                    value={config.additionalContext}
+                    onChange={(e) => setConfig({ ...config, additionalContext: e.target.value })}
+                    placeholder="Describe project purpose, tech stack, or focus areas..."
+                    className="w-full bg-bg-dark border border-white/10 rounded-xl p-3 text-sm text-white
+                             focus:outline-none focus:border-primary/50 placeholder:text-text-secondary-dark/50"
+                  />
+                </div>
               </TabPanel>
 
               {/* Results Tab */}
