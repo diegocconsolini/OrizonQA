@@ -852,50 +852,311 @@ export default function SettingsPageClient() {
               {/* Account Tab */}
               <TabPanel value="account">
                 <div className="space-y-6">
+                  {/* Profile Information */}
                   <Card className="p-6">
-                    <div className="flex items-start gap-3 mb-4">
+                    <div className="flex items-start gap-3 mb-6">
                       <User className="w-5 h-5 text-primary mt-1" />
                       <div className="flex-1">
-                        <h2 className="text-xl font-semibold text-white font-primary mb-2">
-                          Account Information
+                        <h2 className="text-xl font-semibold text-white font-primary mb-1">
+                          Profile Information
                         </h2>
-                        <div className="space-y-3 mt-4">
-                          <div>
-                            <p className="text-sm text-text-secondary-dark mb-1">Email</p>
-                            <p className="text-white font-medium font-secondary">{session?.user?.email}</p>
-                          </div>
-                          <div>
-                            <p className="text-sm text-text-secondary-dark mb-1">Name</p>
-                            <p className="text-white font-medium font-secondary">{session?.user?.name || 'Not set'}</p>
-                          </div>
-                          <div>
-                            <p className="text-sm text-text-secondary-dark mb-1">Account Status</p>
-                            <span className="inline-flex items-center gap-2 px-3 py-1 bg-green-400/10 border border-green-400/20 rounded-full">
-                              <div className="w-2 h-2 bg-green-400 rounded-full" />
-                              <span className="text-sm text-green-400 font-medium">Active</span>
-                            </span>
-                          </div>
+                        <p className="text-sm text-text-secondary-dark font-secondary">
+                          Manage your account details
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="space-y-4">
+                      {/* Email (read-only) */}
+                      <div>
+                        <label className="block text-sm text-text-secondary-dark mb-2">Email</label>
+                        <div className="px-4 py-3 bg-bg-dark border-2 border-white/10 rounded-lg text-white/70 font-secondary">
+                          {profile.email || session?.user?.email}
                         </div>
+                        <p className="text-xs text-text-secondary-dark mt-1">
+                          Contact support to change your email address
+                        </p>
+                      </div>
+
+                      {/* Name (editable) */}
+                      <div>
+                        <label className="block text-sm text-text-secondary-dark mb-2">Name</label>
+                        {editingName ? (
+                          <div className="flex gap-2">
+                            <input
+                              type="text"
+                              value={newName}
+                              onChange={(e) => setNewName(e.target.value)}
+                              placeholder="Your name"
+                              className="flex-1 px-4 py-3 bg-bg-dark border-2 border-white/10 rounded-lg text-white placeholder-text-secondary-dark focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary font-secondary"
+                            />
+                            <Button
+                              variant="primary"
+                              onClick={handleSaveName}
+                              disabled={savingName}
+                            >
+                              {savingName ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              onClick={() => {
+                                setEditingName(false);
+                                setNewName('');
+                              }}
+                            >
+                              <X className="w-4 h-4" />
+                            </Button>
+                          </div>
+                        ) : (
+                          <div className="flex items-center gap-2">
+                            <div className="flex-1 px-4 py-3 bg-bg-dark border-2 border-white/10 rounded-lg text-white font-secondary">
+                              {profile.fullName || 'Not set'}
+                            </div>
+                            <Button
+                              variant="secondary"
+                              onClick={() => {
+                                setEditingName(true);
+                                setNewName(profile.fullName || '');
+                              }}
+                            >
+                              <Pencil className="w-4 h-4" />
+                            </Button>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Member Since */}
+                      <div>
+                        <label className="block text-sm text-text-secondary-dark mb-2">Member Since</label>
+                        <div className="px-4 py-3 bg-bg-dark border-2 border-white/10 rounded-lg text-white/70 font-secondary">
+                          {profile.createdAt
+                            ? new Date(profile.createdAt).toLocaleDateString('en-US', {
+                                year: 'numeric',
+                                month: 'long',
+                                day: 'numeric'
+                              })
+                            : 'Unknown'}
+                        </div>
+                      </div>
+
+                      {/* Account Status */}
+                      <div>
+                        <label className="block text-sm text-text-secondary-dark mb-2">Account Status</label>
+                        <span className="inline-flex items-center gap-2 px-3 py-2 bg-green-400/10 border border-green-400/20 rounded-lg">
+                          <div className="w-2 h-2 bg-green-400 rounded-full" />
+                          <span className="text-sm text-green-400 font-medium">Active</span>
+                        </span>
                       </div>
                     </div>
                   </Card>
 
+                  {/* Change Password */}
                   <Card className="p-6">
-                    <h3 className="text-lg font-semibold text-white font-primary mb-4">
-                      Danger Zone
-                    </h3>
-                    <p className="text-sm text-text-secondary-dark font-secondary mb-4">
-                      Once you delete your account, there is no going back. Please be certain.
-                    </p>
+                    <div className="flex items-start gap-3 mb-4">
+                      <Lock className="w-5 h-5 text-primary mt-1" />
+                      <div className="flex-1">
+                        <h2 className="text-xl font-semibold text-white font-primary mb-1">
+                          Password
+                        </h2>
+                        <p className="text-sm text-text-secondary-dark font-secondary">
+                          Change your password to keep your account secure
+                        </p>
+                      </div>
+                    </div>
+
+                    <Button
+                      variant="secondary"
+                      onClick={() => {
+                        setShowPasswordModal(true);
+                        setPasswordError('');
+                        setPasswordForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
+                      }}
+                    >
+                      <Lock className="w-4 h-4 mr-2" />
+                      Change Password
+                    </Button>
+                  </Card>
+
+                  {/* Danger Zone */}
+                  <Card className="p-6 border-red-500/20">
+                    <div className="flex items-start gap-3 mb-4">
+                      <Trash2 className="w-5 h-5 text-red-400 mt-1" />
+                      <div className="flex-1">
+                        <h2 className="text-xl font-semibold text-red-400 font-primary mb-1">
+                          Danger Zone
+                        </h2>
+                        <p className="text-sm text-text-secondary-dark font-secondary">
+                          Permanently delete your account and all associated data
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="p-4 bg-red-500/5 border border-red-500/20 rounded-lg mb-4">
+                      <p className="text-sm text-red-300 font-secondary">
+                        This action is <strong>irreversible</strong>. All your analyses, settings, and account data will be permanently deleted.
+                      </p>
+                    </div>
+
                     <Button
                       variant="ghost"
-                      size="md"
+                      onClick={() => {
+                        setShowDeleteModal(true);
+                        setDeleteError('');
+                        setDeletePassword('');
+                      }}
                       className="border-2 border-red-500/50 hover:bg-red-500/10 text-red-400"
                     >
+                      <Trash2 className="w-4 h-4 mr-2" />
                       Delete Account
                     </Button>
                   </Card>
                 </div>
+
+                {/* Password Change Modal */}
+                {showPasswordModal && (
+                  <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+                    <Card className="w-full max-w-md p-6 relative">
+                      <button
+                        onClick={() => setShowPasswordModal(false)}
+                        className="absolute top-4 right-4 text-text-secondary-dark hover:text-white"
+                      >
+                        <X className="w-5 h-5" />
+                      </button>
+
+                      <h3 className="text-xl font-bold text-white mb-6">Change Password</h3>
+
+                      {passwordError && (
+                        <div className="mb-4 p-3 bg-red-500/10 border border-red-500/20 rounded-lg">
+                          <p className="text-sm text-red-400">{passwordError}</p>
+                        </div>
+                      )}
+
+                      <div className="space-y-4">
+                        <div>
+                          <label className="block text-sm text-text-secondary-dark mb-2">Current Password</label>
+                          <input
+                            type="password"
+                            value={passwordForm.currentPassword}
+                            onChange={(e) => setPasswordForm(prev => ({ ...prev, currentPassword: e.target.value }))}
+                            className="w-full px-4 py-3 bg-bg-dark border-2 border-white/10 rounded-lg text-white placeholder-text-secondary-dark focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-sm text-text-secondary-dark mb-2">New Password</label>
+                          <input
+                            type="password"
+                            value={passwordForm.newPassword}
+                            onChange={(e) => setPasswordForm(prev => ({ ...prev, newPassword: e.target.value }))}
+                            className="w-full px-4 py-3 bg-bg-dark border-2 border-white/10 rounded-lg text-white placeholder-text-secondary-dark focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
+                          />
+                          <p className="text-xs text-text-secondary-dark mt-1">
+                            Min 8 characters, uppercase, lowercase, number, special character
+                          </p>
+                        </div>
+
+                        <div>
+                          <label className="block text-sm text-text-secondary-dark mb-2">Confirm New Password</label>
+                          <input
+                            type="password"
+                            value={passwordForm.confirmPassword}
+                            onChange={(e) => setPasswordForm(prev => ({ ...prev, confirmPassword: e.target.value }))}
+                            className="w-full px-4 py-3 bg-bg-dark border-2 border-white/10 rounded-lg text-white placeholder-text-secondary-dark focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="flex gap-3 mt-6">
+                        <Button
+                          variant="ghost"
+                          onClick={() => setShowPasswordModal(false)}
+                          className="flex-1"
+                        >
+                          Cancel
+                        </Button>
+                        <Button
+                          variant="primary"
+                          onClick={handleChangePassword}
+                          disabled={savingPassword}
+                          className="flex-1"
+                        >
+                          {savingPassword ? (
+                            <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                          ) : (
+                            <Check className="w-4 h-4 mr-2" />
+                          )}
+                          Change Password
+                        </Button>
+                      </div>
+                    </Card>
+                  </div>
+                )}
+
+                {/* Delete Account Modal */}
+                {showDeleteModal && (
+                  <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+                    <Card className="w-full max-w-md p-6 relative">
+                      <button
+                        onClick={() => setShowDeleteModal(false)}
+                        className="absolute top-4 right-4 text-text-secondary-dark hover:text-white"
+                      >
+                        <X className="w-5 h-5" />
+                      </button>
+
+                      <div className="text-center mb-6">
+                        <div className="w-16 h-16 rounded-full bg-red-500/10 flex items-center justify-center mx-auto mb-4">
+                          <Trash2 className="w-8 h-8 text-red-400" />
+                        </div>
+                        <h3 className="text-xl font-bold text-white mb-2">Delete Account</h3>
+                        <p className="text-text-secondary-dark text-sm">
+                          This will permanently delete your account, all analyses, and settings.
+                        </p>
+                      </div>
+
+                      {deleteError && (
+                        <div className="mb-4 p-3 bg-red-500/10 border border-red-500/20 rounded-lg">
+                          <p className="text-sm text-red-400">{deleteError}</p>
+                        </div>
+                      )}
+
+                      <div className="mb-6">
+                        <label className="block text-sm text-text-secondary-dark mb-2">
+                          Enter your password to confirm
+                        </label>
+                        <input
+                          type="password"
+                          value={deletePassword}
+                          onChange={(e) => setDeletePassword(e.target.value)}
+                          placeholder="Your password"
+                          className="w-full px-4 py-3 bg-bg-dark border-2 border-white/10 rounded-lg text-white placeholder-text-secondary-dark focus:outline-none focus:ring-2 focus:ring-red-500/30 focus:border-red-500"
+                        />
+                      </div>
+
+                      <div className="flex gap-3">
+                        <Button
+                          variant="ghost"
+                          onClick={() => setShowDeleteModal(false)}
+                          className="flex-1"
+                        >
+                          Cancel
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          onClick={handleDeleteAccount}
+                          disabled={deleting || !deletePassword}
+                          className="flex-1 border-2 border-red-500/50 hover:bg-red-500/10 text-red-400"
+                        >
+                          {deleting ? (
+                            <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                          ) : (
+                            <Trash2 className="w-4 h-4 mr-2" />
+                          )}
+                          Delete Account
+                        </Button>
+                      </div>
+                    </Card>
+                  </div>
+                )}
               </TabPanel>
             </TabPanels>
           </Tabs>
