@@ -42,6 +42,7 @@ import OutputSection from '@/app/components/output/OutputSection';
 import { GitInputSection, PrivacyNotice, LocalCachePanel, CacheStatusBar, AIProviderStatus } from './components';
 import ConfigPresets from './components/ConfigPresets';
 import SmartConfigPanel from './components/SmartConfigPanel';
+import OutputSettingsPanel from './components/OutputSettingsPanel';
 
 // Hooks
 import useAnalysis from '@/app/hooks/useAnalysis';
@@ -212,6 +213,7 @@ function AnalyzePageContent() {
   });
   const [activePreset, setActivePreset] = useState(null);
   const [smartConfig, setSmartConfig] = useState(null);
+  const [outputSettings, setOutputSettings] = useState(null);
 
   // API states (loaded from Settings - single source of truth)
   const [provider, setProvider] = useState('claude');
