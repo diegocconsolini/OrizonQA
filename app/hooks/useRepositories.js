@@ -262,31 +262,52 @@ export default function useRepositories() {
       }
 
       let validContents = [];
+      const BATCH_SIZE = 50; // API limit per request
 
       // Use authenticated API if we have a connection (required for private repos)
       if (connection?.id) {
         try {
-          const response = await fetch('/api/oauth/github/content', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              connectionId: connection.id,
-              owner,
-              repo: name,
-              branch,
-              paths: codeFiles
-            })
-          });
-
-          if (!response.ok) {
-            const errorData = await response.json().catch(() => ({}));
-            throw new Error(errorData.error || 'Failed to fetch file contents');
+          // Batch files into chunks of BATCH_SIZE
+          const batches = [];
+          for (let i = 0; i < codeFiles.length; i += BATCH_SIZE) {
+            batches.push(codeFiles.slice(i, i + BATCH_SIZE));
           }
 
-          const data = await response.json();
+          // Fetch all batches in parallel
+          const batchResults = await Promise.all(
+            batches.map(async (batch) => {
+              const response = await fetch('/api/oauth/github/content', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  connectionId: connection.id,
+                  owner,
+                  repo: name,
+                  branch,
+                  paths: batch
+                })
+              });
+
+              if (!response.ok) {
+                const errorData = await response.json().catch(() => ({}));
+                throw new Error(errorData.error || 'Failed to fetch file contents');
+              }
+
+              return response.json();
+            })
+          );
+
+          // Combine results from all batches
+          const allFiles = [];
+          const allFailed = [];
+
+          for (const data of batchResults) {
+            if (data.files) allFiles.push(...data.files);
+            if (data.failed) allFailed.push(...data.failed);
+          }
 
           // Transform response to expected format
-          validContents = data.files
+          validContents = allFiles
             .filter(file => file.content && file.content.length <= 500000) // Skip >500KB
             .map(file => ({
               path: file.path,
@@ -297,8 +318,8 @@ export default function useRepositories() {
             }));
 
           // Log any failed files
-          if (data.failed?.length > 0) {
-            console.warn('Some files failed to fetch:', data.failed);
+          if (allFailed.length > 0) {
+            console.warn('Some files failed to fetch:', allFailed);
           }
         } catch (err) {
           console.error('Authenticated fetch failed, trying public API:', err);
