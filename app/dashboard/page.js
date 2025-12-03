@@ -1,315 +1,301 @@
 'use client';
 
 /**
- * Dashboard Page (Main App) - REDESIGNED
+ * Dashboard Page - Analytics Dashboard
  *
- * The main ORIZON application - requires authentication.
- * Enhanced with history sidebar, stats, and improved UX.
+ * Shows user analytics, usage statistics, and recent analyses.
+ * Inspired by Agent Control Tower dashboard design with GSAP animations.
  *
  * Features:
- * - Recent analyses sidebar with quick access
- * - Tabbed workflow for better organization
- * - Usage statistics display
- * - Code input (paste, GitHub, file upload)
- * - Analysis configuration
- * - QA artifact generation
- * - Results display with export options
+ * - KPI cards with animated counters
+ * - Interactive donut charts for provider/input type distribution
+ * - Usage over time bar chart
+ * - Recent analyses list
+ * - Period selector (7d, 30d, 90d, all)
  */
 
-import { useState, useEffect } from 'react';
-import dynamic from 'next/dynamic';
+import { useState, useEffect, useRef } from 'react';
 import { useSession } from 'next-auth/react';
-import { Loader2, Sparkles } from 'lucide-react';
-
-// UI Components
+import { useRouter } from 'next/navigation';
 import {
-  Card, Button, EmptyState, Tabs, TabList, TabButton, TabPanels, TabPanel
-} from '@/app/components/ui';
+  BarChart3, Zap, Clock, Activity, Sparkles, ArrowRight
+} from 'lucide-react';
+import gsap from 'gsap';
 
 // Layout
 import AppLayout from '@/app/components/layout/AppLayout';
 
-// Existing Components
-import Alert from '@/app/components/shared/Alert';
-import InputSection from '@/app/components/input/InputSection';
-import ConfigSection from '@/app/components/config/ConfigSection';
-import OutputSection from '@/app/components/output/OutputSection';
+// Dashboard Components
+import {
+  KPICard,
+  DonutChart,
+  UsageChart,
+  RecentAnalysesList,
+  PeriodSelector
+} from '@/app/components/dashboard';
 
-// Disable SSR for ApiKeyInput to prevent hydration mismatch
-const ApiKeyInput = dynamic(() => import('@/app/components/config/ApiKeyInput'), { ssr: false });
-
-// Hooks
-import useAnalysis from '@/app/hooks/useAnalysis';
-import useFileUpload from '@/app/hooks/useFileUpload';
-import useGitHubFetch from '@/app/hooks/useGitHubFetch';
+// UI Components
+import Button from '@/app/components/ui/Button';
+import Link from 'next/link';
 
 export default function Dashboard() {
   const { data: session, status } = useSession();
-  const [settingsLoaded, setSettingsLoaded] = useState(false);
+  const router = useRouter();
+  const [period, setPeriod] = useState('30');
+  const [analytics, setAnalytics] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  // Input states
-  const [inputTab, setInputTab] = useState('paste');
-  const [codeInput, setCodeInput] = useState('');
+  // Refs for GSAP animations
+  const kpiCardsRef = useRef(null);
+  const chartsRef = useRef(null);
+  const particlesRef = useRef(null);
 
-  // Config states
-  const [config, setConfig] = useState({
-    userStories: true,
-    testCases: true,
-    acceptanceCriteria: true,
-    edgeCases: false,
-    securityTests: false,
-    outputFormat: 'markdown',
-    testFramework: 'generic',
-    additionalContext: ''
-  });
-
-  // API states
-  const [provider, setProvider] = useState('claude');
-  const [apiKey, setApiKey] = useState('');
-  const [lmStudioUrl, setLmStudioUrl] = useState('http://192.168.2.101:1234');
-  const [selectedModel, setSelectedModel] = useState('');
-  const [usingSavedKey, setUsingSavedKey] = useState(false);
-  const [savedKeyAvailable, setSavedKeyAvailable] = useState(false);
-  const [savedApiKey, setSavedApiKey] = useState('');
-  const model = 'claude-sonnet-4-20250514';
-
-  // Custom hooks
-  const {
-    loading: analysisLoading,
-    error,
-    success,
-    results,
-    tokenUsage,
-    analyzeCodebase,
-    clearResults,
-    setError,
-    setSuccess
-  } = useAnalysis();
-
-  const {
-    uploadedFiles,
-    setUploadedFiles,
-    isDragging,
-    setIsDragging,
-    handleDrop,
-    handleFileSelect,
-    clearFiles
-  } = useFileUpload(setError, setSuccess);
-
-  const {
-    githubUrl,
-    setGithubUrl,
-    githubBranch,
-    setGithubBranch,
-    githubToken,
-    setGithubToken,
-    loading: githubLoading,
-    fetchGitHub,
-    availableBranches,
-    fetchingBranches
-  } = useGitHubFetch(setUploadedFiles, setInputTab, setError, setSuccess);
-
-  const loading = analysisLoading || githubLoading;
-
-  // Calculate token estimate
-  const getInputContent = () => {
-    if (inputTab === 'paste') return codeInput;
-    if (inputTab === 'upload' || uploadedFiles.length > 0) {
-      return uploadedFiles.map(f => `=== FILE: ${f.name} ===\n${f.content}`).join('\n\n');
-    }
-    return '';
-  };
-
-  const estimatedTokens = Math.ceil(getInputContent().length / 4);
-  const isTruncated = getInputContent().length > 100000;
-
-  const handleAnalyze = async () => {
-    const content = getInputContent();
-    const modelToUse = provider === 'lmstudio' && selectedModel ? selectedModel : model;
-    await analyzeCodebase(content, apiKey, config, modelToUse, provider, lmStudioUrl);
-  };
-
-  const clearAll = () => {
-    setCodeInput('');
-    clearFiles();
-    setGithubUrl('');
-    clearResults();
-  };
-
-  const canAnalyze = (provider === 'lmstudio' || apiKey) && (codeInput.trim() || uploadedFiles.length > 0);
-
-  // Load user settings
+  // Fetch analytics data
   useEffect(() => {
-    async function loadUserSettings() {
-      if (status === 'loading' || !session || settingsLoaded) return;
+    async function fetchAnalytics() {
+      if (status === 'loading') return;
+
+      if (!session) {
+        router.push('/login');
+        return;
+      }
 
       try {
-        const response = await fetch('/api/user/settings');
-        if (response.ok) {
-          const data = await response.json();
-          if (data.claudeApiKey) {
-            setSavedApiKey(data.claudeApiKey);
-            setApiKey(data.claudeApiKey);
-            setUsingSavedKey(true);
-            setSavedKeyAvailable(true);
-          }
-          if (data.lmStudioUrl) setLmStudioUrl(data.lmStudioUrl);
+        setLoading(true);
+        const response = await fetch(`/api/user/analytics?period=${period}`);
+
+        if (!response.ok) {
+          throw new Error('Failed to load analytics');
         }
-      } catch (error) {
-        console.error('Error loading user settings:', error);
+
+        const data = await response.json();
+        setAnalytics(data);
+      } catch (err) {
+        console.error('Analytics error:', err);
+        setError(err.message);
       } finally {
-        setSettingsLoaded(true);
+        setLoading(false);
       }
     }
 
-    loadUserSettings();
-  }, [session, status, settingsLoaded]);
+    fetchAnalytics();
+  }, [session, status, period, router]);
 
-  // Handle switching back to saved key
+  // GSAP animations on mount
   useEffect(() => {
-    if (usingSavedKey && savedApiKey) {
-      setApiKey(savedApiKey);
+    if (loading || !analytics) return;
+
+    // Animate KPI cards
+    if (kpiCardsRef.current) {
+      gsap.fromTo(
+        kpiCardsRef.current.children,
+        { y: 50, opacity: 0, scale: 0.9 },
+        {
+          y: 0,
+          opacity: 1,
+          scale: 1,
+          duration: 0.6,
+          stagger: 0.1,
+          ease: 'back.out(1.7)',
+        }
+      );
     }
-  }, [usingSavedKey, savedApiKey]);
+
+    // Animate charts section
+    if (chartsRef.current) {
+      gsap.fromTo(
+        chartsRef.current.children,
+        { y: 30, opacity: 0 },
+        {
+          y: 0,
+          opacity: 1,
+          duration: 0.5,
+          stagger: 0.15,
+          ease: 'power3.out',
+          delay: 0.3,
+        }
+      );
+    }
+
+    // Create floating particles
+    if (particlesRef.current) {
+      const particles = particlesRef.current;
+      particles.innerHTML = ''; // Clear existing particles
+
+      for (let i = 0; i < 15; i++) {
+        const particle = document.createElement('div');
+        particle.className = 'absolute rounded-full pointer-events-none';
+        particle.style.width = `${Math.random() * 4 + 2}px`;
+        particle.style.height = particle.style.width;
+        particle.style.background = `rgba(0, 212, 255, ${Math.random() * 0.2 + 0.1})`;
+        particle.style.left = `${Math.random() * 100}%`;
+        particle.style.top = `${Math.random() * 100}%`;
+        particles.appendChild(particle);
+
+        gsap.to(particle, {
+          y: -100 - Math.random() * 200,
+          x: (Math.random() - 0.5) * 100,
+          opacity: 0,
+          duration: 3 + Math.random() * 4,
+          repeat: -1,
+          delay: Math.random() * 3,
+          ease: 'none',
+        });
+      }
+    }
+
+    return () => {
+      if (particlesRef.current) {
+        particlesRef.current.innerHTML = '';
+      }
+    };
+  }, [loading, analytics]);
+
+  // Format time ago for last analysis
+  const formatTimeAgo = (dateStr) => {
+    if (!dateStr) return 'Never';
+    const date = new Date(dateStr);
+    const now = new Date();
+    const diffMs = now - date;
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMs / 3600000);
+    const diffDays = Math.floor(diffMs / 86400000);
+
+    if (diffMins < 60) return `${diffMins}m ago`;
+    if (diffHours < 24) return `${diffHours}h ago`;
+    if (diffDays < 7) return `${diffDays}d ago`;
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  };
+
+  // Generate sparkline data from daily usage
+  const getSparklineData = () => {
+    if (!analytics?.dailyUsage || analytics.dailyUsage.length === 0) return [];
+    return analytics.dailyUsage.map(d => d.count);
+  };
+
+  if (status === 'loading') {
+    return (
+      <AppLayout>
+        <div className="flex items-center justify-center h-screen">
+          <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary" />
+        </div>
+      </AppLayout>
+    );
+  }
 
   return (
     <AppLayout>
-      <div className="max-w-[1400px] mx-auto">
-        {/* Main Content */}
-        <main className="p-4 md:p-6 lg:p-8">
+      <div className="relative">
+        {/* Floating particles background */}
+        <div ref={particlesRef} className="fixed inset-0 overflow-hidden pointer-events-none z-0" />
 
-          {error && <Alert type="error" message={error} />}
-          {success && <Alert type="success" message={success} />}
-
-          {/* Main Tabs */}
-          <Tabs defaultValue={0} className="mb-6">
-            <TabList>
-              <TabButton>Input</TabButton>
-              <TabButton>Configure</TabButton>
-              <TabButton>Results</TabButton>
-            </TabList>
-
-            <TabPanels>
-              {/* Input Tab */}
-              <TabPanel>
-                <InputSection
-                  inputTab={inputTab}
-                  setInputTab={setInputTab}
-                  codeInput={codeInput}
-                  setCodeInput={setCodeInput}
-                  githubUrl={githubUrl}
-                  setGithubUrl={setGithubUrl}
-                  githubBranch={githubBranch}
-                  setGithubBranch={setGithubBranch}
-                  githubToken={githubToken}
-                  setGithubToken={setGithubToken}
-                  fetchGitHub={fetchGitHub}
-                  uploadedFiles={uploadedFiles}
-                  setUploadedFiles={setUploadedFiles}
-                  isDragging={isDragging}
-                  setIsDragging={setIsDragging}
-                  handleDrop={handleDrop}
-                  handleFileSelect={handleFileSelect}
-                  loading={loading}
-                  estimatedTokens={estimatedTokens}
-                  isTruncated={isTruncated}
-                  availableBranches={availableBranches}
-                  fetchingBranches={fetchingBranches}
-                />
-              </TabPanel>
-
-              {/* Configure Tab */}
-              <TabPanel>
-                <ConfigSection config={config} setConfig={setConfig} />
-
-                <ApiKeyInput
-                  provider={provider}
-                  setProvider={setProvider}
-                  apiKey={apiKey}
-                  setApiKey={setApiKey}
-                  lmStudioUrl={lmStudioUrl}
-                  setLmStudioUrl={setLmStudioUrl}
-                  selectedModel={selectedModel}
-                  setSelectedModel={setSelectedModel}
-                  model={model}
-                  usingSavedKey={usingSavedKey}
-                  setUsingSavedKey={setUsingSavedKey}
-                  savedKeyAvailable={savedKeyAvailable}
-                />
-              </TabPanel>
-
-              {/* Results Tab */}
-              <TabPanel>
-                {results ? (
-                  <OutputSection results={results} />
-                ) : (
-                  <EmptyState
-                    icon={<Sparkles className="w-12 h-12" />}
-                    title="No results yet"
-                    description="Configure your analysis and click 'Analyze Code' to generate QA artifacts"
-                  />
-                )}
-              </TabPanel>
-            </TabPanels>
-          </Tabs>
-
-          {/* Action Buttons */}
-          <div className="flex gap-4 mb-6">
-            <Button
-              variant="primary"
-              size="lg"
-              onClick={handleAnalyze}
-              disabled={!canAnalyze || loading}
-              className="flex-1"
-            >
-              {loading ? (
-                <>
-                  <Loader2 className="animate-spin" size={20} />
-                  <span>Analyzing...</span>
-                </>
-              ) : (
-                <>
-                  <Sparkles size={20} />
-                  <span>Analyze Code</span>
-                </>
-              )}
-            </Button>
-
-            <Button
-              variant="secondary"
-              size="lg"
-              onClick={clearAll}
-              disabled={loading}
-            >
-              Clear All
-            </Button>
+        <main className="p-4 md:p-6 lg:p-8 relative z-10">
+          {/* Page Header */}
+          <div className="flex items-start justify-between mb-8">
+            <div>
+              <h1 className="text-2xl font-bold text-white font-primary">Dashboard</h1>
+              <p className="text-text-secondary-dark mt-1 font-secondary">
+                Monitor your code analysis usage and metrics
+              </p>
+            </div>
+            <div className="flex items-center gap-3">
+              <PeriodSelector value={period} onChange={setPeriod} />
+              <Link href="/analyze">
+                <Button variant="primary" size="md">
+                  <Sparkles className="w-4 h-4 mr-2" />
+                  New Analysis
+                </Button>
+              </Link>
+            </div>
           </div>
 
-          {/* Token Usage Display */}
-          {tokenUsage && (
-            <Card className="p-4 bg-surface-dark/50">
-              <div className="flex items-center justify-center gap-6 text-sm font-secondary">
-                <div className="flex items-center gap-2">
-                  <span className="text-text-secondary-dark">Input:</span>
-                  <span className="text-primary font-semibold">
-                    {(tokenUsage.input || tokenUsage.input_tokens)?.toLocaleString() || '0'}
-                  </span>
-                </div>
-                <div className="w-px h-4 bg-white/10" />
-                <div className="flex items-center gap-2">
-                  <span className="text-text-secondary-dark">Output:</span>
-                  <span className="text-accent font-semibold">
-                    {(tokenUsage.output || tokenUsage.output_tokens)?.toLocaleString() || '0'}
-                  </span>
-                </div>
-              </div>
-            </Card>
+          {/* KPI Cards */}
+          <div ref={kpiCardsRef} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <KPICard
+              title="Total Analyses"
+              value={analytics?.summary?.totalAnalyses || 0}
+              change={analytics?.summary?.analysesChange}
+              icon={<Activity className="w-5 h-5" />}
+              color="primary"
+              sparklineData={getSparklineData()}
+              loading={loading}
+            />
+            <KPICard
+              title="Total Tokens"
+              value={analytics?.summary?.totalTokens || 0}
+              change={analytics?.summary?.tokensChange}
+              icon={<Zap className="w-5 h-5" />}
+              color="quantum"
+              loading={loading}
+            />
+            <KPICard
+              title="Avg Tokens/Analysis"
+              value={analytics?.summary?.avgTokensPerAnalysis || 0}
+              icon={<BarChart3 className="w-5 h-5" />}
+              color="accent"
+              loading={loading}
+            />
+            <KPICard
+              title="Last Analysis"
+              value={formatTimeAgo(analytics?.summary?.lastAnalysisAt)}
+              icon={<Clock className="w-5 h-5" />}
+              color="success"
+              loading={loading}
+              animateValue={false}
+            />
+          </div>
+
+          {/* Charts Row */}
+          <div ref={chartsRef} className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+            <DonutChart
+              title="Provider Distribution"
+              data={analytics?.byProvider || []}
+              centerLabel="Providers"
+              loading={loading}
+            />
+            <DonutChart
+              title="Input Type Distribution"
+              data={analytics?.byInputType || []}
+              centerLabel="Types"
+              loading={loading}
+            />
+          </div>
+
+          {/* Usage Chart */}
+          <div className="mb-8">
+            <UsageChart
+              title={`Usage Over Time (Last ${period === 'all' ? 'All Time' : period + ' days'})`}
+              data={analytics?.dailyUsage || []}
+              loading={loading}
+            />
+          </div>
+
+          {/* Recent Analyses */}
+          <RecentAnalysesList
+            analyses={analytics?.recentAnalyses || []}
+            loading={loading}
+          />
+
+          {/* Quick Actions */}
+          {!loading && analytics?.summary?.totalAnalyses === 0 && (
+            <div className="mt-8 p-8 bg-primary/5 border border-primary/20 rounded-2xl text-center">
+              <Sparkles className="w-12 h-12 text-primary mx-auto mb-4" />
+              <h3 className="text-xl font-semibold text-white mb-2 font-primary">
+                Welcome to ORIZON QA
+              </h3>
+              <p className="text-text-secondary-dark mb-6 font-secondary max-w-md mx-auto">
+                Start analyzing your code to generate user stories, test cases, and acceptance criteria with AI.
+              </p>
+              <Link href="/analyze">
+                <Button variant="primary" size="lg">
+                  <Sparkles className="w-5 h-5 mr-2" />
+                  Start Your First Analysis
+                  <ArrowRight className="w-5 h-5 ml-2" />
+                </Button>
+              </Link>
+            </div>
           )}
-
-          {/* Footer */}
-          <div className="text-center mt-8 text-xs text-text-secondary-dark font-secondary">
-            Built with Claude AI • Your API key is never stored
-          </div>
         </main>
       </div>
     </AppLayout>
