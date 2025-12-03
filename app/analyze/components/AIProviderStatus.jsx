@@ -14,6 +14,7 @@ import Link from 'next/link';
 export default function AIProviderStatus({
   provider = 'claude',
   hasApiKey = false,
+  apiKey = '',
   lmStudioUrl = 'http://localhost:1234',
   claudeModel = 'claude-sonnet-4-20250514',
   lmStudioModel = '',
@@ -45,7 +46,7 @@ export default function AIProviderStatus({
   const isConfigured = provider === 'lmstudio' ? lmServerConnected : hasApiKey;
 
   // Fetch models from API
-  const fetchModels = useCallback(async (providerType, baseUrl = '') => {
+  const fetchModels = useCallback(async (providerType, baseUrl = '', claudeApiKey = '') => {
     const key = providerType;
     setLoadingModels(prev => ({ ...prev, [key]: true }));
     setModelErrors(prev => ({ ...prev, [key]: '' }));
@@ -54,7 +55,12 @@ export default function AIProviderStatus({
       const params = new URLSearchParams({ provider: providerType });
       if (baseUrl) params.set('baseUrl', baseUrl);
 
-      const response = await fetch(`/api/ai/models?${params}`);
+      const headers = { 'Content-Type': 'application/json' };
+      if (providerType === 'anthropic' && claudeApiKey) {
+        headers['X-Claude-Api-Key'] = claudeApiKey;
+      }
+
+      const response = await fetch(`/api/ai/models?${params}`, { headers });
 
       if (!response.ok) {
         const errorData = await response.json();
@@ -90,10 +96,12 @@ export default function AIProviderStatus({
     }
   }, [lmStudioModel, onLmStudioModelChange]);
 
-  // Fetch Claude models on mount
+  // Fetch Claude models when API key is available
   useEffect(() => {
-    fetchModels('anthropic');
-  }, []);
+    if (apiKey) {
+      fetchModels('anthropic', '', apiKey);
+    }
+  }, [apiKey]);
 
   // Fetch LM Studio models when provider is lmstudio or URL changes
   useEffect(() => {
@@ -216,8 +224,8 @@ export default function AIProviderStatus({
               <div className="flex items-center justify-between mb-2">
                 <h3 className="text-xs font-medium text-text-secondary-dark uppercase tracking-wider">Model</h3>
                 <button
-                  onClick={() => fetchModels('anthropic')}
-                  disabled={loadingModels.anthropic}
+                  onClick={() => fetchModels('anthropic', '', apiKey)}
+                  disabled={loadingModels.anthropic || !apiKey}
                   className="p-1 text-text-secondary-dark hover:text-white transition-colors disabled:opacity-50"
                   title="Refresh models"
                 >
