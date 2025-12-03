@@ -8,8 +8,8 @@
  * Changes are for the current session; Settings stores persistent defaults.
  */
 
-import { useState } from 'react';
-import { Settings, Check, AlertCircle, Cpu, ExternalLink, ChevronDown, Zap } from 'lucide-react';
+import { useState, useEffect, useCallback } from 'react';
+import { Settings, Check, AlertCircle, Cpu, ExternalLink, ChevronDown, Zap, RefreshCw, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 
 // Available Claude models
@@ -33,14 +33,65 @@ export default function AIProviderStatus({
   hasApiKey = false,
   lmStudioUrl = '',
   claudeModel = 'claude-sonnet-4-20250514',
+  lmStudioModel = '',
   isLoading = false,
   onProviderChange,
   onModelChange,
-  onLmStudioUrlChange
+  onLmStudioUrlChange,
+  onLmStudioModelChange
 }) {
   const [showModelDropdown, setShowModelDropdown] = useState(false);
-  const isConfigured = provider === 'lmstudio' || hasApiKey;
+  const [showLmModelDropdown, setShowLmModelDropdown] = useState(false);
+  const [lmModels, setLmModels] = useState([]);
+  const [lmModelsLoading, setLmModelsLoading] = useState(false);
+  const [lmModelsError, setLmModelsError] = useState(null);
+  const [lmServerConnected, setLmServerConnected] = useState(false);
+
+  const isConfigured = provider === 'lmstudio' ? lmServerConnected : hasApiKey;
   const isEditable = Boolean(onProviderChange && onModelChange);
+
+  // Fetch LM Studio models when provider is lmstudio or URL changes
+  const fetchLmModels = useCallback(async () => {
+    if (!lmStudioUrl) return;
+
+    setLmModelsLoading(true);
+    setLmModelsError(null);
+
+    try {
+      const response = await fetch(`${lmStudioUrl}/v1/models`, {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to connect to LM Studio');
+      }
+
+      const data = await response.json();
+      const models = data.data || [];
+      setLmModels(models);
+      setLmServerConnected(true);
+
+      // Auto-select first model if none selected
+      if (models.length > 0 && !lmStudioModel && onLmStudioModelChange) {
+        onLmStudioModelChange(models[0].id);
+      }
+    } catch (err) {
+      console.error('Failed to fetch LM Studio models:', err);
+      setLmModelsError(err.message);
+      setLmServerConnected(false);
+      setLmModels([]);
+    } finally {
+      setLmModelsLoading(false);
+    }
+  }, [lmStudioUrl, lmStudioModel, onLmStudioModelChange]);
+
+  // Fetch models when LM Studio is selected or URL changes
+  useEffect(() => {
+    if (provider === 'lmstudio' && lmStudioUrl) {
+      fetchLmModels();
+    }
+  }, [provider, lmStudioUrl, fetchLmModels]);
 
   if (isLoading) {
     return (
