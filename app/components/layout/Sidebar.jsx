@@ -38,6 +38,23 @@ export default function Sidebar({ collapsed = false, onToggle }) {
   const { data: session } = useSession();
   const [stats, setStats] = useState({ total: 0, totalTokens: 0 });
   const [loadingStats, setLoadingStats] = useState(true);
+  const [loggingOut, setLoggingOut] = useState(false);
+
+  // Handle logout with proper token revocation
+  const handleLogout = async () => {
+    if (loggingOut) return;
+    setLoggingOut(true);
+
+    try {
+      // First, call our logout API to revoke GitHub token if applicable
+      await fetch('/api/auth/logout', { method: 'POST' });
+    } catch (error) {
+      console.error('Logout API error:', error);
+    }
+
+    // Then proceed with NextAuth signOut (clears session)
+    await signOut({ callbackUrl: '/login' });
+  };
 
   const navigationItems = [
     {
@@ -206,20 +223,30 @@ export default function Sidebar({ collapsed = false, onToggle }) {
                   </p>
                 </div>
                 <button
-                  onClick={() => signOut({ callbackUrl: '/login' })}
-                  className="p-2 hover:bg-white/5 rounded-lg transition-colors"
+                  onClick={handleLogout}
+                  disabled={loggingOut}
+                  className="p-2 hover:bg-white/5 rounded-lg transition-colors disabled:opacity-50"
                   title="Sign out"
                 >
-                  <LogOut className="w-4 h-4 text-text-secondary-dark" />
+                  {loggingOut ? (
+                    <div className="w-4 h-4 border-2 border-text-secondary-dark/30 border-t-text-secondary-dark rounded-full animate-spin" />
+                  ) : (
+                    <LogOut className="w-4 h-4 text-text-secondary-dark" />
+                  )}
                 </button>
               </div>
             ) : (
               <button
-                onClick={() => signOut({ callbackUrl: '/login' })}
-                className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-primary font-semibold hover:bg-primary/30 transition-colors"
+                onClick={handleLogout}
+                disabled={loggingOut}
+                className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-primary font-semibold hover:bg-primary/30 transition-colors disabled:opacity-50"
                 title="Sign out"
               >
-                {session.user.email?.[0]?.toUpperCase() || 'U'}
+                {loggingOut ? (
+                  <div className="w-4 h-4 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
+                ) : (
+                  session.user.email?.[0]?.toUpperCase() || 'U'
+                )}
               </button>
             )}
           </div>

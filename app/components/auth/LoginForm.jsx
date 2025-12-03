@@ -201,7 +201,7 @@ export default function LoginForm() {
       {/* Remember Me & Forgot Password Row */}
       <div className="flex items-center justify-between">
         {/* Remember Me Checkbox */}
-        <label className="flex items-center gap-2 cursor-pointer group">
+        <label className="flex items-center gap-2 cursor-pointer group" title="When unchecked, GitHub will show account selection">
           <input
             type="checkbox"
             checked={rememberMe}
@@ -210,7 +210,7 @@ export default function LoginForm() {
             className="w-4 h-4 rounded border-0 bg-surface-dark text-primary focus:ring-2 focus:ring-primary/30 focus:ring-offset-0 cursor-pointer disabled:opacity-50"
           />
           <span className="text-sm text-text-secondary-dark group-hover:text-text-primary-dark transition-colors">
-            Remember me
+            Remember account
           </span>
         </label>
 
