@@ -52,7 +52,7 @@ export async function POST(request) {
 
     if (provider === 'lmstudio') {
       // LM Studio uses OpenAI-compatible API
-      const lmUrl = lmStudioUrl || 'http://192.168.2.101:1234';
+      const lmUrl = lmStudioUrl || 'http://localhost:1234';
 
       response = await fetch(`${lmUrl}/v1/chat/completions`, {
         method: 'POST',
