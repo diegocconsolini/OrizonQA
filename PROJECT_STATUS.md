@@ -2,7 +2,7 @@
 
 **Last Updated**: 2025-12-04
 **Live App**: https://orizon-qa.vercel.app
-**Current Phase**: Phase 4.7 Complete ✅
+**Current Phase**: Phase 4.5 Complete ✅ (User-Linked Features)
 
 ---
 
@@ -59,6 +59,24 @@
 - ✅ Migration endpoint: /api/db/migrate-todos
 - ✅ Production build passing (60+ routes)
 
+#### Phase 4.5: User-Linked Analysis Features (COMPLETE) ✅
+- ✅ Dedicated profile page (`/profile`) with:
+  - Profile info display and name editing
+  - Avatar placeholder (ready for image upload)
+  - Password management (change/set)
+  - Account statistics
+  - Account deletion with confirmation
+- ✅ Share link management page (`/shares`) with:
+  - List all shared analyses (active/inactive)
+  - Toggle sharing on/off per analysis
+  - Copy share links to clipboard
+  - View share statistics
+  - Quick navigation to analysis detail
+- ✅ API endpoint `/api/user/shares` for listing user's shared analyses
+- ✅ Sidebar updated with Shares link (Share2 icon)
+- ✅ `getSharedAnalysesByUser()` database function
+- ✅ Production build passing
+
 ### 🚧 SKIPPED/DEFERRED
 
 #### Phase 3: User Value Features (SKIPPED)
@@ -85,6 +103,8 @@
 8. `/settings` - User settings (protected)
 9. `/history` - Analysis history (protected)
 10. `/todos` - Persistent todo list (protected)
+11. `/profile` - User profile management (protected)
+12. `/shares` - Share link management (protected)
 
 ### API Routes Implemented
 1. `/api/analyze` - Claude AI proxy (existing)
@@ -95,11 +115,12 @@
 6. `/api/auth/forgot-password` - Password reset request
 7. `/api/auth/reset-password` - Password reset with token
 8. `/api/user/settings` - GET/POST for user settings
-9. `/api/db/init` - Database initialization
-10. `/api/db/migrate-todos` - Todos table migration
-11. `/api/todos` - GET (list), POST (create) todos
-12. `/api/todos/[id]` - GET/PATCH/DELETE single todo
-13. `/api/todos/bulk` - Bulk operations (reorder, delete, updateStatus)
+9. `/api/user/shares` - GET user's shared analyses
+10. `/api/db/init` - Database initialization
+11. `/api/db/migrate-todos` - Todos table migration
+12. `/api/todos` - GET (list), POST (create) todos
+13. `/api/todos/[id]` - GET/PATCH/DELETE single todo
+14. `/api/todos/bulk` - Bulk operations (reorder, delete, updateStatus)
 
 ### Database Schema
 **Tables**:
@@ -164,42 +185,46 @@ ENCRYPTION_KEY=your-64-char-hex-key-here
 
 ## What Needs to Be Done Next
 
-### Immediate Priority (Phase 4.5 - User Integration)
+### Completed in Phase 4.5 ✅
 
-1. **Link Analyses to Users** (1-2 hours)
-   - [ ] Add user_id to analysis creation in dashboard
-   - [ ] Modify /api/analyze to accept and save user_id
-   - [ ] Create /api/user/analyses endpoint (GET user's analyses)
-   - [ ] Test analysis persistence with user accounts
+1. **Link Analyses to Users** - ✅ DONE
+   - [x] Analysis history linked to user accounts
+   - [x] /api/user/analyses endpoint exists
+   - [x] /api/user/shares endpoint created
 
-2. **Analysis History Page** (2-3 hours)
-   - [ ] Create /history page (protected route)
-   - [ ] Display user's past analyses in list view
-   - [ ] Add filters (date, input type, provider)
-   - [ ] View/download past results
-   - [ ] Delete individual analyses
-   - [ ] Re-run analysis with same config
+2. **Analysis History Page** - ✅ DONE
+   - [x] /history page with list view
+   - [x] Filters by date, input type, provider
+   - [x] View/download past results
+   - [x] Delete analyses
+   - [x] Share management
 
-3. **Dashboard Improvements** (1 hour)
-   - [ ] Show recent analyses widget
-   - [ ] Quick stats (total analyses, tokens used)
-   - [ ] Quick actions (view history, settings)
+3. **Account Management** - ✅ DONE
+   - [x] Profile page (/profile)
+   - [x] Update name/password
+   - [x] Account deletion
+   - [x] Avatar placeholder (ready for image upload)
+
+4. **Share Link Management** - ✅ DONE
+   - [x] /shares page for managing shared links
+   - [x] Toggle sharing on/off
+   - [x] Copy share links
+   - [x] View statistics
 
 ### Medium Priority (Phase 5 - Features)
 
-4. **Export Enhancements** (2-3 hours)
+5. **Export Enhancements**
    - [ ] Export to Jira API integration
    - [ ] Export as PDF (print API)
    - [ ] Batch export multiple analyses
    - [ ] Custom filename support
 
-5. **Account Management** (2-3 hours)
-   - [ ] Profile page (/profile)
-   - [ ] Update email/password
-   - [ ] Account deletion
-   - [ ] Profile picture upload
+6. **Profile Picture Upload**
+   - [ ] File storage solution (S3, Cloudinary, or Vercel Blob)
+   - [ ] Upload avatar images
+   - [ ] Display in sidebar and profile
 
-6. **Email Templates** (1-2 hours)
+7. **Email Templates**
    - [ ] HTML email templates with branding
    - [ ] Welcome email after verification
    - [ ] Customized password reset emails
@@ -231,9 +256,7 @@ ENCRYPTION_KEY=your-64-char-hex-key-here
 1. **Email Templates**: Using plain text emails (HTML templates pending)
 2. **Password Recovery**: No account recovery if email is lost
 3. **Multi-factor Auth**: Not implemented yet
-4. **Account Deletion**: User can't self-delete account
-5. **Profile Management**: Limited to email/API keys
-6. **Analysis History**: Not yet linked to user accounts ⚠️
+4. **Avatar Upload**: Placeholder only, no file storage configured yet
 
 ### Technical Debt
 1. **Landing page showcase**: `/showcase` page exists but not integrated
@@ -306,6 +329,8 @@ app/
 ├── settings/page.js
 ├── todos/page.js                 # Persistent todo list
 ├── history/page.js               # Analysis history
+├── profile/page.js               # User profile management
+├── shares/page.js                # Share link management
 ├── showcase/page.js              # Not integrated
 └── page.js                       # Landing page
 
@@ -357,6 +382,14 @@ docker-compose down
 ## Recent Changes Log
 
 ### 2025-12-04 (Latest)
+- ✅ **Phase 4.5: User-Linked Analysis Features** - Complete implementation
+  - Dedicated profile page (`/profile`) with profile editing, password management, account deletion
+  - Share link management page (`/shares`) with toggle, copy link, view statistics
+  - API endpoint `/api/user/shares` for listing shared analyses
+  - `getSharedAnalysesByUser()` database function in lib/db.js
+  - Sidebar updated with Shares link (Share2 icon)
+  - Production build passing
+
 - ✅ **Phase 4.7: Persistent Todo List** - Complete implementation
   - Database schema with todos table (subtasks, priorities, due dates, tags)
   - API routes for CRUD and bulk operations
@@ -459,21 +492,23 @@ docker-compose down
 
 1. **Phase 3 was SKIPPED** - Went directly from Phase 2 to Phase 4
 2. **NEXT_SESSION.md is OUTDATED** - Refers to Phase 3, which was skipped
-3. **CLAUDE.md is UP TO DATE** - Updated with Phase 4.6 and 4.7
+3. **CLAUDE.md should be updated** - After Phase 4.5 changes
 4. **Analyses are linked to users** - Analysis history page exists at /history
 5. **Persistent todo list** - Available at /todos
-6. **Logo sizes were adjusted 3 times** - Final: lg=96px for navbar
-7. **Two API key systems exist**:
+6. **Profile management** - Dedicated /profile page with full features
+7. **Share link management** - Available at /shares with toggle/copy functionality
+8. **Logo sizes were adjusted 3 times** - Final: lg=96px for navbar
+9. **Two API key systems exist**:
    - Settings page (encrypted storage)
    - Dashboard input (per-request key)
    - Need to decide: use saved key or allow override?
-8. **Implementation plans tracked** in docs/TODO-*.md files
+10. **Implementation plans tracked** in docs/TODO-*.md files
 
 ---
 
 ## Success Metrics
 
-### Phase 4.7 Achievements
+### Phase 4.5 Achievements
 - ✅ 100% authentication flow working
 - ✅ 60+ routes compiled successfully
 - ✅ Zero build errors
@@ -482,11 +517,13 @@ docker-compose down
 - ✅ User settings with encryption
 - ✅ Test execution infrastructure
 - ✅ Persistent todo list
+- ✅ Dedicated profile page with full management
+- ✅ Share link management page
+- ✅ Account deletion capability
 
 ### What's Missing for Full User Experience
-- ⚠️ Profile management
+- ⚠️ Avatar/profile picture upload
 - ⚠️ Email HTML templates
-- ⚠️ Account deletion
 - ⚠️ Drag-and-drop todo reordering (optional)
 - ⚠️ Dashboard todo widget (optional)
 

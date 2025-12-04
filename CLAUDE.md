@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **Codebase QA Analyzer** - A Next.js web application that uses Claude AI to analyze codebases and generate QA artifacts (user stories, test cases, and acceptance criteria). The app supports multiple input methods: direct code pasting, GitHub repository fetching, and file uploads (including .zip files).
 
-**Current Status:** Test Execution Infrastructure Complete. Users can now execute generated tests directly in the browser using WebContainers.
+**Current Status:** Phase 4.5 Complete - User-linked analysis features including profile management and share link management.
 
 **Live App:** https://orizon-qa.vercel.app
 
@@ -148,7 +148,9 @@ app/
 │   │   ├── route.js             # GET: list, POST: create
 │   │   ├── [id]/route.js        # GET/PATCH/DELETE single todo
 │   │   └── bulk/route.js        # Bulk operations (reorder, delete, updateStatus)
-│   └── user/settings/route.js   # User settings API
+│   └── user/
+│       ├── settings/route.js    # User settings API
+│       └── shares/route.js      # Get user's shared analyses
 ├── execute/                     # Test execution UI
 │   └── components/
 │       ├── ExecuteButton.jsx    # Trigger button
