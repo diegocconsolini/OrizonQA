@@ -5,8 +5,9 @@ import { getAnalysisByShareToken } from '@/lib/db';
  * GET /api/shared/[token]
  * Get a shared analysis by token (public, no auth required)
  */
-export async function GET(request, { params }) {
+export async function GET(request, context) {
   try {
+    const params = await context.params;
     const { token } = params;
 
     if (!token || token.length !== 64) {

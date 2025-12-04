@@ -6,7 +6,7 @@ import { getAnalysisByIdForUser, deleteAnalysis } from '@/lib/db';
  * GET /api/user/analyses/[id]
  * Get a single analysis by ID (only if owned by user)
  */
-export async function GET(request, { params }) {
+export async function GET(request, context) {
   try {
     const session = await auth();
 
@@ -14,6 +14,7 @@ export async function GET(request, { params }) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    const params = await context.params;
     const { id } = params;
     const analysis = await getAnalysisByIdForUser(parseInt(id), session.user.id);
 
@@ -43,7 +44,7 @@ export async function GET(request, { params }) {
  * DELETE /api/user/analyses/[id]
  * Delete an analysis (only if owned by user)
  */
-export async function DELETE(request, { params }) {
+export async function DELETE(request, context) {
   try {
     const session = await auth();
 
@@ -51,6 +52,7 @@ export async function DELETE(request, { params }) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    const params = await context.params;
     const { id } = params;
     const deleted = await deleteAnalysis(parseInt(id), session.user.id);
 

@@ -6,7 +6,7 @@ import { toggleAnalysisSharing, getAnalysisSharingStatus } from '@/lib/db';
  * GET /api/user/analyses/[id]/share
  * Get sharing status for an analysis
  */
-export async function GET(request, { params }) {
+export async function GET(request, context) {
   try {
     const session = await auth();
 
@@ -14,6 +14,7 @@ export async function GET(request, { params }) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    const params = await context.params;
     const { id } = params;
     const status = await getAnalysisSharingStatus(parseInt(id), session.user.id);
 
@@ -45,7 +46,7 @@ export async function GET(request, { params }) {
  * Toggle sharing for an analysis
  * Body: { enable: boolean }
  */
-export async function POST(request, { params }) {
+export async function POST(request, context) {
   try {
     const session = await auth();
 
@@ -53,6 +54,7 @@ export async function POST(request, { params }) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    const params = await context.params;
     const { id } = params;
     const { enable } = await request.json();
 
