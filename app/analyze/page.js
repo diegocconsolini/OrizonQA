@@ -454,6 +454,26 @@ function AnalyzePageContent() {
           {error && <Alert type="error" message={error} />}
           {success && <Alert type="success" message={success} />}
 
+          {/* Real-time Analysis Dashboard - ALWAYS visible during analysis (outside tabs) */}
+          {(streamIsAnalyzing || streamIsComplete || streamStatus === AnalysisStatus.ERROR) && (
+            <div className="mb-6">
+              <AnalysisDashboard
+                status={streamStatus}
+                plan={streamPlan}
+                progress={streamProgress}
+                chunks={streamChunks}
+                currentActivity={streamCurrentActivity}
+                tokenUsage={streamTokenUsage}
+                actualCost={streamActualCost}
+                timing={streamTiming}
+                elapsedFormatted={streamElapsedFormatted}
+                dataFlow={streamDataFlow}
+                error={streamError}
+                onCancel={cancelStreamAnalysis}
+              />
+            </div>
+          )}
+
           {/* Main Tabs */}
           <Tabs value={activeTab} onChange={handleTabChange} className="mb-6">
             <TabList>
@@ -505,26 +525,6 @@ function AnalyzePageContent() {
                     <AnalysisPlanIndicator
                       selectedFilePaths={selectedFiles}
                       config={config}
-                    />
-                  </div>
-                )}
-
-                {/* Real-time Analysis Dashboard - Shows during and after streaming analysis */}
-                {(streamIsAnalyzing || streamIsComplete || streamStatus === AnalysisStatus.ERROR) && (
-                  <div className="mt-6">
-                    <AnalysisDashboard
-                      status={streamStatus}
-                      plan={streamPlan}
-                      progress={streamProgress}
-                      chunks={streamChunks}
-                      currentActivity={streamCurrentActivity}
-                      tokenUsage={streamTokenUsage}
-                      actualCost={streamActualCost}
-                      timing={streamTiming}
-                      elapsedFormatted={streamElapsedFormatted}
-                      dataFlow={streamDataFlow}
-                      error={streamError}
-                      onCancel={cancelStreamAnalysis}
                     />
                   </div>
                 )}
