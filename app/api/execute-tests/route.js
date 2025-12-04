@@ -1,7 +1,71 @@
 import { auth } from '@/auth';
 import { NextResponse } from 'next/server';
-import { saveTestExecution } from '@/lib/db';
+import { saveTestExecution, getExecutionsByUser, getExecutionCountByUser } from '@/lib/db';
 import { validateJavaScriptTest, detectFramework, canExecuteInWebContainer } from '@/lib/testExecution/testValidator';
+
+/**
+ * GET /api/execute-tests
+ *
+ * List user's test executions
+ *
+ * Query params:
+ * - limit: number (optional, default 20)
+ * - offset: number (optional, default 0)
+ *
+ * Returns:
+ * - executions: array - List of execution records
+ * - total: number - Total count for pagination
+ */
+export async function GET(request) {
+  const session = await auth();
+  if (!session?.user) {
+    return NextResponse.json(
+      { error: 'Authentication required' },
+      { status: 401 }
+    );
+  }
+
+  const userId = session.user.id;
+  const { searchParams } = new URL(request.url);
+  const limit = Math.min(parseInt(searchParams.get('limit') || '20', 10), 100);
+  const offset = parseInt(searchParams.get('offset') || '0', 10);
+
+  try {
+    const [executions, total] = await Promise.all([
+      getExecutionsByUser(userId, limit, offset),
+      getExecutionCountByUser(userId)
+    ]);
+
+    return NextResponse.json({
+      executions: executions.map(e => ({
+        id: e.id,
+        framework: e.framework,
+        strategy: e.strategy,
+        status: e.status,
+        totalTests: e.total_tests,
+        passedTests: e.passed_tests,
+        failedTests: e.failed_tests,
+        skippedTests: e.skipped_tests,
+        duration: e.duration_ms,
+        startedAt: e.started_at,
+        completedAt: e.completed_at,
+        createdAt: e.created_at,
+        testCode: e.test_code,
+        githubUrl: e.github_url,
+        githubBranch: e.github_branch
+      })),
+      total,
+      limit,
+      offset
+    });
+  } catch (error) {
+    console.error('Failed to fetch executions:', error);
+    return NextResponse.json(
+      { error: 'Failed to fetch executions', message: error.message },
+      { status: 500 }
+    );
+  }
+}
 
 /**
  * POST /api/execute-tests
