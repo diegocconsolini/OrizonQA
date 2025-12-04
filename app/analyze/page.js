@@ -53,6 +53,7 @@ import useAnalysisStream, { AnalysisStatus } from '@/app/hooks/useAnalysisStream
 import useFileUpload from '@/app/hooks/useFileUpload';
 import useRepositories from '@/app/hooks/useRepositories';
 import useIndexedDB from '@/app/hooks/useIndexedDB';
+import useAnalyzePersistence, { createAnalyzeSnapshot } from '@/app/hooks/useAnalyzePersistence';
 
 // Inner component that uses useSearchParams (must be wrapped in Suspense)
 function AnalyzePageContent() {
@@ -61,6 +62,17 @@ function AnalyzePageContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const [settingsLoaded, setSettingsLoaded] = useState(false);
+
+  // Persistence hook for state recovery
+  const {
+    isLoaded: persistenceLoaded,
+    persistedState,
+    saveState: persistState,
+    clearState: clearPersistedState,
+    saveError: persistenceError,
+    loadError: persistenceLoadError,
+    dismissErrors: dismissPersistenceErrors
+  } = useAnalyzePersistence();
 
   // Tab state with URL persistence
   const validTabs = ['input', 'configure', 'results', 'cache'];
@@ -321,6 +333,72 @@ function AnalyzePageContent() {
   } = useFileUpload(setError, setSuccess);
 
   const loading = analysisLoading || streamIsAnalyzing || reposLoading || loadingFiles;
+
+  // Restore state from persistence when loaded
+  useEffect(() => {
+    if (!persistenceLoaded || !persistedState) return;
+
+    // Restore config
+    if (persistedState.config) {
+      setConfig(prev => ({ ...prev, ...persistedState.config }));
+    }
+
+    // Restore cardFiles
+    if (persistedState.cardFiles) {
+      setCardFiles(persistedState.cardFiles);
+    }
+
+    // Restore code input
+    if (persistedState.codeInput) {
+      setCodeInput(persistedState.codeInput);
+    }
+
+    // Restore active tab (if not overridden by URL)
+    if (persistedState.activeTab && !searchParams.get('tab')) {
+      setActiveTab(persistedState.activeTab);
+    }
+
+    // Note: Repository and file selection are handled by useRepositories hook
+    // which has its own persistence via IndexedDB
+
+    // Show success message
+    if (persistedState.selectedFiles?.length > 0 || persistedState.codeInput) {
+      setSuccess('Your previous session was restored.');
+      setTimeout(() => setSuccess(''), 3000);
+    }
+  }, [persistenceLoaded, persistedState]);
+
+  // Save state to persistence when key values change
+  useEffect(() => {
+    if (!persistenceLoaded) return;
+
+    // Don't save during analysis
+    if (streamIsAnalyzing) return;
+
+    const snapshot = createAnalyzeSnapshot({
+      selectedRepo,
+      selectedBranch,
+      selectedFiles,
+      config,
+      cardFiles,
+      activeTab,
+      codeInput,
+      uploadedFiles
+    });
+
+    persistState(snapshot);
+  }, [
+    persistenceLoaded,
+    selectedRepo,
+    selectedBranch,
+    selectedFiles,
+    config,
+    cardFiles,
+    activeTab,
+    codeInput,
+    uploadedFiles,
+    streamIsAnalyzing
+  ]);
 
   // Calculate token estimate
   const getInputContent = useCallback(() => {
