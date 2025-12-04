@@ -345,6 +345,22 @@ function AnalyzePageContent() {
   const handleAnalyze = async () => {
     const model = provider === 'lmstudio' ? lmStudioModel : claudeModel;
 
+    // Build stream config with per-card file info if applicable
+    const buildStreamConfig = () => {
+      const streamConfig = { ...config, model };
+
+      // Include per-card file selections if not using shared mode
+      if (!cardFiles.useSharedFiles) {
+        streamConfig.perCardFiles = {
+          userStories: cardFiles.userStories,
+          testCases: cardFiles.testCases,
+          acceptanceCriteria: cardFiles.acceptanceCriteria
+        };
+      }
+
+      return streamConfig;
+    };
+
     // Git mode - use streaming analysis for real-time visibility
     if (selectedFiles.length > 0 && selectedRepo) {
       setSuccess('Fetching selected files...');
@@ -356,8 +372,7 @@ function AnalyzePageContent() {
       setSuccess(''); // Clear success message before starting stream
 
       // Use streaming SSE endpoint for real-time visibility
-      // Include model in config so API shows correct model name
-      const streamConfig = { ...config, model };
+      const streamConfig = buildStreamConfig();
       await startStreamAnalysis(files, streamConfig, apiKey, provider, lmStudioUrl);
       return;
     }
@@ -373,7 +388,7 @@ function AnalyzePageContent() {
       const files = uploadedFiles.map(f => ({ path: f.name, content: f.content }));
 
       // Use streaming for uploaded files too
-      const streamConfig = { ...config, model };
+      const streamConfig = buildStreamConfig();
       await startStreamAnalysis(files, streamConfig, apiKey, provider, lmStudioUrl);
       return;
     }

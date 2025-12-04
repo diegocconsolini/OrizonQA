@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import Card from '@/app/components/ui/Card';
 import Button from '@/app/components/ui/Button';
+import CardFileSelector from './CardFileSelector';
 import {
   classifyFiles,
   getRecommendedConfig,
@@ -52,7 +53,11 @@ export default function SmartConfigPanel({
   selectedFiles = [],
   config,
   setConfig,
-  onSmartConfigChange
+  onSmartConfigChange,
+  fileTree = [],
+  cardFiles = {},
+  onCardFilesChange,
+  onToggleSharedFiles
 }) {
   // Mode state
   const [mode, setMode] = useState('guided'); // 'easy' | 'guided' | 'expert'
@@ -471,19 +476,32 @@ export default function SmartConfigPanel({
       )}
 
       {mode === 'expert' && (
-        <Card className="p-6">
-          <div className="flex items-center gap-3 mb-4">
-            <Code2 className="w-5 h-5 text-primary" />
-            <div>
-              <h3 className="font-medium text-white">Expert Mode</h3>
-              <p className="text-sm text-text-secondary-dark">
-                Full control over each category with multi-select outputs
-              </p>
-            </div>
-          </div>
+        <div className="space-y-6">
+          {/* Per-Card File Selection */}
+          {onCardFilesChange && (
+            <CardFileSelector
+              selectedFiles={selectedFiles}
+              fileTree={fileTree}
+              cardFiles={cardFiles}
+              onCardFilesChange={onCardFilesChange}
+              onToggleSharedFiles={onToggleSharedFiles}
+              useSharedFiles={cardFiles.useSharedFiles}
+            />
+          )}
 
-          {/* Advanced category config with multi-select */}
-          <div className="space-y-3">
+          <Card className="p-6">
+            <div className="flex items-center gap-3 mb-4">
+              <Code2 className="w-5 h-5 text-primary" />
+              <div>
+                <h3 className="font-medium text-white">Category Configuration</h3>
+                <p className="text-sm text-text-secondary-dark">
+                  Full control over each category with multi-select outputs
+                </p>
+              </div>
+            </div>
+
+            {/* Advanced category config with multi-select */}
+            <div className="space-y-3">
             {Object.entries(categories)
               .filter(([_, cat]) => cat.count > 0)
               .map(([catId, cat]) => {
@@ -542,6 +560,7 @@ export default function SmartConfigPanel({
               })}
           </div>
         </Card>
+        </div>
       )}
 
       {/* Token Estimate - Always visible */}
