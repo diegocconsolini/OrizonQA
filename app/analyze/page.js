@@ -595,6 +595,20 @@ function AnalyzePageContent() {
           {/* Alerts */}
           {error && <Alert type="error" message={error} />}
           {success && <Alert type="success" message={success} />}
+          {persistenceError && (
+            <Alert
+              type="warning"
+              message={persistenceError}
+              onDismiss={dismissPersistenceErrors}
+            />
+          )}
+          {persistenceLoadError && (
+            <Alert
+              type="warning"
+              message={persistenceLoadError}
+              onDismiss={dismissPersistenceErrors}
+            />
+          )}
 
           {/* Real-time Analysis Dashboard - ALWAYS visible during analysis (outside tabs) */}
           {(streamIsAnalyzing || streamIsComplete || streamStatus === AnalysisStatus.ERROR) && (
