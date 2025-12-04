@@ -34,19 +34,29 @@ export async function GET(request) {
     const total = await getAnalysisCountByUser(session.user.id);
 
     // Calculate stats (total tokens used)
-    const statsResult = await query(`
-      SELECT
-        COUNT(*) as total,
-        SUM(COALESCE((token_usage->>'input_tokens')::integer, 0) +
-            COALESCE((token_usage->>'output_tokens')::integer, 0)) as total_tokens
-      FROM analyses
-      WHERE user_id = $1
-    `, [session.user.id]);
+    // Note: SUM returns null if all values are null, so use COALESCE around SUM
+    let stats = { total: 0, totalTokens: 0 };
+    try {
+      const statsResult = await query(`
+        SELECT
+          COUNT(*) as total,
+          COALESCE(SUM(
+            COALESCE((token_usage->>'input_tokens')::integer, 0) +
+            COALESCE((token_usage->>'output_tokens')::integer, 0)
+          ), 0) as total_tokens
+        FROM analyses
+        WHERE user_id = $1
+      `, [session.user.id]);
 
-    const stats = {
-      total: parseInt(statsResult.rows[0]?.total || 0, 10),
-      totalTokens: parseInt(statsResult.rows[0]?.total_tokens || 0, 10)
-    };
+      const row = statsResult.rows[0];
+      stats = {
+        total: parseInt(row?.total || '0', 10) || 0,
+        totalTokens: parseInt(row?.total_tokens || '0', 10) || 0
+      };
+    } catch (statsError) {
+      console.error('Error calculating stats (non-fatal):', statsError);
+      // Continue with default stats - don't fail the whole request
+    }
 
     return NextResponse.json({
       analyses,
@@ -60,9 +70,13 @@ export async function GET(request) {
     });
 
   } catch (error) {
-    console.error('Error fetching user analyses:', error);
+    console.error('Error fetching user analyses:', {
+      message: error.message,
+      stack: error.stack,
+      name: error.name
+    });
     return NextResponse.json(
-      { error: 'Failed to fetch analyses' },
+      { error: 'Failed to fetch analyses', details: error.message },
       { status: 500 }
     );
   }
