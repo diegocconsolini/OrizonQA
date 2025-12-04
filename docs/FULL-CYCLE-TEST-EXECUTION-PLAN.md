@@ -1937,3 +1937,472 @@ export async function POST(request) {
 |---------|------|---------|
 | v1.0 | 2025-12-04 | Initial plan with 11 frameworks, architecture |
 | v2.0 | 2025-12-04 | Refinements: MVP, phases, WebContainer deep dive, open questions |
+| v2.1 | 2025-12-04 | Architecture decisions, integration model, multi-runtime options |
+
+---
+
+## INTEGRATION ARCHITECTURE (v2.1)
+
+### Data Model: Project-Centric
+
+**Decision**: Everything lives under a Project. This is the most organized approach for teams.
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                        PROJECT-CENTRIC DATA MODEL                            │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                               │
+│  USER                                                                         │
+│    │                                                                          │
+│    └──▶ PROJECTS (1:many)                                                    │
+│           │                                                                   │
+│           ├── name: "E-commerce Platform"                                    │
+│           ├── description: "Main shopping app"                               │
+│           ├── github_repo: "company/ecommerce" (optional)                    │
+│           ├── default_branch: "main"                                         │
+│           ├── settings: { framework, testDir, envVars }                      │
+│           │                                                                   │
+│           └──▶ ANALYSES (1:many)                                             │
+│                  │                                                            │
+│                  ├── type: "full" | "incremental"                            │
+│                  ├── files_analyzed: 45                                      │
+│                  ├── user_stories: [...]                                     │
+│                  ├── test_cases: [...]                                       │
+│                  ├── created_at: timestamp                                   │
+│                  │                                                            │
+│                  └──▶ EXECUTIONS (1:many)                                    │
+│                         │                                                     │
+│                         ├── strategy: "webcontainer" | "docker" | "cloud"    │
+│                         ├── framework: "jest"                                │
+│                         ├── status: "running" | "completed" | "failed"       │
+│                         ├── total_tests: 25                                  │
+│                         ├── passed: 23, failed: 2                            │
+│                         │                                                     │
+│                         └──▶ TEST_RESULTS (1:many)                           │
+│                                ├── test_name, status, duration               │
+│                                └── error_message, stack_trace                │
+│                                                                               │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
+### Database Schema Update
+
+```sql
+-- Projects table (NEW)
+CREATE TABLE projects (
+  id SERIAL PRIMARY KEY,
+  user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+
+  -- Basic info
+  name VARCHAR(100) NOT NULL,
+  description TEXT,
+  slug VARCHAR(100) UNIQUE, -- URL-friendly: "my-project"
+
+  -- GitHub connection (optional)
+  github_repo VARCHAR(255),      -- "owner/repo"
+  github_branch VARCHAR(100) DEFAULT 'main',
+  github_connected_at TIMESTAMP,
+
+  -- Default settings
+  default_framework VARCHAR(50) DEFAULT 'jest',
+  default_strategy VARCHAR(20) DEFAULT 'webcontainer',
+  settings JSONB DEFAULT '{}',   -- testDir, envVars, etc.
+
+  -- Metadata
+  created_at TIMESTAMP DEFAULT NOW(),
+  updated_at TIMESTAMP DEFAULT NOW(),
+  archived_at TIMESTAMP          -- Soft delete
+);
+
+-- Update analyses to belong to projects
+ALTER TABLE analyses ADD COLUMN project_id INTEGER REFERENCES projects(id);
+
+-- Update test_executions to belong to analyses (already has analysis_id)
+-- No change needed
+
+-- Indexes
+CREATE INDEX idx_projects_user ON projects(user_id);
+CREATE INDEX idx_projects_slug ON projects(slug);
+CREATE INDEX idx_analyses_project ON analyses(project_id);
+```
+
+### User Flow with Projects
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                         USER JOURNEY WITH PROJECTS                           │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                               │
+│  1. DASHBOARD (/dashboard)                                                   │
+│     └─> List of projects with quick stats                                   │
+│     └─> "New Project" button                                                 │
+│     └─> Recent activity feed                                                │
+│                                                                               │
+│  2. CREATE PROJECT (/projects/new)                                          │
+│     └─> Name, description                                                   │
+│     └─> Optional: Connect GitHub repo                                       │
+│     └─> Default framework/strategy                                          │
+│                                                                               │
+│  3. PROJECT VIEW (/projects/[slug])                                         │
+│     └─> Project header with settings                                        │
+│     └─> Tabs: [Analyses] [Executions] [Settings]                           │
+│     └─> "New Analysis" button                                               │
+│                                                                               │
+│  4. NEW ANALYSIS (/projects/[slug]/analyze)                                 │
+│     └─> Same as current /analyze but scoped to project                      │
+│     └─> Pre-filled with project's GitHub repo if connected                  │
+│                                                                               │
+│  5. ANALYSIS RESULTS (/projects/[slug]/analyses/[id])                       │
+│     └─> Generated tests, user stories                                       │
+│     └─> "Execute Tests" button                                              │
+│                                                                               │
+│  6. EXECUTE TESTS (/projects/[slug]/execute/[analysisId])                   │
+│     └─> Select tests to run                                                 │
+│     └─> Choose execution strategy                                           │
+│     └─> Configure environment                                               │
+│                                                                               │
+│  7. EXECUTION RESULTS (/projects/[slug]/executions/[id])                    │
+│     └─> Live progress, then final results                                   │
+│     └─> Re-run, export options                                              │
+│                                                                               │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## CONTAINERIZATION OPTIONS (Multi-Runtime)
+
+**Decision**: User chooses execution strategy per execution. Maximum flexibility.
+
+### Available Strategies
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                     EXECUTION STRATEGY OPTIONS                               │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                               │
+│  ┌─────────────────────────────────────────────────────────────────────────┐│
+│  │  STRATEGY 1: WEBCONTAINER (Browser-Based)                               ││
+│  ├─────────────────────────────────────────────────────────────────────────┤│
+│  │  Provider: StackBlitz WebContainers API                                 ││
+│  │  Cost: FREE (unlimited)                                                 ││
+│  │  Languages: JavaScript/TypeScript only                                  ││
+│  │  Frameworks: Jest, Vitest, Mocha, Playwright (limited)                  ││
+│  │  Pros: Instant start, no server cost, runs in user's browser           ││
+│  │  Cons: No Python/Java/Ruby, limited resources, no real browser E2E     ││
+│  │  Best for: Quick JS unit tests, prototyping                            ││
+│  └─────────────────────────────────────────────────────────────────────────┘│
+│                                                                               │
+│  ┌─────────────────────────────────────────────────────────────────────────┐│
+│  │  STRATEGY 2: LOCAL DOCKER (User's Machine)                              ││
+│  ├─────────────────────────────────────────────────────────────────────────┤│
+│  │  Provider: User's Docker daemon                                         ││
+│  │  Cost: FREE (user's compute)                                            ││
+│  │  Languages: ALL (JS, Python, Java, Ruby, Go, PHP, C#)                   ││
+│  │  Frameworks: ALL supported frameworks                                    ││
+│  │  Pros: Full power, all languages, user controls resources              ││
+│  │  Cons: User must have Docker, network latency, setup required          ││
+│  │  Best for: Power users, all frameworks, E2E with real browsers         ││
+│  └─────────────────────────────────────────────────────────────────────────┘│
+│                                                                               │
+│  ┌─────────────────────────────────────────────────────────────────────────┐│
+│  │  STRATEGY 3: CLOUD DOCKER (Managed)                                     ││
+│  ├─────────────────────────────────────────────────────────────────────────┤│
+│  │  Provider: Fly.io / Railway / AWS Fargate                               ││
+│  │  Cost: CREDITS (metered usage)                                          ││
+│  │  Languages: ALL                                                          ││
+│  │  Frameworks: ALL                                                         ││
+│  │  Pros: No setup, scales, works everywhere                               ││
+│  │  Cons: Costs money, cold starts, limited free tier                      ││
+│  │  Best for: Teams, CI/CD, users without Docker                          ││
+│  └─────────────────────────────────────────────────────────────────────────┘│
+│                                                                               │
+│  ┌─────────────────────────────────────────────────────────────────────────┐│
+│  │  STRATEGY 4: REMOTE DOCKER (Self-Hosted)                                ││
+│  ├─────────────────────────────────────────────────────────────────────────┤│
+│  │  Provider: User's server (VPS, on-prem, etc.)                           ││
+│  │  Cost: FREE (user's infrastructure)                                     ││
+│  │  Languages: ALL                                                          ││
+│  │  Frameworks: ALL                                                         ││
+│  │  Pros: Full control, no per-execution cost, persistent                  ││
+│  │  Cons: Setup required, user maintains server                            ││
+│  │  Best for: Enterprise, air-gapped environments, high volume             ││
+│  └─────────────────────────────────────────────────────────────────────────┘│
+│                                                                               │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
+### Strategy Comparison Matrix
+
+| Feature | WebContainer | Local Docker | Cloud Docker | Remote Docker |
+|---------|--------------|--------------|--------------|---------------|
+| **Cost** | Free | Free | Credits | Free |
+| **Setup** | None | Docker install | None | Server + Docker |
+| **Languages** | JS only | All | All | All |
+| **E2E Tests** | Limited | Full | Full | Full |
+| **Speed** | Fast | Medium | Medium | Medium |
+| **Offline** | No | Yes | No | Depends |
+| **Resources** | Browser RAM | User's HW | 512MB-2GB | User's HW |
+
+### Framework → Strategy Compatibility
+
+| Framework | WebContainer | Docker |
+|-----------|--------------|--------|
+| Jest | ✅ Full | ✅ Full |
+| Vitest | ✅ Full | ✅ Full |
+| Mocha | ✅ Full | ✅ Full |
+| Playwright | ⚠️ Limited | ✅ Full |
+| Cypress | ❌ No | ✅ Full |
+| Pytest | ❌ No | ✅ Full |
+| JUnit | ❌ No | ✅ Full |
+| RSpec | ❌ No | ✅ Full |
+| Go Test | ❌ No | ✅ Full |
+| PHPUnit | ❌ No | ✅ Full |
+| Cucumber | ⚠️ JS only | ✅ Full |
+| Robot | ❌ No | ✅ Full |
+
+### UI: Strategy Selector
+
+```jsx
+// app/execute/components/StrategySelector.jsx
+
+export default function StrategySelector({ framework, value, onChange }) {
+  const strategies = [
+    {
+      id: 'webcontainer',
+      name: 'Browser (WebContainer)',
+      icon: '🌐',
+      description: 'Runs in your browser. Free & instant.',
+      available: ['jest', 'vitest', 'mocha'].includes(framework),
+      cost: 'Free',
+      speed: 'Fast'
+    },
+    {
+      id: 'local-docker',
+      name: 'Local Docker',
+      icon: '🐳',
+      description: 'Runs on your machine. Requires Docker.',
+      available: true,
+      cost: 'Free',
+      speed: 'Medium',
+      requiresSetup: true
+    },
+    {
+      id: 'cloud-docker',
+      name: 'Cloud (Fly.io)',
+      icon: '☁️',
+      description: 'Runs on our servers. Uses credits.',
+      available: true,
+      cost: 'Credits',
+      speed: 'Medium'
+    },
+    {
+      id: 'remote-docker',
+      name: 'Remote Docker',
+      icon: '🖥️',
+      description: 'Runs on your server. Configure in settings.',
+      available: userHasRemoteDocker,
+      cost: 'Free',
+      speed: 'Medium'
+    }
+  ];
+
+  return (
+    <div className="space-y-2">
+      <label className="text-sm text-slate-400">Execution Strategy</label>
+      <div className="grid grid-cols-2 gap-3">
+        {strategies.map(strategy => (
+          <button
+            key={strategy.id}
+            onClick={() => onChange(strategy.id)}
+            disabled={!strategy.available}
+            className={`p-4 rounded-lg border text-left ${
+              value === strategy.id
+                ? 'border-blue-500 bg-blue-500/10'
+                : strategy.available
+                  ? 'border-slate-600 hover:border-slate-500'
+                  : 'border-slate-700 opacity-50 cursor-not-allowed'
+            }`}
+          >
+            <div className="flex items-center gap-2">
+              <span className="text-2xl">{strategy.icon}</span>
+              <div>
+                <div className="font-medium text-white">{strategy.name}</div>
+                <div className="text-xs text-slate-500">{strategy.description}</div>
+              </div>
+            </div>
+            <div className="mt-2 flex gap-2">
+              <span className="text-xs px-2 py-0.5 rounded bg-slate-700">
+                {strategy.cost}
+              </span>
+              <span className="text-xs px-2 py-0.5 rounded bg-slate-700">
+                {strategy.speed}
+              </span>
+            </div>
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+```
+
+### Cloud Docker Providers (Comparison)
+
+| Provider | Pricing | Cold Start | Max Duration | Best For |
+|----------|---------|------------|--------------|----------|
+| **Fly.io** | $0.0000022/sec (~$0.008/min) | ~2s | Unlimited | General use, good free tier |
+| **Railway** | $0.000463/min | ~3s | Unlimited | Easy setup, good DX |
+| **AWS Fargate** | ~$0.04/vCPU-hour | 30-60s | Unlimited | Enterprise, high scale |
+| **Google Cloud Run** | $0.00002400/vCPU-sec | 0-1s | 60min | Lowest cold start |
+| **Render** | $0.008/min (starter) | ~5s | Unlimited | Simple, predictable |
+
+**Recommendation**: Start with **Fly.io** - good free tier, fast cold starts, simple CLI.
+
+### Local Docker Setup Flow
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                    LOCAL DOCKER SETUP                                        │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                               │
+│  STEP 1: User clicks "Use Local Docker"                                     │
+│          └─> Show setup instructions                                         │
+│                                                                               │
+│  STEP 2: User installs Docker Desktop (if not installed)                    │
+│          └─> Link to Docker Desktop download                                 │
+│                                                                               │
+│  STEP 3: User runs OrizonQA Docker Agent                                    │
+│          $ docker run -d -p 9876:9876 orizonqa/agent:latest                  │
+│          └─> Agent exposes API for OrizonQA to connect                      │
+│                                                                               │
+│  STEP 4: OrizonQA connects to localhost:9876                                │
+│          └─> Health check confirms connection                                │
+│          └─> Save connection in user settings                               │
+│                                                                               │
+│  STEP 5: Ready to execute tests!                                            │
+│          └─> OrizonQA sends test code to agent                              │
+│          └─> Agent runs in isolated container                               │
+│          └─> Results streamed back via SSE                                  │
+│                                                                               │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
+```javascript
+// Docker Agent API (runs on user's machine)
+// docker/agent/server.js
+
+const express = require('express');
+const Docker = require('dockerode');
+
+const app = express();
+const docker = new Docker();
+
+// Health check
+app.get('/health', (req, res) => {
+  res.json({ status: 'ok', version: '1.0.0' });
+});
+
+// Execute tests
+app.post('/execute', async (req, res) => {
+  const { framework, testCode, sourceCode, environment } = req.body;
+
+  // Create container with appropriate image
+  const container = await docker.createContainer({
+    Image: `orizonqa/runner-${framework}`,
+    Cmd: getRunCommand(framework),
+    Env: Object.entries(environment).map(([k, v]) => `${k}=${v}`),
+    HostConfig: {
+      Memory: 512 * 1024 * 1024,
+      CpuPeriod: 100000,
+      CpuQuota: 50000,
+      NetworkMode: 'none' // Security: no network
+    }
+  });
+
+  // Stream results back
+  res.setHeader('Content-Type', 'text/event-stream');
+  // ... stream execution output
+});
+
+app.listen(9876);
+```
+
+### Remote Docker Setup (Enterprise)
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                    REMOTE DOCKER SETUP (Enterprise)                          │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                               │
+│  USER'S SERVER                        ORIZONQA                               │
+│  ┌────────────────┐                   ┌────────────────┐                     │
+│  │ Docker Host    │◄─────HTTPS────────│ orizon-qa.com  │                     │
+│  │ + Agent        │                   │                │                     │
+│  │ (port 9876)    │                   │ User Settings: │                     │
+│  └────────────────┘                   │ dockerHost:    │                     │
+│         │                             │ "myserver.com" │                     │
+│         ▼                             │ dockerToken:   │                     │
+│  ┌────────────────┐                   │ "xxxxx"        │                     │
+│  │ Test Container │                   └────────────────┘                     │
+│  │ (isolated)     │                                                          │
+│  └────────────────┘                                                          │
+│                                                                               │
+│  SECURITY:                                                                   │
+│  ├─> TLS encryption required                                                │
+│  ├─> Bearer token authentication                                            │
+│  ├─> IP allowlist optional                                                  │
+│  └─> Containers have no network access                                      │
+│                                                                               │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
+### Settings Page: Docker Configuration
+
+```jsx
+// app/settings/components/DockerSettings.jsx
+
+export default function DockerSettings() {
+  return (
+    <div className="space-y-6">
+      <h3 className="text-lg font-medium text-white">Docker Configuration</h3>
+
+      {/* Local Docker */}
+      <div className="p-4 bg-slate-800 rounded-lg">
+        <h4 className="font-medium text-white">Local Docker</h4>
+        <p className="text-sm text-slate-400 mt-1">
+          Run tests on your machine using Docker Desktop.
+        </p>
+        <div className="mt-3">
+          <button className="px-4 py-2 bg-blue-600 rounded-lg text-white">
+            Test Connection (localhost:9876)
+          </button>
+        </div>
+      </div>
+
+      {/* Remote Docker */}
+      <div className="p-4 bg-slate-800 rounded-lg">
+        <h4 className="font-medium text-white">Remote Docker</h4>
+        <p className="text-sm text-slate-400 mt-1">
+          Connect to a Docker host on your server.
+        </p>
+        <div className="mt-3 space-y-3">
+          <input
+            type="text"
+            placeholder="https://your-server.com:9876"
+            className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg"
+          />
+          <input
+            type="password"
+            placeholder="Authentication token"
+            className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg"
+          />
+          <button className="px-4 py-2 bg-blue-600 rounded-lg text-white">
+            Connect & Verify
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+```
