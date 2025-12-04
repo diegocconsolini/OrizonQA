@@ -2807,3 +2807,63 @@ For AI agents, customize the flow:
 | Create project first | Just start analyzing |
 | Project settings | Target defaults (inherited) |
 | Project view | History + filters |
+
+---
+
+## SESSION SUMMARY (2025-12-04)
+
+### Decisions Made
+
+| Decision | Choice | Rationale |
+|----------|--------|-----------|
+| Storage | Redis + PostgreSQL | Live progress in Redis, permanent in Postgres |
+| Test Scope | Generated + User + GitHub | Full flexibility for test sources |
+| Code Access | User uploads + GitHub fetch | Real source code for realistic tests |
+| Auth | Always required | Track usage, prevent abuse |
+| Data Model | Target-centric (flexible) | Not rigid "Project", adapts to any scope |
+| Containerization | User chooses per execution | WebContainer, Local Docker, Cloud, Remote |
+
+### Architecture Summary
+
+```
+USER → SELECT TARGET (any scope) → ANALYZE → GENERATE TESTS → EXECUTE → REPORT
+          │                           │              │             │
+          ▼                           ▼              ▼             ▼
+     Scope Types:              AI Analysis     Test Runners    Results DB
+     • Unit (function)         (Claude/LLM)    • WebContainer  • Redis (live)
+     • File                                    • Local Docker  • PostgreSQL
+     • Module (folder)                         • Cloud Docker
+     • Feature (related)                       • Remote Docker
+     • Agent (AI code)
+     • Service (API)
+     • Repository
+```
+
+### Files in This Plan
+
+| File | Purpose | Priority |
+|------|---------|----------|
+| `lib/scopeDetector.js` | Auto-detect scope from input | P0 |
+| `lib/testExecution/webContainerRunner.js` | Browser-based execution | P0 |
+| `lib/testExecution/storage.js` | Redis + PostgreSQL storage | P0 |
+| `app/api/execute-tests/route.js` | Execution API | P0 |
+| `app/execute/[id]/page.js` | Live execution view | P0 |
+| `app/execute/components/StrategySelector.jsx` | Choose execution strategy | P1 |
+| `lib/testExecution/dockerRunner.js` | Docker execution | P2 |
+| `docker/agent/server.js` | Local Docker agent | P2 |
+
+### Next Session: Implementation Start
+
+**Recommended first steps:**
+1. Create database migration for `targets` and `test_executions` tables
+2. Install `@webcontainer/api` package
+3. Build proof-of-concept: Jest test execution in WebContainer
+4. Add "Execute" button to analyze results page
+
+### Document Stats
+
+- **Total Lines**: ~2850
+- **Versions**: v1.0 → v2.0 → v2.1 → v2.2
+- **Sections**: 17 major sections
+- **Code Examples**: 25+ implementation snippets
+- **Diagrams**: 15+ ASCII diagrams
