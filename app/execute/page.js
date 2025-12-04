@@ -10,7 +10,7 @@
  * - Start execution
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import AppLayout from '@/app/components/layout/AppLayout';
@@ -34,7 +34,7 @@ const DEFAULT_ENV_CONFIG = {
   mockApiUrl: ''
 };
 
-export default function ExecutePage() {
+function ExecutePageContent() {
   const { data: session, status } = useSession();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -324,5 +324,20 @@ export default function ExecutePage() {
         )}
       </div>
     </AppLayout>
+  );
+}
+
+// Wrap with Suspense for useSearchParams
+export default function ExecutePage() {
+  return (
+    <Suspense fallback={
+      <AppLayout>
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <Loader2 className="w-8 h-8 text-primary animate-spin" />
+        </div>
+      </AppLayout>
+    }>
+      <ExecutePageContent />
+    </Suspense>
   );
 }
