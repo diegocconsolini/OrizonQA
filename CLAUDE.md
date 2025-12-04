@@ -91,6 +91,32 @@ git log --oneline -5
 git commit --amend -m "Better descriptive message"
 ```
 
+## Background Process Management
+
+**IMPORTANT**: When running long-lived processes like dev servers in background mode:
+
+1. **Track shell IDs**: Remember the shell ID when starting a background process
+2. **Kill before restart**: Always kill previous background shells before starting new ones
+3. **Single instance**: Only have ONE dev server running at a time
+
+**Why this matters**: Each background shell adds system reminders to every message (~150 chars per shell). Having 20+ zombie shells consumes ~3000 chars per message, rapidly filling context.
+
+**Correct pattern**:
+```bash
+# Kill previous dev server first
+fuser -k 3033/tcp 2>/dev/null
+# Then start new one
+PORT=3033 npm run dev
+```
+
+**Wrong pattern**:
+```bash
+# Starting multiple dev servers without cleanup - DON'T DO THIS
+PORT=3033 npm run dev &  # Shell 1
+PORT=3033 npm run dev &  # Shell 2 (zombie)
+PORT=3033 npm run dev &  # Shell 3 (zombie)
+```
+
 ## Architecture
 
 ### Application Structure
