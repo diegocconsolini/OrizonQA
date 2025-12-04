@@ -24,15 +24,6 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 const STORAGE_KEY = 'orizon_analyze_state';
 const STORAGE_VERSION = 1;
 
-// Debounce helper
-function debounce(fn, delay) {
-  let timeoutId;
-  return (...args) => {
-    clearTimeout(timeoutId);
-    timeoutId = setTimeout(() => fn(...args), delay);
-  };
-}
-
 /**
  * Default state values
  */
@@ -75,10 +66,11 @@ const defaultState = {
 
 export default function useAnalyzePersistence() {
   const [isLoaded, setIsLoaded] = useState(false);
-  const [persistedState, setPersistedState] = useState(null);
+  const [initialState, setInitialState] = useState(null); // Set once on load, never changes
   const [saveError, setSaveError] = useState(null);
   const [loadError, setLoadError] = useState(null);
   const saveTimeoutRef = useRef(null);
+  const hasRestoredRef = useRef(false); // Track if we've restored
 
   /**
    * Load state from sessionStorage
@@ -110,7 +102,7 @@ export default function useAnalyzePersistence() {
         return null;
       }
 
-      setPersistedState(parsed.state);
+      setInitialState(parsed.state);
       setIsLoaded(true);
       setLoadError(null);
       return parsed.state;
@@ -149,7 +141,7 @@ export default function useAnalyzePersistence() {
         };
 
         sessionStorage.setItem(STORAGE_KEY, JSON.stringify(toSave));
-        setPersistedState(state);
+        // Don't update state here - that would cause re-renders and loops
         setSaveError(null);
       } catch (error) {
         console.error('Failed to save analyze state:', error);
@@ -188,7 +180,8 @@ export default function useAnalyzePersistence() {
   const clearState = useCallback(() => {
     try {
       sessionStorage.removeItem(STORAGE_KEY);
-      setPersistedState(null);
+      setInitialState(null);
+      hasRestoredRef.current = false;
       setSaveError(null);
     } catch (error) {
       console.error('Failed to clear analyze state:', error);
@@ -196,23 +189,18 @@ export default function useAnalyzePersistence() {
   }, []);
 
   /**
-   * Update specific fields in persisted state
+   * Mark restoration as complete (call this after restoring state)
    */
-  const updateState = useCallback((updates) => {
-    setPersistedState(prev => {
-      const newState = { ...prev, ...updates };
-      saveState(newState);
-      return newState;
-    });
-  }, [saveState]);
+  const markRestored = useCallback(() => {
+    hasRestoredRef.current = true;
+  }, []);
 
   /**
-   * Get a specific value with fallback
+   * Check if state has been restored
    */
-  const getValue = useCallback((key, fallback) => {
-    if (!persistedState) return fallback;
-    return persistedState[key] ?? fallback;
-  }, [persistedState]);
+  const hasRestored = useCallback(() => {
+    return hasRestoredRef.current;
+  }, []);
 
   // Load state on mount
   useEffect(() => {
