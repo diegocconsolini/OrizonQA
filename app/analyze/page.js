@@ -106,6 +106,7 @@ function AnalyzePageContent() {
     loadingFiles,
     selectedFiles,
     toggleFileSelection,
+    batchToggleFiles,
     selectAllCodeFiles,
     selectByPattern,
     clearSelection,
@@ -667,6 +668,7 @@ function AnalyzePageContent() {
                   fileTree={fileTree}
                   selectedFiles={selectedFiles}
                   onToggleFile={toggleFileSelection}
+                  onBatchToggleFiles={batchToggleFiles}
                   onSelectAllCodeFiles={selectAllCodeFiles}
                   onSelectByPattern={selectByPattern}
                   onClearSelection={clearSelection}
