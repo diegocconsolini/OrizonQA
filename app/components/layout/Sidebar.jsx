@@ -30,7 +30,8 @@ import {
   Shield,
   FolderKanban,
   Code,
-  Github
+  Github,
+  CheckSquare
 } from 'lucide-react';
 
 export default function Sidebar({ collapsed = false, onToggle }) {
@@ -77,6 +78,11 @@ export default function Sidebar({ collapsed = false, onToggle }) {
       label: 'History',
       href: '/history',
       icon: <History className="w-5 h-5" />,
+    },
+    {
+      label: 'Todos',
+      href: '/todos',
+      icon: <CheckSquare className="w-5 h-5" />,
     },
     {
       label: 'Settings',

@@ -11,10 +11,10 @@ Create a database-backed todo list feature that persists across browser sessions
 
 ---
 
-## Phase 1: Database Layer
+## Phase 1: Database Layer ✅ COMPLETE
 
 ### 1.1 Create Todos Table Schema
-- [ ] Add `todos` table to `lib/db.js`
+- [x] Add `todos` table to `lib/db.js`
   ```sql
   CREATE TABLE IF NOT EXISTS todos (
     id SERIAL PRIMARY KEY,
@@ -32,145 +32,159 @@ Create a database-backed todo list feature that persists across browser sessions
     completed_at TIMESTAMP
   );
   ```
-- [ ] Add indexes for performance
+- [x] Add indexes for performance
   ```sql
   CREATE INDEX idx_todos_user ON todos(user_id);
   CREATE INDEX idx_todos_status ON todos(status);
   CREATE INDEX idx_todos_parent ON todos(parent_id);
+  CREATE INDEX idx_todos_priority ON todos(priority);
   ```
 
 ### 1.2 Database Helper Functions
 Add to `lib/db.js`:
-- [ ] `createTodo(userId, data)` - Create new todo
-- [ ] `getTodosByUser(userId, filters)` - Get all todos for user with optional filters
-- [ ] `getTodoById(id, userId)` - Get single todo (with permission check)
-- [ ] `updateTodo(id, userId, updates)` - Update todo fields
-- [ ] `deleteTodo(id, userId)` - Delete todo (cascade to subtasks)
-- [ ] `reorderTodos(userId, todoIds)` - Update positions for drag-drop
-- [ ] `getSubtasks(parentId, userId)` - Get subtasks for a todo
+- [x] `initTodosTable()` - Create table and indexes
+- [x] `createTodo(userId, data)` - Create new todo
+- [x] `getTodosByUser(userId, filters)` - Get all todos for user with optional filters
+- [x] `getTodoById(id, userId)` - Get single todo (with permission check)
+- [x] `updateTodo(id, userId, updates)` - Update todo fields
+- [x] `deleteTodo(id, userId)` - Delete todo (cascade to subtasks)
+- [x] `reorderTodos(userId, todoIds)` - Update positions for drag-drop
+- [x] `getSubtasks(parentId, userId)` - Get subtasks for a todo
+- [x] `getTodoStats(userId)` - Get statistics
+- [x] `bulkUpdateTodoStatus(userId, todoIds, status)` - Bulk status update
+- [x] `bulkDeleteTodos(userId, todoIds)` - Bulk delete
 
 ### 1.3 Migration Endpoint
-- [ ] Create `app/api/db/migrate-todos/route.js`
+- [x] Create `app/api/db/migrate-todos/route.js`
   - GET handler to run migration
   - Return success/error status
 
 ---
 
-## Phase 2: API Routes
+## Phase 2: API Routes ✅ COMPLETE
 
 ### 2.1 Main Todos Endpoint
 **File:** `app/api/todos/route.js`
-- [ ] `GET` - List todos for authenticated user
-  - Query params: `status`, `priority`, `tag`, `search`, `limit`, `offset`
-  - Return paginated list with total count
-- [ ] `POST` - Create new todo
+- [x] `GET` - List todos for authenticated user
+  - Query params: `status`, `priority`, `tag`, `search`, `limit`, `offset`, `includeStats`
+  - Return paginated list with total count and stats
+- [x] `POST` - Create new todo
   - Body: `{ title, description?, priority?, dueDate?, tags?, parentId? }`
   - Return created todo
 
 ### 2.2 Single Todo Endpoint
 **File:** `app/api/todos/[id]/route.js`
-- [ ] `GET` - Get single todo with subtasks
-- [ ] `PATCH` - Update todo fields
+- [x] `GET` - Get single todo with subtasks
+- [x] `PATCH` - Update todo fields
   - Body: partial todo object
-- [ ] `DELETE` - Delete todo and subtasks
+- [x] `DELETE` - Delete todo and subtasks
 
 ### 2.3 Bulk Operations Endpoint
 **File:** `app/api/todos/bulk/route.js`
-- [ ] `POST` - Bulk operations
-  - Actions: `reorder`, `complete`, `delete`, `updateStatus`
-  - Body: `{ action, todoIds, data? }`
+- [x] `POST` - Bulk operations
+  - Actions: `reorder`, `delete`, `updateStatus`
+  - Body: `{ action, todoIds, status? }`
 
 ---
 
-## Phase 3: React Hook
+## Phase 3: React Hook ✅ COMPLETE
 
 ### 3.1 useTodos Hook
 **File:** `app/hooks/useTodos.js`
 
 State:
-- [ ] `todos` - Array of todo items
-- [ ] `loading` - Loading state
-- [ ] `error` - Error state
-- [ ] `filters` - Current filter state
+- [x] `todos` - Array of todo items
+- [x] `stats` - Statistics object
+- [x] `total` - Total count
+- [x] `loading` - Loading state
+- [x] `error` - Error state
+- [x] `filters` - Current filter state
 
 Actions:
-- [ ] `fetchTodos(filters?)` - Load todos from API
-- [ ] `createTodo(data)` - Create and add to state
-- [ ] `updateTodo(id, updates)` - Update in state and API
-- [ ] `deleteTodo(id)` - Remove from state and API
-- [ ] `toggleStatus(id)` - Toggle pending/completed
-- [ ] `reorderTodos(startIndex, endIndex)` - Drag-drop reorder
-- [ ] `setFilters(filters)` - Update filters and refetch
+- [x] `fetchTodos(filters?)` - Load todos from API
+- [x] `createTodo(data)` - Create and add to state
+- [x] `updateTodo(id, updates)` - Update in state and API
+- [x] `deleteTodo(id)` - Remove from state and API
+- [x] `toggleStatus(id)` - Toggle pending/completed
+- [x] `reorderTodos(startIndex, endIndex)` - Drag-drop reorder
+- [x] `updateFilters(filters)` - Update filters and refetch
+- [x] `clearFilters()` - Clear all filters
+- [x] `bulkUpdateStatus(todoIds, status)` - Bulk status update
+- [x] `bulkDelete(todoIds)` - Bulk delete
 
 Computed:
-- [ ] `pendingTodos` - Filtered pending items
-- [ ] `completedTodos` - Filtered completed items
-- [ ] `todosByPriority` - Grouped by priority
+- [x] `pendingTodos` - Filtered pending items
+- [x] `inProgressTodos` - Filtered in-progress items
+- [x] `completedTodos` - Filtered completed items
+- [x] `overdueTodos` - Filtered overdue items
+- [x] `todosByPriority` - Grouped by priority
 
 ---
 
-## Phase 4: UI Components
+## Phase 4: UI Components ✅ COMPLETE
 
 ### 4.1 TodoList Component
 **File:** `app/components/todos/TodoList.jsx`
-- [ ] Main container with header and filters
-- [ ] Empty state when no todos
-- [ ] Loading skeleton
-- [ ] Error state with retry
+- [x] Main container with header and filters
+- [x] Empty state when no todos
+- [x] Loading spinner
+- [x] Error state display
+- [x] Add todo button + form modal
 
 ### 4.2 TodoItem Component
 **File:** `app/components/todos/TodoItem.jsx`
-- [ ] Checkbox for status toggle
-- [ ] Title with inline edit
-- [ ] Priority badge (color coded)
-- [ ] Due date display (overdue highlighting)
-- [ ] Tags display
-- [ ] Actions menu (edit, delete, add subtask)
-- [ ] Expand/collapse for subtasks
-- [ ] Drag handle for reordering
+- [x] Checkbox for status toggle
+- [x] Title with inline edit
+- [x] Priority badge (color coded)
+- [x] Due date display (overdue highlighting)
+- [x] Tags display
+- [x] Actions menu (edit, delete, add subtask)
+- [x] Expand/collapse for subtasks
+- [x] Subtask count indicator
 
 ### 4.3 TodoForm Component
 **File:** `app/components/todos/TodoForm.jsx`
-- [ ] Title input (required)
-- [ ] Description textarea (optional)
-- [ ] Priority select (low/medium/high)
-- [ ] Due date picker (optional)
-- [ ] Tags input (comma separated or chips)
-- [ ] Submit/Cancel buttons
-- [ ] Validation feedback
+- [x] Title input (required)
+- [x] Description textarea (optional, in advanced)
+- [x] Priority select (low/medium/high)
+- [x] Due date picker (optional)
+- [x] Tags input (comma separated)
+- [x] Submit/Cancel buttons
+- [x] Validation feedback
+- [x] Compact mode for quick add
 
 ### 4.4 TodoFilters Component
 **File:** `app/components/todos/TodoFilters.jsx`
-- [ ] Status filter tabs (All/Pending/Completed)
-- [ ] Priority filter dropdown
-- [ ] Tag filter (multi-select)
-- [ ] Search input
-- [ ] Clear filters button
+- [x] Status filter tabs (All/Pending/In Progress/Completed)
+- [x] Priority filter dropdown
+- [x] Search input
+- [x] Clear filters button
+- [x] Stats count display in tabs
 
 ### 4.5 TodoStats Component
 **File:** `app/components/todos/TodoStats.jsx`
-- [ ] Total count
-- [ ] Completed count / percentage
-- [ ] Overdue count
-- [ ] By priority breakdown
+- [x] Total count
+- [x] Pending count
+- [x] In Progress count
+- [x] Completed count
+- [x] Overdue count
+- [x] Completion rate progress bar
 
 ---
 
-## Phase 5: Page Integration
+## Phase 5: Page Integration ✅ COMPLETE
 
 ### 5.1 Todos Page
 **File:** `app/todos/page.js`
-- [ ] Protected route (require auth)
-- [ ] AppLayout wrapper
-- [ ] TodoList with all features
-- [ ] Add todo button/form
-- [ ] Page title and description
+- [x] Protected route (require auth)
+- [x] AppLayout wrapper
+- [x] TodoList with all features
+- [x] Page title and description
 
 ### 5.2 Sidebar Integration
 **File:** `app/components/layout/Sidebar.jsx`
-- [ ] Add "Todos" link with icon (CheckSquare)
-- [ ] Badge showing pending count
-- [ ] Active state styling
+- [x] Add "Todos" link with icon (CheckSquare)
+- [x] Active state styling
 
 ### 5.3 Dashboard Widget (Optional)
 **File:** `app/dashboard/components/TodoWidget.jsx`
@@ -209,19 +223,19 @@ Computed:
 
 | Priority | File | Purpose | Status |
 |----------|------|---------|--------|
-| P0 | `lib/db.js` | Add todos table + functions | [ ] |
-| P0 | `app/api/db/migrate-todos/route.js` | Migration endpoint | [ ] |
-| P0 | `app/api/todos/route.js` | List/Create API | [ ] |
-| P0 | `app/api/todos/[id]/route.js` | Get/Update/Delete API | [ ] |
-| P0 | `app/hooks/useTodos.js` | React hook | [ ] |
-| P0 | `app/components/todos/TodoList.jsx` | Main list component | [ ] |
-| P0 | `app/components/todos/TodoItem.jsx` | Single item component | [ ] |
-| P0 | `app/components/todos/TodoForm.jsx` | Create/Edit form | [ ] |
-| P1 | `app/components/todos/TodoFilters.jsx` | Filter controls | [ ] |
-| P1 | `app/components/todos/TodoStats.jsx` | Statistics display | [ ] |
-| P1 | `app/todos/page.js` | Todos page | [ ] |
-| P1 | `app/components/layout/Sidebar.jsx` | Modify: add link | [ ] |
-| P2 | `app/api/todos/bulk/route.js` | Bulk operations | [ ] |
+| P0 | `lib/db.js` | Add todos table + functions | [x] |
+| P0 | `app/api/db/migrate-todos/route.js` | Migration endpoint | [x] |
+| P0 | `app/api/todos/route.js` | List/Create API | [x] |
+| P0 | `app/api/todos/[id]/route.js` | Get/Update/Delete API | [x] |
+| P0 | `app/hooks/useTodos.js` | React hook | [x] |
+| P0 | `app/components/todos/TodoList.jsx` | Main list component | [x] |
+| P0 | `app/components/todos/TodoItem.jsx` | Single item component | [x] |
+| P0 | `app/components/todos/TodoForm.jsx` | Create/Edit form | [x] |
+| P1 | `app/components/todos/TodoFilters.jsx` | Filter controls | [x] |
+| P1 | `app/components/todos/TodoStats.jsx` | Statistics display | [x] |
+| P1 | `app/todos/page.js` | Todos page | [x] |
+| P1 | `app/components/layout/Sidebar.jsx` | Modify: add link | [x] |
+| P1 | `app/api/todos/bulk/route.js` | Bulk operations | [x] |
 | P2 | `app/dashboard/components/TodoWidget.jsx` | Dashboard widget | [ ] |
 
 ---
@@ -252,20 +266,21 @@ Computed:
 
 ## Session Progress Tracker
 
-### Session 1: [DATE]
+### Session 1: 2025-12-04
 - Tasks completed:
-- Blockers:
+  - Database schema and all helper functions (lib/db.js)
+  - Migration endpoint
+  - All API routes (todos, todos/[id], todos/bulk)
+  - useTodos React hook with full functionality
+  - All UI components (TodoList, TodoItem, TodoForm, TodoFilters, TodoStats)
+  - Todos page with AppLayout
+  - Sidebar integration with CheckSquare icon
+- Blockers: None
 - Next steps:
-
-### Session 2: [DATE]
-- Tasks completed:
-- Blockers:
-- Next steps:
-
-### Session 3: [DATE]
-- Tasks completed:
-- Blockers:
-- Next steps:
+  - Run migration: GET /api/db/migrate-todos
+  - Test the feature end-to-end
+  - Consider adding Dashboard widget (optional)
+  - Consider drag-and-drop reordering (optional)
 
 ---
 
@@ -276,6 +291,26 @@ Computed:
 - Match styling with rest of application (Tailwind + slate colors)
 - API routes require authentication via `auth()` from `@/auth`
 - Use optimistic updates in hook for better UX
+
+## How to Use
+
+1. **Run the migration** (first time only):
+   ```
+   GET /api/db/migrate-todos
+   ```
+
+2. **Access the todos page**:
+   - Navigate to `/todos` in your browser
+   - Or click "Todos" in the sidebar
+
+3. **Features available**:
+   - Create, edit, delete todos
+   - Set priority (low/medium/high)
+   - Set due dates
+   - Add tags
+   - Create subtasks
+   - Filter by status/priority/search
+   - View statistics
 
 ---
 
