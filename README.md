@@ -1,6 +1,6 @@
 # Codebase QA Analyzer
 
-Analyze codebases and generate user stories, test cases, and acceptance criteria using Claude AI.
+Analyze codebases and generate user stories, test cases, and acceptance criteria using Claude AI. Execute generated tests directly in your browser.
 
 ## Features
 
@@ -12,6 +12,8 @@ Analyze codebases and generate user stories, test cases, and acceptance criteria
 - **Edge Cases & Security**: Optional inclusion of edge case and security test scenarios
 - **Analysis History**: View, search, and filter all past analyses
 - **Persistent Storage**: All analyses are saved and linked to your account
+- **Browser-Based Test Execution**: Run Jest, Vitest, or Mocha tests directly in browser using WebContainers
+- **Real-Time Results**: Live streaming of test output with pass/fail indicators
 
 ## Getting Started
 
@@ -50,6 +52,7 @@ vercel
 3. **Enter API key**: Your Claude API key (never stored, used only for the request)
 4. **Analyze**: Click the button and wait for results
 5. **Export**: Copy to clipboard or download as Markdown/JSON
+6. **Execute Tests**: Click "Execute Tests" to run generated tests in your browser
 
 ## Tech Stack
 
@@ -61,6 +64,7 @@ vercel
 - [JSZip](https://stuk.github.io/jszip/) - ZIP file handling
 - [Claude API](https://docs.anthropic.com/claude/reference/messages_post) - AI analysis
 - [Resend](https://resend.com/) - Transactional emails
+- [WebContainers](https://webcontainers.io/) - Browser-based test execution
 
 ## Privacy & Security
 

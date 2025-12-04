@@ -135,8 +135,19 @@ app/
 │   │   ├── resend-code/route.js
 │   │   ├── forgot-password/route.js
 │   │   └── reset-password/route.js
-│   ├── db/init/route.js         # Database initialization
+│   ├── execute-tests/           # Test execution endpoints
+│   │   ├── route.js             # POST: start, PUT: validate
+│   │   └── [id]/
+│   │       ├── route.js         # GET: status, PATCH: cancel, DELETE: remove
+│   │       └── stream/route.js  # SSE stream for real-time updates
+│   ├── db/
+│   │   ├── init/route.js        # Database initialization
+│   │   └── migrate-test-execution/route.js  # Test execution tables
 │   └── user/settings/route.js   # User settings API
+├── execute/                     # Test execution UI
+│   └── components/
+│       ├── ExecuteButton.jsx    # Trigger button
+│       └── ExecutionModal.jsx   # Live progress modal
 ├── components/
 │   ├── auth/                    # Authentication forms
 │   │   ├── SignupForm.jsx
@@ -164,7 +175,8 @@ app/
 ├── hooks/                    # Custom React hooks
 │   ├── useAnalysis.js
 │   ├── useFileUpload.js
-│   └── useGitHubFetch.js
+│   ├── useGitHubFetch.js
+│   └── useTestExecution.js  # Test execution state management
 ├── dashboard/page.js         # Main app (protected, was root page)
 ├── history/                  # Analysis history (NEW)
 │   ├── page.js               # History list with search/filter
@@ -201,6 +213,7 @@ app/
 - `useAnalysis` - Handles API calls and result management
 - `useFileUpload` - File processing and upload handling
 - `useGitHubFetch` - GitHub repository fetching logic
+- `useTestExecution` - Test execution lifecycle with SSE streaming
 
 **`app/api/analyze/route.js`** - Server-side API route that:
 - Accepts: `apiKey`, `prompt`, `model`, `maxTokens`
@@ -430,6 +443,19 @@ The project uses ES modules (`"type": "module"` in package.json) to enable moder
   - Landing page for unauthenticated users
   - Database schema: users, sessions, analyses, audit_logs
   - Production build passing (20 routes)
+
+- **Phase 4.6:** Test Execution Infrastructure ✅
+  - Browser-based test execution using WebContainers API
+  - Support for Jest, Vitest, Mocha frameworks
+  - Real-time output streaming via SSE
+  - ExecuteButton integrated into OutputSection
+  - ExecutionModal with live progress and results
+  - useTestExecution hook for state management
+  - Test validation with Acorn AST parser
+  - Security patterns blocked (no fs, child_process, etc.)
+  - Database tables: targets, test_executions, test_results
+  - Migration endpoint: /api/db/migrate-test-execution
+  - Production build passing (57 routes)
 
 ### In Progress 🚧
 - **Phase 4.5:** User-linked analysis features
