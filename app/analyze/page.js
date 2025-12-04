@@ -310,7 +310,9 @@ function AnalyzePageContent() {
       setSuccess(''); // Clear success message before starting stream
 
       // Use streaming SSE endpoint for real-time visibility
-      await startStreamAnalysis(files, config, apiKey, provider, lmStudioUrl);
+      // Include model in config so API shows correct model name
+      const streamConfig = { ...config, model };
+      await startStreamAnalysis(files, streamConfig, apiKey, provider, lmStudioUrl);
       return;
     }
 
@@ -325,7 +327,8 @@ function AnalyzePageContent() {
       const files = uploadedFiles.map(f => ({ path: f.name, content: f.content }));
 
       // Use streaming for uploaded files too
-      await startStreamAnalysis(files, config, apiKey, provider, lmStudioUrl);
+      const streamConfig = { ...config, model };
+      await startStreamAnalysis(files, streamConfig, apiKey, provider, lmStudioUrl);
       return;
     }
 

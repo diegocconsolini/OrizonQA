@@ -94,6 +94,11 @@ export async function POST(request) {
           ...config
         };
 
+        // Get correct model name based on provider
+        const modelName = provider === 'lmstudio'
+          ? (analysisConfig.model || 'Local LLM')
+          : (analysisConfig.model || 'claude-sonnet-4-20250514');
+
         // Prepare content - determine if single or multi-pass needed
         const prepared = prepareContent(files, analysisConfig);
 
@@ -143,7 +148,7 @@ export async function POST(request) {
 
           emit('api-call', {
             provider,
-            model: analysisConfig.model || 'claude-sonnet-4-20250514',
+            model: modelName,
             promptSize: prompt.length,
             promptTokens,
             status: 'sending'
@@ -190,7 +195,7 @@ export async function POST(request) {
 
             emit('api-call', {
               provider,
-              model: analysisConfig.model || 'claude-sonnet-4-20250514',
+              model: modelName,
               promptSize: chunkPrompt.length,
               promptTokens,
               chunkIndex: i,
@@ -276,7 +281,7 @@ export async function POST(request) {
 
             emit('api-call', {
               provider,
-              model: analysisConfig.model || 'claude-sonnet-4-20250514',
+              model: modelName,
               promptSize: synthesisPrompt.length,
               promptTokens: synthPromptTokens,
               phase: 'synthesis',
