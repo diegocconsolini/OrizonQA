@@ -24,14 +24,36 @@ export async function GET(request) {
     }
 
     const { searchParams } = new URL(request.url);
-    const limit = parseInt(searchParams.get('limit') || '10', 10);
-    const offset = parseInt(searchParams.get('offset') || '0', 10);
+    const limit = Math.min(parseInt(searchParams.get('limit') || '10', 10) || 10, 100);
+    const offset = Math.max(parseInt(searchParams.get('offset') || '0', 10) || 0, 0);
 
-    // Fetch analyses
-    const analyses = await getAnalysesByUser(session.user.id, limit, offset);
+    // Ensure userId is a valid number
+    const userId = parseInt(session.user.id, 10);
+    if (isNaN(userId)) {
+      console.error('Invalid user ID in session:', session.user.id);
+      return NextResponse.json(
+        { error: 'Invalid session' },
+        { status: 401 }
+      );
+    }
 
-    // Get total count
-    const total = await getAnalysisCountByUser(session.user.id);
+    // Fetch analyses with error handling
+    let analyses = [];
+    try {
+      analyses = await getAnalysesByUser(userId, limit, offset);
+    } catch (fetchError) {
+      console.error('Error fetching analyses:', fetchError);
+      // Continue with empty array rather than failing
+    }
+
+    // Get total count with error handling
+    let total = 0;
+    try {
+      total = await getAnalysisCountByUser(userId);
+    } catch (countError) {
+      console.error('Error getting analysis count:', countError);
+      total = analyses.length; // Fallback to current page length
+    }
 
     // Calculate stats (total tokens used)
     // Note: SUM returns null if all values are null, so use COALESCE around SUM
@@ -46,7 +68,7 @@ export async function GET(request) {
           ), 0) as total_tokens
         FROM analyses
         WHERE user_id = $1
-      `, [session.user.id]);
+      `, [userId]);
 
       const row = statsResult.rows[0];
       stats = {
