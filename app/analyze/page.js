@@ -66,9 +66,11 @@ function AnalyzePageContent() {
   // Persistence hook for state recovery
   const {
     isLoaded: persistenceLoaded,
-    persistedState,
+    initialState: persistedState,
     saveState: persistState,
     clearState: clearPersistedState,
+    markRestored,
+    hasRestored,
     saveError: persistenceError,
     loadError: persistenceLoadError,
     dismissErrors: dismissPersistenceErrors
@@ -334,9 +336,13 @@ function AnalyzePageContent() {
 
   const loading = analysisLoading || streamIsAnalyzing || reposLoading || loadingFiles;
 
-  // Restore state from persistence when loaded
+  // Restore state from persistence when loaded (ONLY ONCE)
   useEffect(() => {
-    if (!persistenceLoaded || !persistedState) return;
+    // Only restore once
+    if (!persistenceLoaded || !persistedState || hasRestored()) return;
+
+    // Mark as restored FIRST to prevent re-entry
+    markRestored();
 
     // Restore config
     if (persistedState.config) {
@@ -366,11 +372,14 @@ function AnalyzePageContent() {
       setSuccess('Your previous session was restored.');
       setTimeout(() => setSuccess(''), 3000);
     }
-  }, [persistenceLoaded, persistedState]);
+  }, [persistenceLoaded, persistedState, hasRestored, markRestored]);
 
   // Save state to persistence when key values change
   useEffect(() => {
     if (!persistenceLoaded) return;
+
+    // Don't save until initial restore is complete
+    if (!hasRestored()) return;
 
     // Don't save during analysis
     if (streamIsAnalyzing) return;
@@ -389,6 +398,7 @@ function AnalyzePageContent() {
     persistState(snapshot);
   }, [
     persistenceLoaded,
+    hasRestored,
     selectedRepo,
     selectedBranch,
     selectedFiles,
@@ -397,7 +407,8 @@ function AnalyzePageContent() {
     activeTab,
     codeInput,
     uploadedFiles,
-    streamIsAnalyzing
+    streamIsAnalyzing,
+    persistState
   ]);
 
   // Calculate token estimate

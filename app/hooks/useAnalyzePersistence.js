@@ -228,15 +228,15 @@ export default function useAnalyzePersistence() {
   return {
     // State
     isLoaded,
-    persistedState,
+    initialState,  // State loaded on mount - only use this for initial restore
     defaultState,
 
     // Actions
     saveState,
     loadState,
     clearState,
-    updateState,
-    getValue,
+    markRestored,
+    hasRestored,
 
     // Errors
     saveError,
