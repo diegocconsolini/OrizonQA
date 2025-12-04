@@ -31,7 +31,8 @@ import {
   FolderKanban,
   Code,
   Github,
-  CheckSquare
+  CheckSquare,
+  Share2
 } from 'lucide-react';
 
 export default function Sidebar({ collapsed = false, onToggle }) {
@@ -83,6 +84,11 @@ export default function Sidebar({ collapsed = false, onToggle }) {
       label: 'Todos',
       href: '/todos',
       icon: <CheckSquare className="w-5 h-5" />,
+    },
+    {
+      label: 'Shares',
+      href: '/shares',
+      icon: <Share2 className="w-5 h-5" />,
     },
     {
       label: 'Settings',
