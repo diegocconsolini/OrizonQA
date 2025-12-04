@@ -219,6 +219,52 @@ function AnalyzePageContent() {
   const [smartConfig, setSmartConfig] = useState(null);
   const [outputSettings, setOutputSettings] = useState(null);
 
+  // Per-card file selection (expert mode)
+  const [cardFiles, setCardFiles] = useState({
+    userStories: [],
+    testCases: [],
+    acceptanceCriteria: [],
+    useSharedFiles: true // When true, all cards use selectedFiles
+  });
+
+  // Update cardFiles when selectedFiles changes (if useSharedFiles is true)
+  useEffect(() => {
+    if (cardFiles.useSharedFiles) {
+      setCardFiles(prev => ({
+        ...prev,
+        userStories: selectedFiles,
+        testCases: selectedFiles,
+        acceptanceCriteria: selectedFiles
+      }));
+    }
+  }, [selectedFiles, cardFiles.useSharedFiles]);
+
+  // Handler for per-card file changes
+  const handleCardFilesChange = useCallback((card, files) => {
+    setCardFiles(prev => ({
+      ...prev,
+      [card]: files,
+      useSharedFiles: false // Disable shared mode when manually selecting
+    }));
+  }, []);
+
+  // Toggle between shared and per-card file selection
+  const toggleSharedFiles = useCallback((useShared) => {
+    if (useShared) {
+      setCardFiles({
+        userStories: selectedFiles,
+        testCases: selectedFiles,
+        acceptanceCriteria: selectedFiles,
+        useSharedFiles: true
+      });
+    } else {
+      setCardFiles(prev => ({
+        ...prev,
+        useSharedFiles: false
+      }));
+    }
+  }, [selectedFiles]);
+
   // API states (loaded from Settings - single source of truth)
   const [provider, setProvider] = useState('claude');
   const [apiKey, setApiKey] = useState('');
@@ -568,6 +614,10 @@ function AnalyzePageContent() {
                     config={config}
                     setConfig={setConfig}
                     onSmartConfigChange={setSmartConfig}
+                    fileTree={fileTree}
+                    cardFiles={cardFiles}
+                    onCardFilesChange={handleCardFilesChange}
+                    onToggleSharedFiles={toggleSharedFiles}
                   />
                 </div>
 
