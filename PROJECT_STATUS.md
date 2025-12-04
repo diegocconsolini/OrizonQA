@@ -298,11 +298,11 @@ ENCRYPTION_KEY=your-64-char-hex-key-here
 - **File Processing**: JSZip
 
 ### Backend
-- **API**: Next.js API routes
-- **AI**: Claude API (claude-sonnet-4-20250514)
-- **LM Studio**: Optional local LLM support
-- **Auth**: Next-Auth v4 (Credentials provider)
+- **API**: Next.js API routes (60+)
+- **AI**: Claude API (claude-sonnet-4-20250514) + LM Studio
+- **Auth**: Next-Auth v4 (GitHub OAuth + Credentials)
 - **Email**: Resend
+- **Integrations**: GitHub, GitLab, Azure DevOps
 - **Database**: PostgreSQL (Vercel Postgres in prod)
 - **Cache**: Vercel KV/Redis (for GitHub fetches)
 
@@ -510,44 +510,26 @@ docker-compose down
 
 ---
 
-## Critical Notes for Future Sessions
+## Key Notes
 
-1. **Phase 3 was SKIPPED** - Went directly from Phase 2 to Phase 4
-2. **NEXT_SESSION.md is OUTDATED** - Refers to Phase 3, which was skipped
-3. **CLAUDE.md should be updated** - After Phase 4.5 changes
-4. **Analyses are linked to users** - Analysis history page exists at /history
-5. **Persistent todo list** - Available at /todos
-6. **Profile management** - Dedicated /profile page with full features
-7. **Share link management** - Available at /shares with toggle/copy functionality
-8. **Logo sizes were adjusted 3 times** - Final: lg=96px for navbar
-9. **Two API key systems exist**:
-   - Settings page (encrypted storage)
-   - Dashboard input (per-request key)
-   - Need to decide: use saved key or allow override?
-10. **Implementation plans tracked** in docs/TODO-*.md files
+1. **Full-featured platform** - Not MVP, comprehensive QA tool
+2. **GitHub OAuth implemented** - Both for login AND private repo access
+3. **Multi-provider integrations** - GitHub, GitLab, Azure DevOps with webhooks
+4. **Projects system** - Full requirement/test/coverage management
+5. **10+ output formats** - Markdown, JSON, Jira, TestRail, Azure, BDD
+6. **Browser test execution** - WebContainers, no server needed
+7. **Documentation was outdated** - Updated Dec 2025 to reflect reality
 
 ---
 
-## Success Metrics
+## Platform Statistics
 
-### Phase 4.5 Achievements
-- ✅ 100% authentication flow working
-- ✅ 60+ routes compiled successfully
-- ✅ Zero build errors
-- ✅ Production-ready code
-- ✅ Security best practices implemented
-- ✅ User settings with encryption
-- ✅ Test execution infrastructure
-- ✅ Persistent todo list
-- ✅ Dedicated profile page with full management
-- ✅ Share link management page
-- ✅ Account deletion capability
-
-### What's Missing for Full User Experience
-- ⚠️ Avatar/profile picture upload
-- ⚠️ Email HTML templates
-- ⚠️ Drag-and-drop todo reordering (optional)
-- ⚠️ Dashboard todo widget (optional)
+- 27 pages
+- 60+ API routes
+- 15+ database tables
+- 9 React hooks
+- 25+ UI components
+- 3 external integrations
 
 ---
 
