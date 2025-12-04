@@ -41,7 +41,9 @@
       "WebFetch(domain:docs.github.com)",
       "WebFetch(domain:localhost)",
       "Bash(xargs:*)",
-      "Bash(ps:*)"
+      "Bash(ps:*)",
+      "WebFetch(domain:docs.galileo.ai)",
+      "WebFetch(domain:arize.com)"
     ],
     "deny": [],
     "ask": []
