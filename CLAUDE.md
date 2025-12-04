@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **Codebase QA Analyzer** - A Next.js web application that uses Claude AI to analyze codebases and generate QA artifacts (user stories, test cases, and acceptance criteria). The app supports multiple input methods: direct code pasting, GitHub repository fetching, and file uploads (including .zip files).
 
-**Current Status:** Phase 4.5 Complete - User-linked analysis features including profile management and share link management.
+**Current Status:** Full-featured QA platform with projects, requirements, test management, multi-provider integrations (GitHub/GitLab/Azure DevOps), OAuth authentication, and browser-based test execution.
 
 **Live App:** https://orizon-qa.vercel.app
 
@@ -127,118 +127,193 @@ The app uses Next.js 14's App Router pattern with a modular component architectu
 ```
 app/
 ├── api/
-│   ├── analyze/route.js         # API endpoint for Claude AI interactions
-│   ├── auth/                    # Authentication endpoints
-│   │   ├── [...nextauth]/route.js
+│   ├── analyze/route.js              # Claude AI analysis
+│   ├── analyze-stream/route.js       # Streaming analysis with SSE
+│   ├── analyze-multipass/route.js    # Multi-pass chunked analysis
+│   ├── ai/models/route.js            # Available AI models
+│   ├── auth/                         # Authentication
+│   │   ├── [...nextauth]/route.js    # NextAuth handler (GitHub OAuth + Credentials)
 │   │   ├── signup/route.js
 │   │   ├── verify-email/route.js
-│   │   ├── resend-code/route.js
 │   │   ├── forgot-password/route.js
-│   │   └── reset-password/route.js
-│   ├── execute-tests/           # Test execution endpoints
-│   │   ├── route.js             # POST: start, PUT: validate
+│   │   ├── reset-password/route.js
+│   │   ├── device/route.js           # Device flow for CLI
+│   │   └── logout/route.js
+│   ├── integrations/                 # External service integrations
+│   │   ├── github/                   # GitHub integration
+│   │   │   ├── connect/route.js
+│   │   │   ├── disconnect/route.js
+│   │   │   ├── sync/route.js
+│   │   │   └── webhook/route.js
+│   │   ├── gitlab/                   # GitLab integration
+│   │   │   ├── connect/route.js
+│   │   │   ├── disconnect/route.js
+│   │   │   ├── sync/route.js
+│   │   │   └── webhook/route.js
+│   │   └── azure-devops/             # Azure DevOps integration
+│   │       ├── connect/route.js
+│   │       ├── disconnect/route.js
+│   │       ├── sync/route.js
+│   │       └── webhook/route.js
+│   ├── oauth/github/                 # GitHub OAuth for private repos
+│   │   ├── connect/route.js
+│   │   ├── callback/route.js
+│   │   ├── repositories/route.js
+│   │   ├── tree/route.js
+│   │   ├── content/route.js
+│   │   └── revoke/route.js
+│   ├── projects/                     # Project management
+│   │   ├── route.js                  # List/create projects
 │   │   └── [id]/
-│   │       ├── route.js         # GET: status, PATCH: cancel, DELETE: remove
-│   │       └── stream/route.js  # SSE stream for real-time updates
-│   ├── db/
-│   │   ├── init/route.js        # Database initialization
-│   │   ├── migrate-test-execution/route.js  # Test execution tables
-│   │   └── migrate-todos/route.js  # Todos table migration
-│   ├── todos/                   # Todos API endpoints
-│   │   ├── route.js             # GET: list, POST: create
-│   │   ├── [id]/route.js        # GET/PATCH/DELETE single todo
-│   │   └── bulk/route.js        # Bulk operations (reorder, delete, updateStatus)
-│   └── user/
-│       ├── settings/route.js    # User settings API
-│       └── shares/route.js      # Get user's shared analyses
-├── execute/                     # Test execution UI
+│   │       ├── route.js              # Get/update/delete project
+│   │       ├── requirements/         # Requirements management
+│   │       │   ├── route.js
+│   │       │   └── [reqId]/
+│   │       │       ├── route.js
+│   │       │       └── tests/route.js
+│   │       ├── tests/                # Test case management
+│   │       │   ├── route.js
+│   │       │   ├── bulk-import/route.js
+│   │       │   └── [testId]/route.js
+│   │       └── coverage/route.js     # Coverage matrix
+│   ├── execute-tests/                # Test execution
+│   │   ├── route.js
+│   │   └── [id]/
+│   │       ├── route.js
+│   │       └── stream/route.js
+│   ├── todos/                        # Todo management
+│   │   ├── route.js
+│   │   ├── [id]/route.js
+│   │   └── bulk/route.js
+│   ├── user/                         # User APIs
+│   │   ├── settings/route.js
+│   │   ├── profile/route.js
+│   │   ├── analytics/route.js
+│   │   ├── analyses/route.js
+│   │   ├── shares/route.js
+│   │   └── delete/route.js
+│   ├── shared/[token]/route.js       # Public shared analysis
+│   └── db/                           # Database migrations
+│       ├── init/route.js
+│       ├── migrate-oauth/route.js
+│       ├── migrate-todos/route.js
+│       └── migrate-test-execution/route.js
+│
+├── analyze/                          # Analysis page
+│   ├── page.js
 │   └── components/
-│       ├── ExecuteButton.jsx    # Trigger button
-│       └── ExecutionModal.jsx   # Live progress modal
+│       ├── RepositorySelector.jsx    # Search & select repos with favorites
+│       ├── BranchSelector.jsx        # Branch selection
+│       ├── FileFolderPicker.jsx      # Select specific files/folders
+│       ├── SmartConfigPanel.jsx      # AI-powered config suggestions
+│       ├── OutputSettingsPanel.jsx   # Format & framework selection
+│       ├── AnalysisProgress.jsx      # Progress with stages
+│       ├── ChunkProgress.jsx         # Multi-pass chunk progress
+│       ├── TokenUsageBar.jsx         # Token consumption display
+│       ├── LocalCachePanel.jsx       # IndexedDB cache management
+│       └── ...more
+│
+├── projects/                         # Project management
+│   ├── page.js                       # Project list
+│   ├── new/page.js                   # Create project
+│   └── [id]/
+│       ├── page.js                   # Project dashboard
+│       ├── requirements/             # Requirements
+│       │   ├── page.js
+│       │   ├── new/page.js
+│       │   └── [reqId]/page.js
+│       ├── tests/                    # Test cases
+│       │   ├── page.js
+│       │   ├── new/page.js
+│       │   └── [testId]/page.js
+│       ├── coverage/page.js          # Coverage matrix
+│       └── settings/integrations/page.js  # Project integrations
+│
+├── dashboard/page.js                 # Analytics dashboard
+├── history/                          # Analysis history
+│   ├── page.js
+│   └── [id]/page.js
+├── profile/page.js                   # User profile
+├── shares/page.js                    # Share link management
+├── settings/page.js                  # User settings
+├── todos/page.js                     # Todo list
+├── shared/[token]/page.js            # Public shared view
+│
 ├── components/
-│   ├── auth/                    # Authentication forms
-│   │   ├── SignupForm.jsx
-│   │   ├── LoginForm.jsx
-│   │   ├── VerificationCodeInput.jsx
-│   │   ├── ForgotPasswordForm.jsx
-│   │   └── ResetPasswordForm.jsx
-│   ├── layout/                  # Layout components (NEW)
-│   │   ├── Sidebar.jsx          # Left navigation sidebar
-│   │   └── AppLayout.jsx        # Layout wrapper with sidebar
-│   ├── ui/                      # UI component library (30+ components)
-│   ├── todos/                   # Todo list components
-│   │   ├── TodoList.jsx         # Main list container
-│   │   ├── TodoItem.jsx         # Single todo row with actions
-│   │   ├── TodoForm.jsx         # Create/edit form
-│   │   ├── TodoFilters.jsx      # Status/priority/search filters
-│   │   ├── TodoStats.jsx        # Statistics cards
-│   │   └── index.js             # Barrel exports
-│   ├── config/                  # Configuration components
-│   │   ├── ApiKeyInput.jsx
-│   │   └── ConfigSection.jsx
-│   ├── input/                   # Input method components
-│   │   ├── FileTree.jsx
-│   │   └── InputSection.jsx
-│   ├── output/                  # Output display components
-│   │   └── OutputSection.jsx
-│   └── shared/                  # Reusable UI components
-│       ├── Alert.jsx
-│       ├── Header.jsx
-│       ├── HelpModal.jsx
-│       └── Tab.jsx
-├── hooks/                    # Custom React hooks
-│   ├── useAnalysis.js
-│   ├── useFileUpload.js
-│   ├── useGitHubFetch.js
-│   ├── useTestExecution.js  # Test execution state management
-│   └── useTodos.js          # Todo list state management with optimistic updates
-├── dashboard/page.js         # Main app (protected, was root page)
-├── history/                  # Analysis history (NEW)
-│   ├── page.js               # History list with search/filter
-│   └── [id]/page.js          # Individual analysis detail
-├── login/page.js             # Login page
-├── signup/page.js            # Signup page
-├── verify-email/page.js      # Email verification
-├── forgot-password/page.js   # Password reset request
-├── reset-password/page.js    # Password reset form
-├── settings/page.js          # User settings (protected)
-├── todos/page.js             # Persistent todo list (protected)
-├── profile/page.js           # User profile management (protected)
-├── shares/page.js            # Share link management (protected)
-├── globals.css               # Tailwind base styles
-├── layout.js                 # Root layout with metadata
-└── page.js                   # Landing page (public)
+│   ├── analyze/                      # 15+ analyze components
+│   ├── dashboard/                    # KPICard, UsageChart, ActivityHeatmap, etc.
+│   ├── auth/                         # Auth forms
+│   ├── layout/                       # Sidebar, AppLayout
+│   ├── todos/                        # Todo components
+│   ├── settings/                     # GitHubConnectionSection, etc.
+│   ├── modals/                       # ImportTestsModal, etc.
+│   └── ui/                           # 25+ reusable UI components
+│
+├── hooks/
+│   ├── useAnalysis.js                # Basic analysis
+│   ├── useAnalysisStream.js          # Streaming analysis with SSE
+│   ├── useFileUpload.js              # File upload handling
+│   ├── useGitHubFetch.js             # Public GitHub fetch
+│   ├── useRepositories.js            # OAuth repo management
+│   ├── useIndexedDB.js               # Local caching
+│   ├── useLMStudio.js                # Local LLM integration
+│   ├── useTestExecution.js           # Test execution
+│   └── useTodos.js                   # Todo management
+│
+└── lib/indexedDB.js                  # IndexedDB utilities
 ```
 
-### Key Components
+### Key Features
 
-**`app/page.js`** - Main orchestrator component (183 lines) that:
-- Manages global state and coordinates between components
-- Uses custom hooks for business logic (analysis, file upload, GitHub fetch)
-- Renders modular components for different UI sections
-- Maintains clean separation of concerns
+**Projects & Requirements System:**
+- Create projects with metadata (name, description, repo URL)
+- Add requirements (user stories) with priority and status
+- Create test cases linked to requirements
+- Coverage matrix showing requirement-to-test traceability
+- Bulk import tests from analysis results
+- Project-level integrations with external services
 
-**Components:**
-- `Header` & `HelpModal` - App branding and user guidance
-- `Alert` - Error and success notifications
-- `InputSection` - Three input methods (paste, GitHub, file upload)
-- `ConfigSection` - Analysis options and output format selection
-- `ApiKeyInput` - API key configuration
-- `OutputSection` - Results display with copy/download functionality
-- `Tab` & `FileTree` - Reusable UI elements
+**Multi-Provider Integrations:**
+- **GitHub**: Connect repos, sync issues, receive webhooks
+- **GitLab**: Connect projects, sync issues, receive webhooks
+- **Azure DevOps**: Connect projects, sync work items, receive webhooks
+- Per-project integration configuration
+- Encrypted token storage
+
+**GitHub OAuth for Private Repos:**
+- Connect GitHub account to access private repositories
+- Browse repositories with search and favorites
+- Select specific branches
+- Pick files/folders for analysis
+- Revoke access anytime
+
+**Output Formats (lib/outputFormats.js):**
+- **Documentation**: Markdown, HTML
+- **Data Export**: JSON, YAML, CSV
+- **Test Tools**: Jira/Xray JSON, TestRail CSV, Azure Test Plans XML
+- **BDD**: Gherkin/Cucumber feature files
+
+**Analysis Modes:**
+- Basic single-pass analysis
+- Streaming analysis with real-time SSE output
+- Multi-pass chunked analysis for large codebases
+
+**Dashboard Analytics:**
+- KPI cards (analyses, tokens, tests)
+- Usage charts over time
+- Activity heatmap
+- Recent analyses list
 
 **Custom Hooks:**
-- `useAnalysis` - Handles API calls and result management
-- `useFileUpload` - File processing and upload handling
-- `useGitHubFetch` - GitHub repository fetching logic
-- `useTestExecution` - Test execution lifecycle with SSE streaming
-- `useTodos` - Todo CRUD with optimistic updates, filtering, and statistics
-
-**`app/api/analyze/route.js`** - Server-side API route that:
-- Accepts: `apiKey`, `prompt`, `model`, `maxTokens`
-- Proxies requests to Anthropic Messages API
-- Handles error responses (rate limiting, invalid keys, etc.)
-- Returns Claude's response with token usage
+- `useAnalysis` - Basic API calls
+- `useAnalysisStream` - SSE streaming analysis
+- `useFileUpload` - File processing
+- `useGitHubFetch` - Public GitHub fetch
+- `useRepositories` - OAuth repo management with favorites
+- `useIndexedDB` - Local caching for offline support
+- `useLMStudio` - Local LLM integration
+- `useTestExecution` - Browser-based test execution
+- `useTodos` - Persistent todo management
 
 ### Data Flow
 
@@ -291,11 +366,27 @@ Browser-based test execution using WebContainers API. Tests run entirely in the 
 - `PATCH /api/execute-tests/[id]` - Cancel execution
 - `DELETE /api/execute-tests/[id]` - Remove execution record
 
-**Database Tables:**
-- `targets` - Flexible scope for test execution (repo, project, etc.)
-- `test_executions` - Execution records with status, timing, results
-- `test_results` - Individual test results (passed/failed/skipped)
-- `execution_credits` - Future billing/quota support
+**Database Tables (PostgreSQL):**
+Core tables (lib/db.js):
+- `users` - User accounts with encrypted API keys
+- `sessions` - NextAuth sessions
+- `analyses` - Analysis history with results
+- `audit_logs` - Security event logging
+- `todos` - Persistent todo list
+- `oauth_connections` - GitHub OAuth tokens (encrypted)
+
+Test execution (lib/db.js):
+- `targets` - Execution scope (repo, project)
+- `test_executions` - Execution records
+- `test_results` - Individual test results
+- `execution_credits` - Future billing support
+
+Projects system (lib/db-*.js):
+- `projects` - Project metadata
+- `requirements` - User stories/requirements
+- `test_cases` - Test case definitions
+- `test_suites` - Test suite groupings
+- `test_coverage` - Requirement-to-test mapping
 
 **Supported Frameworks:**
 - Jest (auto-detected via `describe/it/test/expect`)

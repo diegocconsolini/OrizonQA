@@ -45,7 +45,8 @@
       "WebFetch(domain:docs.galileo.ai)",
       "WebFetch(domain:arize.com)",
       "Bash(npm install:*)",
-      "Bash(docker-compose ps:*)"
+      "Bash(docker-compose ps:*)",
+      "Bash(grep:*)"
     ],
     "deny": [],
     "ask": []
