@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **Codebase QA Analyzer** - A Next.js web application that uses Claude AI to analyze codebases and generate QA artifacts (user stories, test cases, and acceptance criteria). The app supports multiple input methods: direct code pasting, GitHub repository fetching, and file uploads (including .zip files).
 
-**Current Status:** Navigation & History System Complete. User analyses are persisted and accessible via dedicated History page.
+**Current Status:** Test Execution Infrastructure Complete. Users can now execute generated tests directly in the browser using WebContainers.
 
 **Live App:** https://orizon-qa.vercel.app
 
@@ -18,6 +18,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **Icons**: Lucide React
 - **File Processing**: JSZip for handling .zip archives
 - **AI**: Claude API (via Anthropic Messages API) + LM Studio (local LLMs)
+- **Test Execution**: WebContainers API (browser-based Node.js for Jest/Vitest/Mocha)
 - **Database**: PostgreSQL (Vercel Postgres in production)
 - **Cache**: Vercel KV/Redis (for GitHub fetches and analysis results)
 - **Authentication**: Next-Auth v4 (JWT sessions)
@@ -216,6 +217,68 @@ app/
 5. Backend proxies to Anthropic API with user's key
 6. Response parsed and displayed in tabbed output sections
 7. User can copy or download generated QA artifacts
+8. **NEW**: User can execute generated tests directly in browser
+
+### Test Execution System
+
+Browser-based test execution using WebContainers API. Tests run entirely in the browser without server infrastructure.
+
+**Architecture:**
+```
+┌────────────────────────────────────────────────────────────┐
+│                      Browser (Client)                       │
+├────────────────────────────────────────────────────────────┤
+│  ExecuteButton → ExecutionModal → useTestExecution hook    │
+│                          ↓                                  │
+│  POST /api/execute-tests → Get executionId + streamUrl     │
+│                          ↓                                  │
+│  SSE Connection: /api/execute-tests/[id]/stream            │
+│                          ↓                                  │
+│  WebContainer (in-browser Node.js)                         │
+│  ├── Mount test files                                       │
+│  ├── Install dependencies (jest/vitest/mocha)             │
+│  ├── Run tests                                             │
+│  └── Stream output via SSE                                 │
+└────────────────────────────────────────────────────────────┘
+```
+
+**Key Components:**
+- `app/execute/components/ExecuteButton.jsx` - Trigger button with loading states
+- `app/execute/components/ExecutionModal.jsx` - Live progress and results display
+- `app/hooks/useTestExecution.js` - State management hook with SSE connection
+
+**Test Execution Libraries:**
+- `lib/testExecution/webContainerRunner.js` - WebContainer orchestration
+- `lib/testExecution/resultParser.js` - Parse Jest/Vitest/Mocha output
+- `lib/testExecution/testValidator.js` - Syntax validation and framework detection
+
+**API Endpoints:**
+- `POST /api/execute-tests` - Start execution, returns executionId
+- `GET /api/execute-tests/[id]` - Fetch execution status/results
+- `GET /api/execute-tests/[id]/stream` - SSE stream for real-time updates
+- `PATCH /api/execute-tests/[id]` - Cancel execution
+- `DELETE /api/execute-tests/[id]` - Remove execution record
+
+**Database Tables:**
+- `targets` - Flexible scope for test execution (repo, project, etc.)
+- `test_executions` - Execution records with status, timing, results
+- `test_results` - Individual test results (passed/failed/skipped)
+- `execution_credits` - Future billing/quota support
+
+**Supported Frameworks:**
+- Jest (auto-detected via `describe/it/test/expect`)
+- Vitest (detected via vitest imports)
+- Mocha (detected via mocha imports or `describe/it` without Jest)
+
+**Execution Status Flow:**
+```
+IDLE → STARTING → BOOTING → MOUNTING → INSTALLING → RUNNING → COMPLETE/FAILED/CANCELLED
+```
+
+**Security:**
+- Test code validated with Acorn AST parser
+- Blocked patterns: `process.exit`, `child_process`, `eval`, `fs.*`, `vm`, `os`
+- Runs in isolated WebContainer sandbox
 
 ### File Upload System
 
