@@ -200,6 +200,7 @@ app/
 ├── forgot-password/page.js   # Password reset request
 ├── reset-password/page.js    # Password reset form
 ├── settings/page.js          # User settings (protected)
+├── todos/page.js             # Persistent todo list (protected)
 ├── globals.css               # Tailwind base styles
 ├── layout.js                 # Root layout with metadata
 └── page.js                   # Landing page (public)
@@ -227,6 +228,7 @@ app/
 - `useFileUpload` - File processing and upload handling
 - `useGitHubFetch` - GitHub repository fetching logic
 - `useTestExecution` - Test execution lifecycle with SSE streaming
+- `useTodos` - Todo CRUD with optimistic updates, filtering, and statistics
 
 **`app/api/analyze/route.js`** - Server-side API route that:
 - Accepts: `apiKey`, `prompt`, `model`, `maxTokens`
@@ -305,6 +307,55 @@ IDLE → STARTING → BOOTING → MOUNTING → INSTALLING → RUNNING → COMPLE
 - Test code validated with Acorn AST parser
 - Blocked patterns: `process.exit`, `child_process`, `eval`, `fs.*`, `vm`, `os`
 - Runs in isolated WebContainer sandbox
+
+### Todos System
+
+Persistent todo list that survives across browser sessions and user logins.
+
+**Features:**
+- Create, edit, delete todos with title, description, priority, due date, tags
+- Status tracking: pending → in_progress → completed
+- Priority levels: low (green), medium (yellow), high (red)
+- Subtasks support with parent-child relationships
+- Due date with overdue highlighting
+- Filter by status, priority, search
+- Bulk operations (reorder, delete, update status)
+- Statistics dashboard (total, pending, completed, overdue)
+
+**Database Table:**
+```sql
+todos (
+  id, user_id, title, description, status, priority,
+  due_date, tags[], parent_id, position,
+  created_at, updated_at, completed_at
+)
+```
+
+**API Endpoints:**
+- `GET /api/todos` - List todos with filters (status, priority, tag, search)
+- `POST /api/todos` - Create todo
+- `GET /api/todos/[id]` - Get single todo with subtasks
+- `PATCH /api/todos/[id]` - Update todo
+- `DELETE /api/todos/[id]` - Delete todo (cascades to subtasks)
+- `POST /api/todos/bulk` - Bulk operations (reorder, updateStatus, delete)
+
+**Key Components:**
+- `app/components/todos/TodoList.jsx` - Main container with filters and stats
+- `app/components/todos/TodoItem.jsx` - Single todo row with inline edit
+- `app/components/todos/TodoForm.jsx` - Create/edit form with priority/date
+- `app/components/todos/TodoFilters.jsx` - Status tabs, priority dropdown, search
+- `app/components/todos/TodoStats.jsx` - Statistics cards with completion rate
+
+**React Hook (`useTodos`):**
+- Optimistic updates for instant UI feedback
+- Auto-refetch on filter changes
+- Computed values: pendingTodos, completedTodos, overdueTodos, todosByPriority
+
+**Migration:**
+```bash
+# Run once to create todos table
+GET /api/db/migrate-todos
+```
 
 ### File Upload System
 
@@ -469,6 +520,19 @@ The project uses ES modules (`"type": "module"` in package.json) to enable moder
   - Database tables: targets, test_executions, test_results
   - Migration endpoint: /api/db/migrate-test-execution
   - Production build passing (57 routes)
+
+- **Phase 4.7:** Persistent Todo List ✅
+  - Database-backed todos that persist across sessions
+  - Full CRUD with subtasks, priorities, due dates, tags
+  - Status workflow: pending → in_progress → completed
+  - Filter by status, priority, search
+  - Statistics dashboard with completion rate
+  - useTodos hook with optimistic updates
+  - TodoList, TodoItem, TodoForm, TodoFilters, TodoStats components
+  - Sidebar integration with CheckSquare icon
+  - Database table: todos (with indexes)
+  - Migration endpoint: /api/db/migrate-todos
+  - Production build passing (60+ routes)
 
 ### In Progress 🚧
 - **Phase 4.5:** User-linked analysis features

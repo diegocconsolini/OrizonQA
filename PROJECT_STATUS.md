@@ -1,8 +1,8 @@
 # ORIZON QA - Project Status & Implementation Tracker
 
-**Last Updated**: 2025-11-30
+**Last Updated**: 2025-12-04
 **Live App**: https://orizon-qa.vercel.app
-**Current Phase**: Phase 4 Complete ✅
+**Current Phase**: Phase 4.7 Complete ✅
 
 ---
 
@@ -35,6 +35,30 @@
 - ✅ Database schema with users, sessions, analyses, audit_logs tables
 - ✅ Production build passing (20 routes)
 
+#### Phase 4.6: Test Execution Infrastructure (COMPLETE) ✅
+- ✅ Browser-based test execution using WebContainers API
+- ✅ Support for Jest, Vitest, Mocha frameworks
+- ✅ Real-time output streaming via SSE
+- ✅ ExecuteButton and ExecutionModal components
+- ✅ useTestExecution hook for state management
+- ✅ Test validation with Acorn AST parser
+- ✅ Security patterns blocked (no fs, child_process, etc.)
+- ✅ Database tables: targets, test_executions, test_results
+- ✅ Production build passing (57 routes)
+
+#### Phase 4.7: Persistent Todo List (COMPLETE) ✅
+- ✅ Database-backed todos that persist across sessions
+- ✅ Full CRUD with subtasks, priorities, due dates, tags
+- ✅ Status workflow: pending → in_progress → completed
+- ✅ Filter by status, priority, search
+- ✅ Statistics dashboard with completion rate
+- ✅ useTodos hook with optimistic updates
+- ✅ TodoList, TodoItem, TodoForm, TodoFilters, TodoStats components
+- ✅ Sidebar integration with CheckSquare icon
+- ✅ Database table: todos (with indexes)
+- ✅ Migration endpoint: /api/db/migrate-todos
+- ✅ Production build passing (60+ routes)
+
 ### 🚧 SKIPPED/DEFERRED
 
 #### Phase 3: User Value Features (SKIPPED)
@@ -59,6 +83,8 @@
 6. `/reset-password` - Password reset with token
 7. `/dashboard` - Main app (protected, was `/` before)
 8. `/settings` - User settings (protected)
+9. `/history` - Analysis history (protected)
+10. `/todos` - Persistent todo list (protected)
 
 ### API Routes Implemented
 1. `/api/analyze` - Claude AI proxy (existing)
@@ -70,13 +96,21 @@
 7. `/api/auth/reset-password` - Password reset with token
 8. `/api/user/settings` - GET/POST for user settings
 9. `/api/db/init` - Database initialization
+10. `/api/db/migrate-todos` - Todos table migration
+11. `/api/todos` - GET (list), POST (create) todos
+12. `/api/todos/[id]` - GET/PATCH/DELETE single todo
+13. `/api/todos/bulk` - Bulk operations (reorder, delete, updateStatus)
 
 ### Database Schema
 **Tables**:
 - `users` - User accounts, email, password_hash, encrypted API keys
 - `sessions` - Next-Auth sessions
-- `analyses` - Analysis history (ready for user linking, **not yet linked to users**)
+- `analyses` - Analysis history (linked to users)
 - `audit_logs` - Security events and audit trail
+- `todos` - Persistent todo list with subtasks, priorities, due dates, tags
+- `targets` - Test execution targets/scopes
+- `test_executions` - Test execution records
+- `test_results` - Individual test results
 
 ### Key Components
 **Auth Components** (`app/components/auth/`):
@@ -98,6 +132,8 @@
 - input/ - InputSection, FileTree
 - output/ - OutputSection
 - config/ - ConfigSection, ApiKeyInput
+- todos/ - TodoList, TodoItem, TodoForm, TodoFilters, TodoStats
+- layout/ - Sidebar, AppLayout
 
 ### Security Features
 1. **Password Hashing**: bcryptjs (10 rounds)
@@ -258,7 +294,9 @@ app/
 ├── hooks/
 │   ├── useAnalysis.js
 │   ├── useFileUpload.js
-│   └── useGitHubFetch.js
+│   ├── useGitHubFetch.js
+│   ├── useTestExecution.js
+│   └── useTodos.js
 ├── dashboard/page.js             # Main app (protected)
 ├── login/page.js
 ├── signup/page.js
@@ -266,6 +304,8 @@ app/
 ├── forgot-password/page.js
 ├── reset-password/page.js
 ├── settings/page.js
+├── todos/page.js                 # Persistent todo list
+├── history/page.js               # Analysis history
 ├── showcase/page.js              # Not integrated
 └── page.js                       # Landing page
 
@@ -316,7 +356,17 @@ docker-compose down
 
 ## Recent Changes Log
 
-### 2025-11-30 (Latest)
+### 2025-12-04 (Latest)
+- ✅ **Phase 4.7: Persistent Todo List** - Complete implementation
+  - Database schema with todos table (subtasks, priorities, due dates, tags)
+  - API routes for CRUD and bulk operations
+  - useTodos hook with optimistic updates
+  - UI components (TodoList, TodoItem, TodoForm, TodoFilters, TodoStats)
+  - Sidebar integration
+  - Migration endpoint: /api/db/migrate-todos
+  - Production build passing (60+ routes)
+
+### 2025-11-30
 - ✅ Reduced landing page navbar to half size (user request)
   - Logo: 2xl (200px) → lg (96px)
   - Padding: py-6 → py-3
@@ -409,33 +459,36 @@ docker-compose down
 
 1. **Phase 3 was SKIPPED** - Went directly from Phase 2 to Phase 4
 2. **NEXT_SESSION.md is OUTDATED** - Refers to Phase 3, which was skipped
-3. **CLAUDE.md is OUTDATED** - Still says "Phase 2 complete, ready for Phase 3"
-4. **Analyses NOT yet linked to users** - Database has user_id column but not used
-5. **No analysis history page** - Despite database support
+3. **CLAUDE.md is UP TO DATE** - Updated with Phase 4.6 and 4.7
+4. **Analyses are linked to users** - Analysis history page exists at /history
+5. **Persistent todo list** - Available at /todos
 6. **Logo sizes were adjusted 3 times** - Final: lg=96px for navbar
 7. **Two API key systems exist**:
    - Settings page (encrypted storage)
    - Dashboard input (per-request key)
    - Need to decide: use saved key or allow override?
+8. **Implementation plans tracked** in docs/TODO-*.md files
 
 ---
 
 ## Success Metrics
 
-### Phase 4 Achievements
+### Phase 4.7 Achievements
 - ✅ 100% authentication flow working
-- ✅ 20 routes compiled successfully
+- ✅ 60+ routes compiled successfully
 - ✅ Zero build errors
 - ✅ Production-ready code
 - ✅ Security best practices implemented
 - ✅ User settings with encryption
+- ✅ Test execution infrastructure
+- ✅ Persistent todo list
 
 ### What's Missing for Full User Experience
-- ⚠️ Analysis history (database ready, not connected)
-- ⚠️ User-linked analyses
 - ⚠️ Profile management
 - ⚠️ Email HTML templates
 - ⚠️ Account deletion
+- ⚠️ Drag-and-drop todo reordering (optional)
+- ⚠️ Dashboard todo widget (optional)
 
 ---
 
