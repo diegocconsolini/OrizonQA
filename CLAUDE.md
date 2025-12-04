@@ -565,11 +565,13 @@ The app is hardcoded to use `claude-sonnet-4-20250514` model. This is the latest
 
 ## Privacy & Security
 
-- API keys are client-side only and never stored
-- No user data persistence
-- Direct API calls to Anthropic (no intermediary storage)
-- Files processed in-memory only
-- All processing happens in real-time with no logging
+- **API Keys**: Stored encrypted (AES-256-GCM) in database OR per-session only
+- **OAuth Tokens**: Encrypted storage for GitHub/GitLab/Azure connections
+- **Passwords**: bcrypt hashed (10 rounds)
+- **Sessions**: JWT tokens with 30-day expiration
+- **Audit Logging**: All auth events tracked
+- **Test Execution**: Sandboxed in WebContainers (no server access)
+- **Files**: Processed in-memory, cached locally in IndexedDB
 
 ## ES Module Configuration
 
@@ -578,69 +580,64 @@ The project uses ES modules (`"type": "module"` in package.json) to enable moder
 ## Current Implementation Status
 
 ### Completed ✅
-- **Phase 1:** Critical bug fix
-  - Prompt construction system working
-  - API route refactored
-  - App deployed and functional
-  - Templates from Codebase-Digest integrated
 
-- **Phase 2:** Component refactoring ✅
-  - 9 components extracted and organized
-  - 3 custom hooks created
-  - page.js reduced from 715 → 183 lines (74% reduction)
-  - Clean separation of concerns achieved
-  - All functionality working and tested
+**Core Platform:**
+- ✅ Claude AI analysis with streaming and multi-pass support
+- ✅ Multiple input methods (paste, file upload, GitHub)
+- ✅ 10+ output formats (Markdown, JSON, Jira, TestRail, Azure, BDD)
+- ✅ Browser-based test execution (Jest, Vitest, Mocha)
+- ✅ Local caching with IndexedDB
+- ✅ LM Studio integration for local LLMs
 
-- **Phase 4:** Authentication system ✅
-  - User signup with email verification (6-digit code)
-  - Login with Next-Auth v4 (JWT sessions, 30-day expiration)
-  - Password reset flow (forgot/reset with tokens)
-  - User settings page with encrypted API key storage
-  - Protected routes with middleware
-  - Dashboard with auto-loaded API keys
-  - Audit logging for security events
-  - Landing page for unauthenticated users
-  - Database schema: users, sessions, analyses, audit_logs
-  - Production build passing (20 routes)
+**Authentication & Users:**
+- ✅ Email/password signup with verification
+- ✅ GitHub OAuth login
+- ✅ Password reset flow
+- ✅ JWT sessions (30-day expiration)
+- ✅ Encrypted API key storage (AES-256-GCM)
+- ✅ User profile management
+- ✅ Account deletion
+- ✅ Audit logging
 
-- **Phase 4.6:** Test Execution Infrastructure ✅
-  - Browser-based test execution using WebContainers API
-  - Support for Jest, Vitest, Mocha frameworks
-  - Real-time output streaming via SSE
-  - ExecuteButton integrated into OutputSection
-  - ExecutionModal with live progress and results
-  - useTestExecution hook for state management
-  - Test validation with Acorn AST parser
-  - Security patterns blocked (no fs, child_process, etc.)
-  - Database tables: targets, test_executions, test_results
-  - Migration endpoint: /api/db/migrate-test-execution
-  - Production build passing (57 routes)
+**Projects System:**
+- ✅ Project CRUD with metadata
+- ✅ Requirements/user stories management
+- ✅ Test case management with bulk import
+- ✅ Coverage matrix (requirement-to-test traceability)
+- ✅ Test suites organization
 
-- **Phase 4.7:** Persistent Todo List ✅
-  - Database-backed todos that persist across sessions
-  - Full CRUD with subtasks, priorities, due dates, tags
-  - Status workflow: pending → in_progress → completed
-  - Filter by status, priority, search
-  - Statistics dashboard with completion rate
-  - useTodos hook with optimistic updates
-  - TodoList, TodoItem, TodoForm, TodoFilters, TodoStats components
-  - Sidebar integration with CheckSquare icon
-  - Database table: todos (with indexes)
-  - Migration endpoint: /api/db/migrate-todos
-  - Production build passing (60+ routes)
+**Integrations:**
+- ✅ GitHub OAuth for private repos (connect, browse, select files)
+- ✅ GitHub integration (sync, webhooks)
+- ✅ GitLab integration (sync, webhooks)
+- ✅ Azure DevOps integration (sync, webhooks)
+- ✅ Per-project integration configuration
 
-- **Phase 4.5:** User-linked analysis features ✅
-  - Dedicated profile page (`/profile`) with editing, password management, account deletion
-  - Share link management page (`/shares`) with toggle, copy, statistics
-  - API endpoint `/api/user/shares` for listing shared analyses
-  - `getSharedAnalysesByUser()` database function
-  - Sidebar updated with Shares link
+**User Features:**
+- ✅ Dashboard with analytics (KPIs, charts, heatmaps)
+- ✅ Analysis history with sharing
+- ✅ Share link management
+- ✅ Persistent todo list
+- ✅ Settings page
 
-### Planned 📋
-- **Phase 5:** Advanced features (export to Jira, avatar upload, team accounts)
-- **Phase 6:** CLI development (npx command)
-- **Phase 7:** Integrations (GitHub Actions, Jira Cloud app, CI/CD webhooks)
+**Infrastructure:**
+- ✅ PostgreSQL with 15+ tables
+- ✅ Redis caching
+- ✅ Database migrations
+- ✅ 60+ API routes
+- ✅ 27 pages
 
-**Note**: Phase 3 (session-based features) was SKIPPED. Went directly from Phase 2 to Phase 4 for database-backed user features.
+### Remaining Work 📋
 
-See `PROJECT_STATUS.md` and `TODO.md` for detailed status and action items.
+**Polish:**
+- [ ] Avatar/profile picture upload
+- [ ] HTML email templates
+- [ ] Google OAuth
+
+**Future:**
+- [ ] CLI tool (`npx orizon-qa`)
+- [ ] GitHub Action
+- [ ] Team/organization accounts
+- [ ] Billing system
+
+See `PROJECT_STATUS.md` for detailed tracking.

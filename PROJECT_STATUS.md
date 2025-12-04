@@ -2,136 +2,217 @@
 
 **Last Updated**: 2025-12-04
 **Live App**: https://orizon-qa.vercel.app
-**Current Phase**: Phase 4.5 Complete ✅ (User-Linked Features)
+**Current Status**: Full-featured QA platform ✅
 
 ---
 
 ## Quick Status Summary
 
-### ✅ COMPLETED PHASES
+### ✅ IMPLEMENTED FEATURES
 
-#### Phase 1: Core Application (COMPLETE)
-- ✅ Prompt construction system with Codebase-Digest templates
-- ✅ API route for Claude AI interactions
-- ✅ Multiple input methods (paste, GitHub, file upload)
-- ✅ Configurable output formats (Markdown, JSON, Jira)
-- ✅ Deployed to Vercel
+#### Core Analysis Platform
+- ✅ Claude AI analysis (basic, streaming, multi-pass)
+- ✅ Multiple input methods (paste, file upload, GitHub public/private)
+- ✅ 10+ output formats (Markdown, JSON, YAML, Jira/Xray, TestRail, Azure, BDD/Gherkin)
+- ✅ Repository selector with search and favorites
+- ✅ Branch selection and file/folder picker
+- ✅ Local caching with IndexedDB
+- ✅ LM Studio integration for local LLMs
+- ✅ Smart config suggestions
 
-#### Phase 2: Component Refactoring (COMPLETE)
-- ✅ Extracted 9 reusable components
-- ✅ Created 3 custom hooks (useAnalysis, useFileUpload, useGitHubFetch)
-- ✅ Reduced page.js from 715 → 183 lines (74% reduction)
-- ✅ Clean separation of concerns
+#### Authentication & Users
+- ✅ Email/password signup with 6-digit verification
+- ✅ GitHub OAuth login
+- ✅ Password reset flow
+- ✅ JWT sessions (30-day expiration)
+- ✅ Encrypted API key storage (AES-256-GCM)
+- ✅ User profile management
+- ✅ Account deletion
+- ✅ Audit logging
 
-#### Phase 4: Authentication System (COMPLETE) ✅
-- ✅ User signup with email verification (6-digit code)
-- ✅ Login with Next-Auth v4 (JWT sessions)
-- ✅ Password reset flow (forgot/reset)
-- ✅ User settings page with encrypted API key storage (AES-256-GCM)
-- ✅ Protected routes with middleware
-- ✅ Dashboard with auto-loaded API keys
-- ✅ Audit logging for security events
-- ✅ Landing page for unauthenticated users
-- ✅ Database schema with users, sessions, analyses, audit_logs tables
-- ✅ Production build passing (20 routes)
+#### Projects System
+- ✅ Project CRUD with metadata
+- ✅ Requirements/user stories management
+- ✅ Test case management
+- ✅ Test suites organization
+- ✅ Bulk test import from analysis
+- ✅ Coverage matrix (requirement-to-test traceability)
 
-#### Phase 4.6: Test Execution Infrastructure (COMPLETE) ✅
-- ✅ Browser-based test execution using WebContainers API
-- ✅ Support for Jest, Vitest, Mocha frameworks
-- ✅ Real-time output streaming via SSE
-- ✅ ExecuteButton and ExecutionModal components
-- ✅ useTestExecution hook for state management
-- ✅ Test validation with Acorn AST parser
-- ✅ Security patterns blocked (no fs, child_process, etc.)
-- ✅ Database tables: targets, test_executions, test_results
-- ✅ Production build passing (57 routes)
+#### External Integrations
+- ✅ GitHub OAuth for private repos (browse, select files, favorites)
+- ✅ GitHub integration (connect, sync, webhooks)
+- ✅ GitLab integration (connect, sync, webhooks)
+- ✅ Azure DevOps integration (connect, sync, webhooks)
+- ✅ Per-project integration configuration
 
-#### Phase 4.7: Persistent Todo List (COMPLETE) ✅
-- ✅ Database-backed todos that persist across sessions
-- ✅ Full CRUD with subtasks, priorities, due dates, tags
-- ✅ Status workflow: pending → in_progress → completed
-- ✅ Filter by status, priority, search
-- ✅ Statistics dashboard with completion rate
-- ✅ useTodos hook with optimistic updates
-- ✅ TodoList, TodoItem, TodoForm, TodoFilters, TodoStats components
-- ✅ Sidebar integration with CheckSquare icon
-- ✅ Database table: todos (with indexes)
-- ✅ Migration endpoint: /api/db/migrate-todos
-- ✅ Production build passing (60+ routes)
+#### Test Execution
+- ✅ Browser-based execution (WebContainers)
+- ✅ Jest, Vitest, Mocha support
+- ✅ Real-time SSE streaming
+- ✅ Sandboxed execution
 
-#### Phase 4.5: User-Linked Analysis Features (COMPLETE) ✅
-- ✅ Dedicated profile page (`/profile`) with:
-  - Profile info display and name editing
-  - Avatar placeholder (ready for image upload)
-  - Password management (change/set)
-  - Account statistics
-  - Account deletion with confirmation
-- ✅ Share link management page (`/shares`) with:
-  - List all shared analyses (active/inactive)
-  - Toggle sharing on/off per analysis
-  - Copy share links to clipboard
-  - View share statistics
-  - Quick navigation to analysis detail
-- ✅ API endpoint `/api/user/shares` for listing user's shared analyses
-- ✅ Sidebar updated with Shares link (Share2 icon)
-- ✅ `getSharedAnalysesByUser()` database function
-- ✅ Production build passing
+#### User Features
+- ✅ Dashboard with analytics (KPIs, charts, heatmaps)
+- ✅ Analysis history with sharing
+- ✅ Share link management
+- ✅ Persistent todo list
+- ✅ Settings page
 
-### 🚧 SKIPPED/DEFERRED
+#### Infrastructure
+- ✅ 60+ API routes
+- ✅ 27 pages
+- ✅ 15+ database tables
+- ✅ 9 React hooks
+- ✅ Redis caching
 
-#### Phase 3: User Value Features (SKIPPED)
-- ❌ Session-based analysis history
-- ❌ Export enhancements (PDF, combined files)
-- ❌ Demo mode with sample data
-- ❌ Input improvements (drag & drop)
-- ❌ Output improvements (syntax highlighting)
+### 📋 REMAINING WORK
 
-**Reason**: Jumped directly to Phase 4 (Authentication) for database-backed user features
+#### Polish
+- [ ] Avatar/profile picture upload
+- [ ] HTML email templates
+- [ ] Google OAuth
+
+#### Future
+- [ ] CLI tool (`npx orizon-qa`)
+- [ ] GitHub Action
+- [ ] Team/organization accounts
+- [ ] Billing system
 
 ---
 
 ## Current Implementation Details
 
-### Pages Implemented
-1. `/` - Landing page (unauthenticated)
-2. `/login` - Login page
-3. `/signup` - Signup page
-4. `/verify-email` - Email verification with 6-digit code
+### Pages Implemented (27 total)
+
+**Public Pages:**
+1. `/` - Landing page
+2. `/login` - Login (email/password + GitHub OAuth)
+3. `/signup` - Registration
+4. `/verify-email` - Email verification
 5. `/forgot-password` - Password reset request
-6. `/reset-password` - Password reset with token
-7. `/dashboard` - Main app (protected, was `/` before)
-8. `/settings` - User settings (protected)
-9. `/history` - Analysis history (protected)
-10. `/todos` - Persistent todo list (protected)
-11. `/profile` - User profile management (protected)
-12. `/shares` - Share link management (protected)
+6. `/reset-password` - Password reset form
+7. `/shared/[token]` - Public shared analysis view
+8. `/showcase` - Feature showcase
 
-### API Routes Implemented
-1. `/api/analyze` - Claude AI proxy (existing)
-2. `/api/auth/[...nextauth]` - Next-Auth handler
-3. `/api/auth/signup` - User registration
-4. `/api/auth/verify-email` - Email verification
-5. `/api/auth/resend-code` - Resend verification code
-6. `/api/auth/forgot-password` - Password reset request
-7. `/api/auth/reset-password` - Password reset with token
-8. `/api/user/settings` - GET/POST for user settings
-9. `/api/user/shares` - GET user's shared analyses
-10. `/api/db/init` - Database initialization
-11. `/api/db/migrate-todos` - Todos table migration
-12. `/api/todos` - GET (list), POST (create) todos
-13. `/api/todos/[id]` - GET/PATCH/DELETE single todo
-14. `/api/todos/bulk` - Bulk operations (reorder, delete, updateStatus)
+**Protected Pages:**
+9. `/dashboard` - Analytics dashboard with KPIs
+10. `/analyze` - Analysis page with repo selector
+11. `/history` - Analysis history
+12. `/history/[id]` - Analysis detail
+13. `/profile` - User profile management
+14. `/shares` - Share link management
+15. `/settings` - User settings
+16. `/todos` - Persistent todo list
 
-### Database Schema
-**Tables**:
-- `users` - User accounts, email, password_hash, encrypted API keys
-- `sessions` - Next-Auth sessions
-- `analyses` - Analysis history (linked to users)
-- `audit_logs` - Security events and audit trail
-- `todos` - Persistent todo list with subtasks, priorities, due dates, tags
-- `targets` - Test execution targets/scopes
-- `test_executions` - Test execution records
-- `test_results` - Individual test results
+**Projects System:**
+17. `/projects` - Project list
+18. `/projects/new` - Create project
+19. `/projects/[id]` - Project dashboard
+20. `/projects/[id]/requirements` - Requirements list
+21. `/projects/[id]/requirements/new` - Create requirement
+22. `/projects/[id]/requirements/[reqId]` - Requirement detail
+23. `/projects/[id]/tests` - Test cases list
+24. `/projects/[id]/tests/new` - Create test case
+25. `/projects/[id]/tests/[testId]` - Test case detail
+26. `/projects/[id]/coverage` - Coverage matrix
+27. `/projects/[id]/settings/integrations` - Project integrations
+
+### API Routes Implemented (60+ total)
+
+**Analysis:**
+- `/api/analyze` - Basic Claude AI analysis
+- `/api/analyze-stream` - Streaming analysis with SSE
+- `/api/analyze-multipass` - Multi-pass chunked analysis
+- `/api/ai/models` - Available AI models
+
+**Authentication:**
+- `/api/auth/[...nextauth]` - NextAuth (GitHub OAuth + Credentials)
+- `/api/auth/signup` - Registration
+- `/api/auth/verify-email` - Email verification
+- `/api/auth/resend-code` - Resend verification
+- `/api/auth/forgot-password` - Password reset request
+- `/api/auth/reset-password` - Password reset
+- `/api/auth/device` - Device flow for CLI
+- `/api/auth/logout` - Logout with token revocation
+
+**Integrations:**
+- `/api/integrations/github/[connect|disconnect|sync|webhook]`
+- `/api/integrations/gitlab/[connect|disconnect|sync|webhook]`
+- `/api/integrations/azure-devops/[connect|disconnect|sync|webhook]`
+
+**GitHub OAuth (Private Repos):**
+- `/api/oauth/github/connect` - Initiate OAuth
+- `/api/oauth/github/callback` - OAuth callback
+- `/api/oauth/github/repositories` - List repos
+- `/api/oauth/github/tree` - Get repo tree
+- `/api/oauth/github/content` - Get file content
+- `/api/oauth/github/revoke` - Revoke access
+- `/api/oauth/connections` - List connections
+
+**Projects:**
+- `/api/projects` - List/create projects
+- `/api/projects/[id]` - Get/update/delete project
+- `/api/projects/[id]/requirements` - List/create requirements
+- `/api/projects/[id]/requirements/[reqId]` - Requirement CRUD
+- `/api/projects/[id]/requirements/[reqId]/tests` - Link tests
+- `/api/projects/[id]/tests` - List/create test cases
+- `/api/projects/[id]/tests/bulk-import` - Bulk import
+- `/api/projects/[id]/tests/[testId]` - Test case CRUD
+- `/api/projects/[id]/coverage` - Coverage matrix
+
+**Test Execution:**
+- `/api/execute-tests` - Start execution
+- `/api/execute-tests/[id]` - Status/cancel/delete
+- `/api/execute-tests/[id]/stream` - SSE stream
+
+**User:**
+- `/api/user/settings` - User settings
+- `/api/user/profile` - Profile management
+- `/api/user/analytics` - Usage analytics
+- `/api/user/analyses` - Analysis history
+- `/api/user/analyses/[id]` - Single analysis
+- `/api/user/analyses/[id]/share` - Toggle sharing
+- `/api/user/shares` - List shares
+- `/api/user/delete` - Delete account
+
+**Todos:**
+- `/api/todos` - List/create
+- `/api/todos/[id]` - CRUD
+- `/api/todos/bulk` - Bulk operations
+
+**Database:**
+- `/api/db/init` - Initialize schema
+- `/api/db/migrate-oauth` - OAuth tables
+- `/api/db/migrate-todos` - Todos table
+- `/api/db/migrate-test-execution` - Test execution tables
+- `/api/db/migrate-analysis-chunks` - Analysis chunks
+- `/api/db/migrate-llm-settings` - LLM settings
+
+**Other:**
+- `/api/shared/[token]` - Public shared analysis
+
+### Database Schema (15+ tables)
+
+**Core (lib/db.js):**
+- `users` - Accounts, encrypted API keys, settings
+- `sessions` - NextAuth sessions
+- `analyses` - Analysis history with results
+- `audit_logs` - Security event logging
+- `todos` - Persistent todo list
+- `oauth_connections` - GitHub OAuth tokens (encrypted)
+
+**Test Execution (lib/db.js):**
+- `targets` - Execution scope
+- `test_executions` - Execution records
+- `test_results` - Test results
+- `execution_credits` - Quota tracking
+
+**Projects (lib/db-*.js):**
+- `projects` - Project metadata
+- `requirements` - User stories
+- `test_cases` - Test definitions
+- `test_suites` - Suite groupings
+- `test_coverage` - Requirement-test mapping
 
 ### Key Components
 **Auth Components** (`app/components/auth/`):
@@ -183,86 +264,27 @@ ENCRYPTION_KEY=your-64-char-hex-key-here
 
 ---
 
-## What Needs to Be Done Next
+## Remaining Work
 
-### Completed in Phase 4.5 ✅
+### Polish (Low Priority)
+- [ ] Avatar/profile picture upload (needs file storage: S3/Cloudinary/Vercel Blob)
+- [ ] HTML email templates with branding
+- [ ] Google OAuth provider
 
-1. **Link Analyses to Users** - ✅ DONE
-   - [x] Analysis history linked to user accounts
-   - [x] /api/user/analyses endpoint exists
-   - [x] /api/user/shares endpoint created
-
-2. **Analysis History Page** - ✅ DONE
-   - [x] /history page with list view
-   - [x] Filters by date, input type, provider
-   - [x] View/download past results
-   - [x] Delete analyses
-   - [x] Share management
-
-3. **Account Management** - ✅ DONE
-   - [x] Profile page (/profile)
-   - [x] Update name/password
-   - [x] Account deletion
-   - [x] Avatar placeholder (ready for image upload)
-
-4. **Share Link Management** - ✅ DONE
-   - [x] /shares page for managing shared links
-   - [x] Toggle sharing on/off
-   - [x] Copy share links
-   - [x] View statistics
-
-### Medium Priority (Phase 5 - Features)
-
-5. **Export Enhancements**
-   - [ ] Export to Jira API integration
-   - [ ] Export as PDF (print API)
-   - [ ] Batch export multiple analyses
-   - [ ] Custom filename support
-
-6. **Profile Picture Upload**
-   - [ ] File storage solution (S3, Cloudinary, or Vercel Blob)
-   - [ ] Upload avatar images
-   - [ ] Display in sidebar and profile
-
-7. **Email Templates**
-   - [ ] HTML email templates with branding
-   - [ ] Welcome email after verification
-   - [ ] Customized password reset emails
-
-### Future Priority (Phase 6+)
-
-7. **Advanced Features**
-   - [ ] Multi-factor authentication
-   - [ ] Social auth (GitHub, Google)
-   - [ ] Team accounts & collaboration
-   - [ ] Usage analytics dashboard
-   - [ ] API rate limiting per user
-   - [ ] Billing/subscription system
-
-8. **CLI Tool** (deferred from original plan)
-   - [ ] npx command for local analysis
-   - [ ] Direct CLI usage without web UI
-
-9. **Integrations**
-   - [ ] GitHub Actions integration
-   - [ ] Jira Cloud app
-   - [ ] CI/CD webhook support
+### Future Features
+- [ ] CLI tool (`npx orizon-qa`)
+- [ ] GitHub Action for CI/CD
+- [ ] Team/organization accounts
+- [ ] Billing/subscription system
 
 ---
 
-## Known Issues & Limitations
+## Known Limitations
 
-### Current Known Issues
-1. **Email Templates**: Using plain text emails (HTML templates pending)
-2. **Password Recovery**: No account recovery if email is lost
-3. **Multi-factor Auth**: Not implemented yet
-4. **Avatar Upload**: Placeholder only, no file storage configured yet
-
-### Technical Debt
-1. **Landing page showcase**: `/showcase` page exists but not integrated
-2. **Session storage**: Old session-based history code may conflict
-3. **API key handling**: Both settings storage and per-request key input exist
-4. **Middleware**: Could be optimized for performance
+1. **Avatar**: Placeholder only, no file storage configured
+2. **Email**: Plain text emails (no HTML templates)
+3. **OAuth**: GitHub only (no Google/Microsoft)
+4. **Showcase**: `/showcase` page exists but not linked from navigation
 
 ---
 
