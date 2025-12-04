@@ -1629,34 +1629,247 @@ export default function ExecuteButton({ testCode, framework, onComplete }) {
 
 ---
 
-### 16. Open Questions to Resolve
+### 16. Architecture Decisions (Finalized)
 
-Before implementation, clarify:
+**Decisions made on 2025-12-04:**
 
-1. **Storage**: Where to store execution results?
-   - Option A: PostgreSQL only (current)
-   - Option B: PostgreSQL + S3 for large outputs
-   - Option C: Redis for short-term, PostgreSQL for permanent
+| Question | Decision | Rationale |
+|----------|----------|-----------|
+| **Storage** | Redis + PostgreSQL | Redis for live progress & recent results (TTL: 1hr). PostgreSQL for permanent history. Best for real-time SSE updates. |
+| **Test Scope** | Generated + User + GitHub | Full flexibility. AI-generated tests, user-pasted tests, AND tests fetched from GitHub repos. |
+| **Code Access** | User uploads + GitHub | Tests CAN access real source code via user upload OR GitHub fetch. Most realistic test execution. |
+| **Authentication** | Always required | Must be logged in to execute. Easier to track usage, prevent abuse, and link results to user history. |
 
-2. **Scope of "Execute"**: What exactly runs?
-   - Option A: Only AI-generated tests from current analysis
-   - Option B: User can paste their own tests too
-   - Option C: Both (generated + user-provided)
+---
 
-3. **Real code under test**: Do tests have access to user's actual code?
-   - Option A: No - tests are standalone (mocked)
-   - Option B: Yes - user provides code bundle
-   - Option C: Yes - fetch from GitHub (complex)
+#### Storage Architecture (Redis + PostgreSQL)
 
-4. **Pricing trigger**: When do credits get consumed?
-   - Option A: Per execution minute
-   - Option B: Per test case
-   - Option C: Per analysis+execution bundle
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                    STORAGE ARCHITECTURE                          │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                   │
+│  REDIS (Vercel KV) - Live & Recent                              │
+│  ├─> execution:{id}:status     → "running" / "complete"         │
+│  ├─> execution:{id}:progress   → { current: 3, total: 10 }      │
+│  ├─> execution:{id}:output     → Streaming console output       │
+│  └─> TTL: 1 hour (auto-expire)                                  │
+│                                                                   │
+│  POSTGRESQL (Vercel Postgres) - Permanent                       │
+│  ├─> test_executions           → Execution metadata & results   │
+│  ├─> test_results              → Individual test outcomes       │
+│  └─> No TTL (permanent history)                                 │
+│                                                                   │
+│  FLOW:                                                           │
+│  1. Start execution → Write to Redis (status: running)          │
+│  2. Stream progress → Update Redis (SSE reads from here)        │
+│  3. Complete → Copy to PostgreSQL, delete from Redis            │
+│                                                                   │
+└─────────────────────────────────────────────────────────────────┘
+```
 
-5. **Authentication**: Required for execution?
-   - Option A: Yes - always (execution tied to user)
-   - Option B: Optional - anonymous gets limited free tier
-   - Option C: Yes, but guests can try 1 free execution
+```javascript
+// lib/testExecution/storage.js
+import { kv } from '@vercel/kv';
+import { pool } from '@/lib/db';
+
+// Live execution state (Redis)
+export async function updateExecutionProgress(executionId, progress) {
+  await kv.hset(`execution:${executionId}`, {
+    status: progress.status,
+    current: progress.current,
+    total: progress.total,
+    output: progress.output
+  });
+  await kv.expire(`execution:${executionId}`, 3600); // 1 hour TTL
+}
+
+export async function getExecutionProgress(executionId) {
+  return await kv.hgetall(`execution:${executionId}`);
+}
+
+// Permanent storage (PostgreSQL)
+export async function saveExecutionResult(execution) {
+  const result = await pool.query(`
+    INSERT INTO test_executions
+    (user_id, analysis_id, framework, strategy, status,
+     total_tests, passed_tests, failed_tests, duration_ms, raw_results)
+    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+    RETURNING id
+  `, [
+    execution.userId,
+    execution.analysisId,
+    execution.framework,
+    execution.strategy,
+    execution.status,
+    execution.totalTests,
+    execution.passedTests,
+    execution.failedTests,
+    execution.durationMs,
+    JSON.stringify(execution.results)
+  ]);
+
+  // Clean up Redis
+  await kv.del(`execution:${execution.id}`);
+
+  return result.rows[0].id;
+}
+```
+
+---
+
+#### Test Scope: Multiple Sources
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                    TEST SOURCE OPTIONS                           │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                   │
+│  SOURCE 1: AI-Generated Tests                                   │
+│  ├─> From OrizonQA analysis results                             │
+│  ├─> "Execute" button on analysis page                          │
+│  └─> Pre-validated, ready to run                                │
+│                                                                   │
+│  SOURCE 2: User-Provided Tests                                  │
+│  ├─> Paste test code directly                                   │
+│  ├─> Upload test files (.test.js, etc.)                        │
+│  └─> Requires validation before execution                       │
+│                                                                   │
+│  SOURCE 3: GitHub Repository Tests                              │
+│  ├─> Fetch from connected GitHub repo                           │
+│  ├─> Select branch and test directory                           │
+│  └─> Uses existing GitHub OAuth connection                      │
+│                                                                   │
+│  UI: Tab selector for test source                               │
+│  ┌─────────────────────────────────────────────────────────────┐│
+│  │ [Generated] [Paste/Upload] [From GitHub]                    ││
+│  └─────────────────────────────────────────────────────────────┘│
+│                                                                   │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+#### Code Access: Real Source Code
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                 SOURCE CODE ACCESS                               │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                   │
+│  OPTION A: User Upload (Simpler)                                │
+│  ├─> User zips source code + tests                              │
+│  ├─> Uploads to OrizonQA                                        │
+│  ├─> Extracted in WebContainer/Docker                           │
+│  └─> Tests can import real modules                              │
+│                                                                   │
+│  OPTION B: GitHub Fetch (More Integrated)                       │
+│  ├─> Use existing GitHub OAuth connection                       │
+│  ├─> Clone repo to execution environment                        │
+│  ├─> Select branch (main, feature/*, etc.)                      │
+│  └─> Full access to repo structure                              │
+│                                                                   │
+│  IMPLEMENTATION:                                                 │
+│  ├─> MVP: User upload only (simpler)                            │
+│  └─> Phase 2: Add GitHub fetch                                  │
+│                                                                   │
+│  SECURITY:                                                       │
+│  ├─> Max upload size: 10MB (zip)                                │
+│  ├─> Scan for sensitive files (.env, secrets)                   │
+│  ├─> Sandbox execution (no network access)                      │
+│  └─> Resource limits (512MB RAM, 60s timeout)                   │
+│                                                                   │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+```javascript
+// lib/testExecution/sourceCodeLoader.js
+
+export async function loadSourceCode(config) {
+  if (config.source === 'upload') {
+    // Extract uploaded zip to temp directory
+    return await extractUploadedZip(config.zipFile);
+  }
+
+  if (config.source === 'github') {
+    // Fetch from GitHub using OAuth token
+    return await fetchGitHubRepo({
+      owner: config.owner,
+      repo: config.repo,
+      branch: config.branch,
+      accessToken: config.accessToken
+    });
+  }
+
+  // No source code - tests are standalone
+  return null;
+}
+
+async function fetchGitHubRepo({ owner, repo, branch, accessToken }) {
+  // Use GitHub API to get repo contents
+  const response = await fetch(
+    `https://api.github.com/repos/${owner}/${repo}/zipball/${branch}`,
+    {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        Accept: 'application/vnd.github+json'
+      }
+    }
+  );
+
+  const zip = await response.arrayBuffer();
+  return await extractZipToTemp(zip);
+}
+```
+
+---
+
+#### Authentication: Required for All Execution
+
+```javascript
+// app/api/execute-tests/route.js
+import { auth } from '@/auth';
+
+export async function POST(request) {
+  // ALWAYS require authentication
+  const session = await auth();
+
+  if (!session?.user) {
+    return NextResponse.json(
+      { error: 'Authentication required to execute tests' },
+      { status: 401 }
+    );
+  }
+
+  const userId = session.user.id;
+
+  // ... execution logic
+}
+```
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                 AUTH REQUIREMENTS                                │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                   │
+│  REQUIRED FOR:                                                   │
+│  ├─> Starting test execution                                    │
+│  ├─> Viewing execution results                                  │
+│  ├─> Accessing execution history                                │
+│  └─> All /execute/* and /reports/* routes                      │
+│                                                                   │
+│  BENEFITS:                                                       │
+│  ├─> Track usage per user (for credits)                        │
+│  ├─> Prevent abuse (rate limiting)                              │
+│  ├─> Link results to user history                               │
+│  └─> Secure access to source code                               │
+│                                                                   │
+│  MIDDLEWARE:                                                     │
+│  // middleware.js - add to protected routes                     │
+│  matcher: ['/execute/:path*', '/reports/:path*']                │
+│                                                                   │
+└─────────────────────────────────────────────────────────────────┘
+```
 
 ---
 
