@@ -203,6 +203,8 @@ app/
 ├── reset-password/page.js    # Password reset form
 ├── settings/page.js          # User settings (protected)
 ├── todos/page.js             # Persistent todo list (protected)
+├── profile/page.js           # User profile management (protected)
+├── shares/page.js            # Share link management (protected)
 ├── globals.css               # Tailwind base styles
 ├── layout.js                 # Root layout with metadata
 └── page.js                   # Landing page (public)
@@ -536,14 +538,15 @@ The project uses ES modules (`"type": "module"` in package.json) to enable moder
   - Migration endpoint: /api/db/migrate-todos
   - Production build passing (60+ routes)
 
-### In Progress 🚧
-- **Phase 4.5:** User-linked analysis features
-  - Link analyses to user accounts (database ready, not connected)
-  - Analysis history page
-  - User profile management
+- **Phase 4.5:** User-linked analysis features ✅
+  - Dedicated profile page (`/profile`) with editing, password management, account deletion
+  - Share link management page (`/shares`) with toggle, copy, statistics
+  - API endpoint `/api/user/shares` for listing shared analyses
+  - `getSharedAnalysesByUser()` database function
+  - Sidebar updated with Shares link
 
 ### Planned 📋
-- **Phase 5:** Advanced features (export to Jira, team accounts, billing)
+- **Phase 5:** Advanced features (export to Jira, avatar upload, team accounts)
 - **Phase 6:** CLI development (npx command)
 - **Phase 7:** Integrations (GitHub Actions, Jira Cloud app, CI/CD webhooks)
 
