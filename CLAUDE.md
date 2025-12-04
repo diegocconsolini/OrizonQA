@@ -142,7 +142,12 @@ app/
 │   │       └── stream/route.js  # SSE stream for real-time updates
 │   ├── db/
 │   │   ├── init/route.js        # Database initialization
-│   │   └── migrate-test-execution/route.js  # Test execution tables
+│   │   ├── migrate-test-execution/route.js  # Test execution tables
+│   │   └── migrate-todos/route.js  # Todos table migration
+│   ├── todos/                   # Todos API endpoints
+│   │   ├── route.js             # GET: list, POST: create
+│   │   ├── [id]/route.js        # GET/PATCH/DELETE single todo
+│   │   └── bulk/route.js        # Bulk operations (reorder, delete, updateStatus)
 │   └── user/settings/route.js   # User settings API
 ├── execute/                     # Test execution UI
 │   └── components/
@@ -159,6 +164,13 @@ app/
 │   │   ├── Sidebar.jsx          # Left navigation sidebar
 │   │   └── AppLayout.jsx        # Layout wrapper with sidebar
 │   ├── ui/                      # UI component library (30+ components)
+│   ├── todos/                   # Todo list components
+│   │   ├── TodoList.jsx         # Main list container
+│   │   ├── TodoItem.jsx         # Single todo row with actions
+│   │   ├── TodoForm.jsx         # Create/edit form
+│   │   ├── TodoFilters.jsx      # Status/priority/search filters
+│   │   ├── TodoStats.jsx        # Statistics cards
+│   │   └── index.js             # Barrel exports
 │   ├── config/                  # Configuration components
 │   │   ├── ApiKeyInput.jsx
 │   │   └── ConfigSection.jsx
@@ -176,7 +188,8 @@ app/
 │   ├── useAnalysis.js
 │   ├── useFileUpload.js
 │   ├── useGitHubFetch.js
-│   └── useTestExecution.js  # Test execution state management
+│   ├── useTestExecution.js  # Test execution state management
+│   └── useTodos.js          # Todo list state management with optimistic updates
 ├── dashboard/page.js         # Main app (protected, was root page)
 ├── history/                  # Analysis history (NEW)
 │   ├── page.js               # History list with search/filter

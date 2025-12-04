@@ -14,6 +14,7 @@ Analyze codebases and generate user stories, test cases, and acceptance criteria
 - **Persistent Storage**: All analyses are saved and linked to your account
 - **Browser-Based Test Execution**: Run Jest, Vitest, or Mocha tests directly in browser using WebContainers
 - **Real-Time Results**: Live streaming of test output with pass/fail indicators
+- **Persistent Todo List**: Track tasks across sessions with priorities, due dates, tags, and subtasks
 
 ## Getting Started
 
