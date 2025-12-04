@@ -1,7 +1,8 @@
 import { useState } from 'react';
-import { Copy, Download, Check, Upload } from 'lucide-react';
+import { Copy, Download, Check, Upload, Play } from 'lucide-react';
 import Tab from '../shared/Tab';
 import ImportTestsModal from '../modals/ImportTestsModal';
+import ExecuteButton from '@/app/execute/components/ExecuteButton';
 
 export default function OutputSection({ results }) {
   const [outputTab, setOutputTab] = useState('stories');
@@ -64,14 +65,25 @@ export default function OutputSection({ results }) {
       </div>
 
       <div className="flex justify-between items-center gap-3 p-4 pt-0">
-        <button
-          onClick={() => setShowImportModal(true)}
-          disabled={!results.testCases && !results.userStories}
-          className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-cyan-500 to-violet-500 hover:from-cyan-600 hover:to-violet-600 disabled:opacity-50 disabled:cursor-not-allowed rounded-xl text-sm font-medium text-white transition-all"
-        >
-          <Upload size={16} />
-          Save to Project
-        </button>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => setShowImportModal(true)}
+            disabled={!results.testCases && !results.userStories}
+            className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-cyan-500 to-violet-500 hover:from-cyan-600 hover:to-violet-600 disabled:opacity-50 disabled:cursor-not-allowed rounded-xl text-sm font-medium text-white transition-all"
+          >
+            <Upload size={16} />
+            Save to Project
+          </button>
+
+          {results.testCases && (
+            <ExecuteButton
+              testCode={results.testCases}
+              framework="auto"
+              disabled={!results.testCases}
+              size="md"
+            />
+          )}
+        </div>
 
         <div className="flex gap-3">
           <button
