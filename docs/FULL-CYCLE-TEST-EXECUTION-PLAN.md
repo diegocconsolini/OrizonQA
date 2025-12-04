@@ -1380,6 +1380,316 @@ docker/
 
 ---
 
+### 15. WebContainer Implementation (MVP Deep Dive)
+
+This is the critical path for MVP. WebContainers run Node.js in the browser.
+
+#### Installation
+```bash
+npm install @webcontainer/api
+```
+
+#### Core Implementation
+```javascript
+// lib/testExecution/webContainerRunner.js
+import { WebContainer } from '@webcontainer/api';
+
+let webcontainerInstance = null;
+
+export async function getWebContainer() {
+  if (!webcontainerInstance) {
+    webcontainerInstance = await WebContainer.boot();
+  }
+  return webcontainerInstance;
+}
+
+export async function runJestTests(testCode, options = {}) {
+  const webcontainer = await getWebContainer();
+
+  // Create project structure
+  const files = {
+    'package.json': {
+      file: {
+        contents: JSON.stringify({
+          name: 'orizon-test-runner',
+          type: 'module',
+          scripts: {
+            test: 'jest --json --outputFile=results.json'
+          },
+          devDependencies: {
+            jest: '^29.7.0',
+            '@babel/preset-env': '^7.23.0'
+          }
+        }, null, 2)
+      }
+    },
+    'jest.config.js': {
+      file: {
+        contents: `
+export default {
+  testEnvironment: 'node',
+  transform: {},
+  moduleFileExtensions: ['js', 'mjs'],
+  testMatch: ['**/*.test.js']
+};
+`
+      }
+    },
+    '__tests__': {
+      directory: {
+        'generated.test.js': {
+          file: { contents: testCode }
+        }
+      }
+    }
+  };
+
+  // Mount files
+  await webcontainer.mount(files);
+
+  // Install dependencies
+  const installProcess = await webcontainer.spawn('npm', ['install']);
+
+  const installExitCode = await installProcess.exit;
+  if (installExitCode !== 0) {
+    throw new Error('Failed to install dependencies');
+  }
+
+  // Run tests
+  const testProcess = await webcontainer.spawn('npm', ['test']);
+
+  // Collect output
+  let output = '';
+  testProcess.output.pipeTo(new WritableStream({
+    write(chunk) {
+      output += chunk;
+      options.onOutput?.(chunk);
+    }
+  }));
+
+  const testExitCode = await testProcess.exit;
+
+  // Read results file
+  let results = null;
+  try {
+    const resultsFile = await webcontainer.fs.readFile('/results.json', 'utf-8');
+    results = JSON.parse(resultsFile);
+  } catch (e) {
+    // Results file might not exist if tests crashed
+  }
+
+  return {
+    exitCode: testExitCode,
+    output,
+    results,
+    success: testExitCode === 0
+  };
+}
+```
+
+#### React Hook for Execution
+```javascript
+// app/hooks/useTestExecution.js
+'use client';
+
+import { useState, useCallback, useRef } from 'react';
+import { runJestTests } from '@/lib/testExecution/webContainerRunner';
+
+export const ExecutionStatus = {
+  IDLE: 'idle',
+  BOOTING: 'booting',
+  INSTALLING: 'installing',
+  RUNNING: 'running',
+  COMPLETE: 'complete',
+  FAILED: 'failed'
+};
+
+export function useTestExecution() {
+  const [status, setStatus] = useState(ExecutionStatus.IDLE);
+  const [output, setOutput] = useState('');
+  const [results, setResults] = useState(null);
+  const [error, setError] = useState(null);
+  const abortRef = useRef(false);
+
+  const execute = useCallback(async (testCode, framework = 'jest') => {
+    setStatus(ExecutionStatus.BOOTING);
+    setOutput('');
+    setResults(null);
+    setError(null);
+    abortRef.current = false;
+
+    try {
+      setStatus(ExecutionStatus.INSTALLING);
+
+      const result = await runJestTests(testCode, {
+        onOutput: (chunk) => {
+          if (!abortRef.current) {
+            setOutput(prev => prev + chunk);
+            setStatus(ExecutionStatus.RUNNING);
+          }
+        }
+      });
+
+      if (abortRef.current) return;
+
+      setResults(result.results);
+      setStatus(result.success ? ExecutionStatus.COMPLETE : ExecutionStatus.FAILED);
+
+    } catch (err) {
+      if (!abortRef.current) {
+        setError(err.message);
+        setStatus(ExecutionStatus.FAILED);
+      }
+    }
+  }, []);
+
+  const abort = useCallback(() => {
+    abortRef.current = true;
+    setStatus(ExecutionStatus.IDLE);
+  }, []);
+
+  return {
+    status,
+    output,
+    results,
+    error,
+    execute,
+    abort,
+    isRunning: [ExecutionStatus.BOOTING, ExecutionStatus.INSTALLING, ExecutionStatus.RUNNING].includes(status)
+  };
+}
+```
+
+#### Execute Button Component
+```jsx
+// app/execute/components/ExecuteButton.jsx
+'use client';
+
+import { Play, Loader2 } from 'lucide-react';
+import { useTestExecution, ExecutionStatus } from '@/app/hooks/useTestExecution';
+
+export default function ExecuteButton({ testCode, framework, onComplete }) {
+  const { status, execute, isRunning } = useTestExecution();
+
+  const handleExecute = async () => {
+    const result = await execute(testCode, framework);
+    onComplete?.(result);
+  };
+
+  const statusText = {
+    [ExecutionStatus.BOOTING]: 'Starting environment...',
+    [ExecutionStatus.INSTALLING]: 'Installing dependencies...',
+    [ExecutionStatus.RUNNING]: 'Running tests...',
+  };
+
+  return (
+    <button
+      onClick={handleExecute}
+      disabled={isRunning}
+      className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium ${
+        isRunning
+          ? 'bg-slate-700 text-slate-400 cursor-not-allowed'
+          : 'bg-green-600 hover:bg-green-700 text-white'
+      }`}
+    >
+      {isRunning ? (
+        <>
+          <Loader2 className="w-4 h-4 animate-spin" />
+          {statusText[status] || 'Running...'}
+        </>
+      ) : (
+        <>
+          <Play className="w-4 h-4" />
+          Execute Tests
+        </>
+      )}
+    </button>
+  );
+}
+```
+
+#### WebContainer Limitations
+
+| Feature | Supported | Notes |
+|---------|-----------|-------|
+| Node.js | YES | Full support |
+| npm/pnpm | YES | Package installation works |
+| File system | YES | Virtual FS in browser |
+| Network requests | PARTIAL | Only to allowed origins |
+| Child processes | PARTIAL | Limited subprocess support |
+| Native modules | NO | No native binaries |
+| Playwright | PARTIAL | Headless mode only, limited |
+| Cypress | NO | Requires real browser |
+
+**When to fall back to Docker:**
+- Tests require native modules (canvas, sharp, etc.)
+- Tests need real browser automation
+- Tests require network access to external services
+- Tests need more than 1GB memory
+
+---
+
+### 16. Open Questions to Resolve
+
+Before implementation, clarify:
+
+1. **Storage**: Where to store execution results?
+   - Option A: PostgreSQL only (current)
+   - Option B: PostgreSQL + S3 for large outputs
+   - Option C: Redis for short-term, PostgreSQL for permanent
+
+2. **Scope of "Execute"**: What exactly runs?
+   - Option A: Only AI-generated tests from current analysis
+   - Option B: User can paste their own tests too
+   - Option C: Both (generated + user-provided)
+
+3. **Real code under test**: Do tests have access to user's actual code?
+   - Option A: No - tests are standalone (mocked)
+   - Option B: Yes - user provides code bundle
+   - Option C: Yes - fetch from GitHub (complex)
+
+4. **Pricing trigger**: When do credits get consumed?
+   - Option A: Per execution minute
+   - Option B: Per test case
+   - Option C: Per analysis+execution bundle
+
+5. **Authentication**: Required for execution?
+   - Option A: Yes - always (execution tied to user)
+   - Option B: Optional - anonymous gets limited free tier
+   - Option C: Yes, but guests can try 1 free execution
+
+---
+
+### 17. Next Steps (Immediate Actions)
+
+```
+□ 1. Research WebContainer API limits and browser support
+     └─ Verify it works in all major browsers
+     └─ Test memory limits with large test files
+
+□ 2. Create proof-of-concept
+     └─ Simple page that runs Jest test in WebContainer
+     └─ Measure boot time, execution time
+     └─ Verify JSON output parsing works
+
+□ 3. Design UI wireframes
+     └─ Execute button placement on analyze results
+     └─ Live progress view layout
+     └─ Results display format
+
+□ 4. Database migration
+     └─ Create test_executions table
+     └─ Create test_results table
+     └─ Add indexes
+
+□ 5. Implement MVP
+     └─ Follow Phase 1 file list
+     └─ Start with Jest only
+     └─ Add Vitest after Jest works
+```
+
+---
+
 ## Sources
 
 ### Test Frameworks
@@ -1395,6 +1705,8 @@ docker/
 - [Allure Report](https://allurereport.org/) - Test reporting
 - [Testcontainers](https://testcontainers.com/) - Container testing
 - [Docker SDK](https://docs.docker.com/engine/api/) - Container API
+- [WebContainers](https://webcontainers.io/) - Browser-based Node.js (StackBlitz)
+- [MSW](https://mswjs.io/) - Mock Service Worker for API mocking
 
 ### Test Management
 - [Testomat.io](https://testomat.io/) - Test management
@@ -1403,3 +1715,12 @@ docker/
 ### CI/CD Integration
 - [GitHub Actions](https://github.com/features/actions) - CI/CD
 - [BrowserStack Guide](https://www.browserstack.com/guide/automation-testing-languages) - Automation languages
+
+---
+
+## Document History
+
+| Version | Date | Changes |
+|---------|------|---------|
+| v1.0 | 2025-12-04 | Initial plan with 11 frameworks, architecture |
+| v2.0 | 2025-12-04 | Refinements: MVP, phases, WebContainer deep dive, open questions |
