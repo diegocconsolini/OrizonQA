@@ -338,6 +338,7 @@ function AnalyzePageContent() {
     clearFiles();
     clearSelection();
     clearResults();
+    resetStream(); // Reset streaming state
   };
 
   // Can analyze check
@@ -498,8 +499,8 @@ function AnalyzePageContent() {
                   cachedFiles={cachedFilePaths}
                 />
 
-                {/* Analysis Plan Indicator - Shows when files are selected */}
-                {selectedFiles.length > 0 && !analysisLoading && (
+                {/* Analysis Plan Indicator - Shows when files are selected (before analysis) */}
+                {selectedFiles.length > 0 && !streamIsAnalyzing && streamStatus === AnalysisStatus.IDLE && (
                   <div className="mt-6">
                     <AnalysisPlanIndicator
                       selectedFilePaths={selectedFiles}
@@ -508,8 +509,28 @@ function AnalyzePageContent() {
                   </div>
                 )}
 
-                {/* Analysis Progress - Shows during analysis */}
-                {analysisLoading && analysisProgress && (
+                {/* Real-time Analysis Dashboard - Shows during and after streaming analysis */}
+                {(streamIsAnalyzing || streamIsComplete || streamStatus === AnalysisStatus.ERROR) && (
+                  <div className="mt-6">
+                    <AnalysisDashboard
+                      status={streamStatus}
+                      plan={streamPlan}
+                      progress={streamProgress}
+                      chunks={streamChunks}
+                      currentActivity={streamCurrentActivity}
+                      tokenUsage={streamTokenUsage}
+                      actualCost={streamActualCost}
+                      timing={streamTiming}
+                      elapsedFormatted={streamElapsedFormatted}
+                      dataFlow={streamDataFlow}
+                      error={streamError}
+                      onCancel={cancelStreamAnalysis}
+                    />
+                  </div>
+                )}
+
+                {/* Fallback: Old progress for single-pass analysis (paste mode) */}
+                {analysisLoading && analysisProgress && !streamIsAnalyzing && (
                   <div className="mt-6">
                     <AnalysisProgress
                       progress={analysisProgress}
@@ -561,7 +582,10 @@ function AnalyzePageContent() {
 
               {/* Results Tab */}
               <TabPanel value="results">
-                {results ? (
+                {/* Show streaming results if available, otherwise legacy results */}
+                {streamResults ? (
+                  <OutputSection results={streamResults} />
+                ) : results ? (
                   <OutputSection results={results} />
                 ) : (
                   <EmptyState
@@ -718,23 +742,32 @@ function AnalyzePageContent() {
             )}
           </div>
 
-          {/* Token Usage Display */}
-          {tokenUsage && (
+          {/* Token Usage Display - Shows streaming or legacy token usage */}
+          {(streamTokenUsage?.input || tokenUsage) && (
             <Card className="p-4 bg-surface-dark/50">
               <div className="flex items-center justify-center gap-6 text-sm font-secondary">
                 <div className="flex items-center gap-2">
                   <span className="text-text-secondary-dark">Input:</span>
                   <span className="text-primary font-semibold">
-                    {(tokenUsage.input || tokenUsage.input_tokens)?.toLocaleString() || '0'}
+                    {(streamTokenUsage?.input || tokenUsage?.input || tokenUsage?.input_tokens || 0).toLocaleString()}
                   </span>
                 </div>
                 <div className="w-px h-4 bg-white/10" />
                 <div className="flex items-center gap-2">
                   <span className="text-text-secondary-dark">Output:</span>
                   <span className="text-accent font-semibold">
-                    {(tokenUsage.output || tokenUsage.output_tokens)?.toLocaleString() || '0'}
+                    {(streamTokenUsage?.output || tokenUsage?.output || tokenUsage?.output_tokens || 0).toLocaleString()}
                   </span>
                 </div>
+                {streamActualCost && streamActualCost !== '$0.0000' && (
+                  <>
+                    <div className="w-px h-4 bg-white/10" />
+                    <div className="flex items-center gap-2">
+                      <span className="text-text-secondary-dark">Cost:</span>
+                      <span className="text-green-400 font-semibold">{streamActualCost}</span>
+                    </div>
+                  </>
+                )}
               </div>
             </Card>
           )}
