@@ -45,9 +45,11 @@ import SmartConfigPanel from './components/SmartConfigPanel';
 import OutputSettingsPanel from './components/OutputSettingsPanel';
 import AnalysisPlanIndicator from './components/AnalysisPlanIndicator';
 import AnalysisProgress from './components/AnalysisProgress';
+import AnalysisDashboard from './components/AnalysisDashboard';
 
 // Hooks
 import useAnalysis from '@/app/hooks/useAnalysis';
+import useAnalysisStream, { AnalysisStatus } from '@/app/hooks/useAnalysisStream';
 import useFileUpload from '@/app/hooks/useFileUpload';
 import useRepositories from '@/app/hooks/useRepositories';
 import useIndexedDB from '@/app/hooks/useIndexedDB';
@@ -241,6 +243,27 @@ function AnalyzePageContent() {
     analysisStartTime
   } = useAnalysis();
 
+  // Streaming analysis hook for real-time visibility
+  const {
+    status: streamStatus,
+    isAnalyzing: streamIsAnalyzing,
+    isComplete: streamIsComplete,
+    plan: streamPlan,
+    progress: streamProgress,
+    chunks: streamChunks,
+    currentActivity: streamCurrentActivity,
+    tokenUsage: streamTokenUsage,
+    actualCost: streamActualCost,
+    results: streamResults,
+    error: streamError,
+    timing: streamTiming,
+    elapsedFormatted: streamElapsedFormatted,
+    dataFlow: streamDataFlow,
+    startAnalysis: startStreamAnalysis,
+    cancelAnalysis: cancelStreamAnalysis,
+    reset: resetStream
+  } = useAnalysisStream();
+
   const {
     uploadedFiles,
     setUploadedFiles,
@@ -251,7 +274,7 @@ function AnalyzePageContent() {
     clearFiles
   } = useFileUpload(setError, setSuccess);
 
-  const loading = analysisLoading || reposLoading || loadingFiles;
+  const loading = analysisLoading || streamIsAnalyzing || reposLoading || loadingFiles;
 
   // Calculate token estimate
   const getInputContent = useCallback(() => {
@@ -272,11 +295,11 @@ function AnalyzePageContent() {
   const estimatedTokens = Math.ceil(getInputContent().length / 4);
   const isTruncated = getInputContent().length > 100000;
 
-  // Handle analysis - uses multi-pass for files (100% coverage)
+  // Handle analysis - uses streaming SSE for real-time visibility
   const handleAnalyze = async () => {
     const model = provider === 'lmstudio' ? lmStudioModel : claudeModel;
 
-    // Git mode - use multi-pass analysis for 100% file coverage
+    // Git mode - use streaming analysis for real-time visibility
     if (selectedFiles.length > 0 && selectedRepo) {
       setSuccess('Fetching selected files...');
       const files = await getFilesForAnalysis();
@@ -284,25 +307,25 @@ function AnalyzePageContent() {
         setError('Failed to fetch file contents');
         return;
       }
-      setSuccess('Starting multi-pass analysis...');
+      setSuccess(''); // Clear success message before starting stream
 
-      // Use the new multi-pass endpoint for files
-      await analyzeFiles(files, apiKey, config, model, provider, lmStudioUrl);
+      // Use streaming SSE endpoint for real-time visibility
+      await startStreamAnalysis(files, config, apiKey, provider, lmStudioUrl);
       return;
     }
 
-    // Paste mode - use single-pass analysis
+    // Paste mode - use single-pass analysis (no streaming needed)
     if (codeInput.trim()) {
       await analyzeCodebase(codeInput, apiKey, config, model, provider, lmStudioUrl);
       return;
     }
 
-    // Upload mode - use multi-pass if many files, otherwise single-pass
+    // Upload mode - use streaming for files
     if (uploadedFiles.length > 0) {
       const files = uploadedFiles.map(f => ({ path: f.name, content: f.content }));
 
-      // Use multi-pass for uploaded files too (100% coverage)
-      await analyzeFiles(files, apiKey, config, model, provider, lmStudioUrl);
+      // Use streaming for uploaded files too
+      await startStreamAnalysis(files, config, apiKey, provider, lmStudioUrl);
       return;
     }
 
