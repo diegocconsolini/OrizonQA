@@ -43,7 +43,8 @@
       "Bash(xargs:*)",
       "Bash(ps:*)",
       "WebFetch(domain:docs.galileo.ai)",
-      "WebFetch(domain:arize.com)"
+      "WebFetch(domain:arize.com)",
+      "Bash(npm install:*)"
     ],
     "deny": [],
     "ask": []
