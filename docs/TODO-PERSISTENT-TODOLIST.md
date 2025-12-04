@@ -275,10 +275,12 @@ Computed:
   - All UI components (TodoList, TodoItem, TodoForm, TodoFilters, TodoStats)
   - Todos page with AppLayout
   - Sidebar integration with CheckSquare icon
+  - ✅ Build passes (60+ routes)
+  - ✅ Migration ran successfully
+  - ✅ Table verified in database with all columns and indexes
 - Blockers: None
 - Next steps:
-  - Run migration: GET /api/db/migrate-todos
-  - Test the feature end-to-end
+  - Test the feature in browser
   - Consider adding Dashboard widget (optional)
   - Consider drag-and-drop reordering (optional)
 
