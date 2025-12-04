@@ -443,6 +443,24 @@ export default function useRepositories() {
   }, []);
 
   /**
+   * Batch toggle multiple files (for folder selection)
+   * This is more efficient than calling toggleFileSelection for each file
+   */
+  const batchToggleFiles = useCallback((filePaths, action) => {
+    setSelectedFiles(prev => {
+      const currentSet = new Set(prev);
+
+      if (action === 'add') {
+        filePaths.forEach(path => currentSet.add(path));
+      } else if (action === 'remove') {
+        filePaths.forEach(path => currentSet.delete(path));
+      }
+
+      return Array.from(currentSet);
+    });
+  }, []);
+
+  /**
    * Select all code files
    */
   const selectAllCodeFiles = useCallback(() => {
@@ -537,6 +555,7 @@ export default function useRepositories() {
     // File selection
     selectedFiles,
     toggleFileSelection,
+    batchToggleFiles,
     selectAllCodeFiles,
     selectByPattern,
     clearSelection,

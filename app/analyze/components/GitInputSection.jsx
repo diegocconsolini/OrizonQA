@@ -47,6 +47,7 @@ export default function GitInputSection({
   fileTree = [],
   selectedFiles = [],
   onToggleFile,
+  onBatchToggleFiles,
   onSelectAllCodeFiles,
   onSelectByPattern,
   onClearSelection,
@@ -221,6 +222,7 @@ export default function GitInputSection({
                       fileTree={fileTree}
                       selectedFiles={selectedFiles}
                       onToggleFile={onToggleFile}
+                      onBatchToggleFiles={onBatchToggleFiles}
                       onSelectAllCodeFiles={onSelectAllCodeFiles}
                       onSelectByPattern={onSelectByPattern}
                       onClearSelection={onClearSelection}

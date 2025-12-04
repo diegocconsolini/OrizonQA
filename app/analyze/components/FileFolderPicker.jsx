@@ -49,6 +49,7 @@ export default function FileFolderPicker({
   fileTree = [],
   selectedFiles = [],
   onToggleFile,
+  onBatchToggleFiles,
   onSelectAllCodeFiles,
   onSelectByPattern,
   onClearSelection,
@@ -58,6 +59,9 @@ export default function FileFolderPicker({
   loading = false,
   selectedRepo = null
 }) {
+  // Create Sets for O(1) lookups instead of O(n) array.includes()
+  const selectedFilesSet = useMemo(() => new Set(selectedFiles), [selectedFiles]);
+  const cachedFilesSet = useMemo(() => new Set(cachedFiles), [cachedFiles]);
   const [expandedFolders, setExpandedFolders] = useState(new Set(['src', 'app', 'lib']));
   const [patternInput, setPatternInput] = useState('');
   const [showPatternInput, setShowPatternInput] = useState(false);
@@ -130,7 +134,7 @@ export default function FileFolderPicker({
     setExpandedFolders(new Set());
   }, []);
 
-  // Check selection state of a folder (none, some, all)
+  // Check selection state of a folder (none, some, all) - O(n) with Set lookup O(1) per file
   const getFolderSelectionState = useCallback((node) => {
     if (!node.children) return 'none';
 
@@ -143,13 +147,14 @@ export default function FileFolderPicker({
     const allFiles = getAllFilePaths(node);
     if (allFiles.length === 0) return 'none';
 
-    const selectedCount = allFiles.filter(f => selectedFiles.includes(f)).length;
+    // Use Set for O(1) lookup instead of O(n) includes()
+    const selectedCount = allFiles.filter(f => selectedFilesSet.has(f)).length;
     if (selectedCount === 0) return 'none';
     if (selectedCount === allFiles.length) return 'all';
     return 'some';
-  }, [selectedFiles]);
+  }, [selectedFilesSet]);
 
-  // Toggle folder selection (select/deselect all files in folder)
+  // Toggle folder selection (select/deselect all files in folder) - SINGLE state update
   const toggleFolderSelection = useCallback((node, e) => {
     e.stopPropagation();
     if (!node.children) return;
@@ -163,22 +168,30 @@ export default function FileFolderPicker({
     const allFiles = getAllFilePaths(node);
     const state = getFolderSelectionState(node);
 
-    if (state === 'all') {
-      // Deselect all
-      allFiles.forEach(f => {
-        if (selectedFiles.includes(f)) {
-          onToggleFile(f);
-        }
-      });
+    // Use batch toggle for a single state update instead of N individual updates
+    if (onBatchToggleFiles) {
+      if (state === 'all') {
+        onBatchToggleFiles(allFiles, 'remove');
+      } else {
+        onBatchToggleFiles(allFiles, 'add');
+      }
     } else {
-      // Select all
-      allFiles.forEach(f => {
-        if (!selectedFiles.includes(f)) {
-          onToggleFile(f);
-        }
-      });
+      // Fallback to individual toggles if batch not available
+      if (state === 'all') {
+        allFiles.forEach(f => {
+          if (selectedFilesSet.has(f)) {
+            onToggleFile(f);
+          }
+        });
+      } else {
+        allFiles.forEach(f => {
+          if (!selectedFilesSet.has(f)) {
+            onToggleFile(f);
+          }
+        });
+      }
     }
-  }, [selectedFiles, getFolderSelectionState, onToggleFile]);
+  }, [selectedFilesSet, getFolderSelectionState, onToggleFile, onBatchToggleFiles]);
 
   // Handle pattern submission
   const handlePatternSubmit = (e) => {
@@ -212,7 +225,8 @@ export default function FileFolderPicker({
   const renderNode = (node, depth = 0) => {
     const isFolder = node.type === 'tree';
     const isExpanded = expandedFolders.has(node.path);
-    const isSelected = selectedFiles.includes(node.path);
+    // Use Set for O(1) lookup instead of O(n) includes()
+    const isSelected = selectedFilesSet.has(node.path);
     const folderState = isFolder ? getFolderSelectionState(node) : null;
 
     return (
@@ -283,8 +297,8 @@ export default function FileFolderPicker({
             {node.name}
           </span>
 
-          {/* Cache indicator */}
-          {!isFolder && cachedFiles.includes(node.path) && (
+          {/* Cache indicator - O(1) Set lookup */}
+          {!isFolder && cachedFilesSet.has(node.path) && (
             <span className="flex items-center gap-1 px-1.5 py-0.5 bg-green-500/10 rounded text-xs text-green-400">
               <CheckCircle2 className="w-3 h-3" />
               cached
@@ -451,7 +465,7 @@ export default function FileFolderPicker({
                 {selectedFiles.length} of {totalFiles} files selected
               </span>
               <span className="text-text-secondary-dark">
-                {cachedFiles.filter(f => selectedFiles.includes(f)).length} already cached
+                {selectedFiles.filter(f => cachedFilesSet.has(f)).length} already cached
               </span>
             </div>
 
