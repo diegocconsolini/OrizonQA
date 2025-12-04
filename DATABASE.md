@@ -95,16 +95,29 @@ You should see `PONG`.
 
 ## Database Schema
 
-### `analyses` table
+### Core Tables
 
+#### `users` table
+| Column | Type | Description |
+|--------|------|-------------|
+| `id` | SERIAL | Primary key |
+| `email` | VARCHAR(255) | User email (unique) |
+| `email_verified` | BOOLEAN | Email verification status |
+| `password_hash` | VARCHAR(255) | Hashed password (bcrypt) |
+| `claude_api_key_encrypted` | TEXT | AES-256-GCM encrypted API key |
+| `ai_provider` | VARCHAR(20) | Default AI provider |
+| `created_at` | TIMESTAMP | Account creation time |
+
+#### `analyses` table
 Stores all analysis results for history and caching.
 
 | Column | Type | Description |
 |--------|------|-------------|
 | `id` | SERIAL | Primary key |
+| `user_id` | INTEGER | FK to users (nullable) |
 | `created_at` | TIMESTAMP | Creation timestamp |
 | `input_type` | VARCHAR(50) | Input method (paste/github/upload) |
-| `content_hash` | VARCHAR(64) | SHA-256 hash of content (for deduplication) |
+| `content_hash` | VARCHAR(64) | SHA-256 hash of content |
 | `provider` | VARCHAR(20) | AI provider (claude/lmstudio) |
 | `model` | VARCHAR(100) | Model name |
 | `config` | JSONB | Analysis configuration |
@@ -112,6 +125,50 @@ Stores all analysis results for history and caching.
 | `token_usage` | JSONB | Token usage stats |
 | `github_url` | TEXT | GitHub repo URL (if applicable) |
 | `github_branch` | VARCHAR(255) | GitHub branch (if applicable) |
+
+#### `todos` table
+Persistent todo list with subtasks support.
+
+| Column | Type | Description |
+|--------|------|-------------|
+| `id` | SERIAL | Primary key |
+| `user_id` | INTEGER | FK to users |
+| `title` | VARCHAR(500) | Todo title (required) |
+| `description` | TEXT | Optional description |
+| `status` | VARCHAR(20) | pending/in_progress/completed |
+| `priority` | VARCHAR(10) | low/medium/high |
+| `due_date` | TIMESTAMP | Optional due date |
+| `tags` | TEXT[] | Array of tags |
+| `parent_id` | INTEGER | FK to todos (for subtasks) |
+| `position` | INTEGER | Order position |
+| `created_at` | TIMESTAMP | Creation time |
+| `updated_at` | TIMESTAMP | Last update time |
+| `completed_at` | TIMESTAMP | Completion time (nullable) |
+
+**Indexes:**
+- `idx_todos_user` - Filter by user
+- `idx_todos_status` - Filter by status
+- `idx_todos_parent` - Find subtasks
+- `idx_todos_priority` - Filter by priority
+
+### Additional Tables
+
+#### `audit_logs` table
+Security event logging.
+
+#### `test_executions` table
+Browser-based test execution records.
+
+#### `test_results` table
+Individual test results from executions.
+
+### Migration Endpoints
+
+| Endpoint | Purpose |
+|----------|---------|
+| `/api/db/init` | Initialize core tables (users, analyses, audit_logs) |
+| `/api/db/migrate-test-execution` | Create test execution tables |
+| `/api/db/migrate-todos` | Create todos table |
 
 **Indexes:**
 - `idx_analyses_created_at` - Fast recent queries
@@ -328,8 +385,9 @@ If you see connection errors, Redis will gracefully degrade to in-memory cache.
 
 ## Future Enhancements
 
-- [ ] User authentication and ownership
-- [ ] Analysis history UI
+- [x] User authentication and ownership ✅
+- [x] Analysis history UI ✅
+- [x] Persistent todo list ✅
 - [ ] Export analysis history to CSV/JSON
 - [ ] Shared analysis links
 - [ ] Rate limiting per user
