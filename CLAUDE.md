@@ -670,11 +670,11 @@ The project uses ES modules (`"type": "module"` in package.json) to enable moder
 | `app/reports/[id]/components/FailureDetails.jsx` | ✅ DONE |
 | `app/reports/[id]/components/AllureReport.jsx` | ✅ DONE |
 
-### Phase 4: Report Pages (2 files)
+### Phase 4: Report Pages (2 files) ✅ COMPLETE
 | File | Status |
 |------|--------|
-| `app/reports/page.js` | ⬜ TODO |
-| `app/reports/[id]/page.js` | ⬜ TODO |
+| `app/reports/page.js` | ✅ DONE |
+| `app/reports/[id]/page.js` | ✅ DONE |
 
 ### Phase 5: Navigation Updates (3 files)
 | File | Status |
@@ -689,9 +689,9 @@ The project uses ES modules (`"type": "module"` in package.json) to enable moder
 | Phase 1 | 5 | 5 | 0 |
 | Phase 2 | 2 | 2 | 0 |
 | Phase 3 | 4 | 4 | 0 |
-| Phase 4 | 2 | 0 | 2 |
+| Phase 4 | 2 | 2 | 0 |
 | Phase 5 | 3 | 0 | 3 |
-| **TOTAL** | **16** | **11** | **5** |
+| **TOTAL** | **16** | **13** | **3** |
 
 ### User Flow After Completion
 ```

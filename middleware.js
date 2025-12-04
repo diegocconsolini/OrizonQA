@@ -39,6 +39,8 @@ const protectedRoutes = [
   '/settings',
   '/history',
   '/analyze',
+  '/execute',
+  '/reports',
 ];
 
 // Auth routes (redirect to dashboard if already authenticated)

@@ -32,7 +32,9 @@ import {
   Code,
   Github,
   CheckSquare,
-  Share2
+  Share2,
+  Play,
+  FileText
 } from 'lucide-react';
 
 export default function Sidebar({ collapsed = false, onToggle }) {
@@ -69,6 +71,16 @@ export default function Sidebar({ collapsed = false, onToggle }) {
       href: '/analyze',
       icon: <Code className="w-5 h-5" />,
       badge: 'Git',
+    },
+    {
+      label: 'Execute',
+      href: '/execute',
+      icon: <Play className="w-5 h-5" />,
+    },
+    {
+      label: 'Reports',
+      href: '/reports',
+      icon: <FileText className="w-5 h-5" />,
     },
     {
       label: 'Projects',
