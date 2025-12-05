@@ -629,11 +629,10 @@ The project uses ES modules (`"type": "module"` in package.json) to enable moder
 
 ---
 
-## 🚨 ACTIVE IMPLEMENTATION: Test Execution UI
+## ✅ COMPLETED: Test Execution UI
 
-**Status**: IN PROGRESS
+**Status**: COMPLETE
 **Tracker**: `docs/TEST-EXECUTION-UI-IMPLEMENTATION.md`
-**Problem**: Only 10% of planned Test Execution UI was built. This section tracks completion of the remaining 90%.
 
 ### What Exists (Backend - COMPLETE)
 | File | Status |
@@ -706,6 +705,60 @@ The project uses ES modules (`"type": "module"` in package.json) to enable moder
 - [x] `npm run build` passes
 - [ ] Full user flow works end-to-end
 - [x] Sidebar shows Execute & Reports links
+
+---
+
+## 🚨 ACTIVE IMPLEMENTATION: Smart Analysis Flow UX
+
+**Status**: IN PROGRESS
+**Tracker**: `docs/SMART_ANALYSIS_FLOW.md`
+**Problem**: Users don't understand what inputs generate what outputs, especially for executable tests.
+
+### Goal
+Replace confusing manual file selection with guided, goal-based analysis that auto-detects tech stack and recommends what can be generated.
+
+### Phase 1: Add Visibility (Low Risk) ✅ COMPLETE
+| Task | Status |
+|------|--------|
+| Integrate `AnalysisPreview.jsx` into Configure tab | ✅ |
+| Show "Tests will be executable" / "documentation only" | ✅ |
+
+### Phase 2: Add Pre-Analysis (Medium Risk) ✅ COMPLETE
+| Task | Status |
+|------|--------|
+| Fetch package.json when repo selected | ✅ |
+| Create `lib/repoAnalyzer.js` (detectTechStack, detectTestFramework) | ✅ |
+| Create `RepoAnalysisSummary.jsx` component | ✅ |
+| Auto-suggest test framework based on detection | ✅ |
+
+### Phase 3: Add Goal Selection (Higher Risk) ✅ COMPLETE
+| Task | Status |
+|------|--------|
+| Create `lib/analysisGoals.js` (goal definitions) | ✅ |
+| Create `GoalSelector.jsx` component | ✅ |
+| Goals auto-configure files + settings | ✅ |
+| Keep manual selection as "Custom" option | ✅ |
+
+### Phase 4: Simplify UI (Optional) ✅ COMPLETE
+| Task | Status |
+|------|--------|
+| Hide complex manual options by default | ✅ |
+| Make goal-based flow the default | ✅ |
+| Advanced options for power users only | ✅ |
+
+### Key Files
+- `lib/repoAnalyzer.js` - Tech stack & test framework detection
+- `lib/analysisGoals.js` - Goal definitions (6 presets + custom)
+- `app/analyze/components/AnalysisPreview.jsx` - Shows what will be generated
+- `app/analyze/components/RepoAnalysisSummary.jsx` - Repository analysis summary
+- `app/analyze/components/GoalSelector.jsx` - Goal selection UI
+- `app/analyze/page.js` - Main integration point
+- `docs/SMART_ANALYSIS_FLOW.md` - Original plan document
+
+### Proposed Flow
+```
+Select Repo → Auto-Analyze Repo → Choose Goal → Review & Run
+```
 
 ---
 

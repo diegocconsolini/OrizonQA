@@ -19,9 +19,12 @@ import {
   Upload,
   Code,
   ChevronRight,
+  ChevronDown,
   AlertCircle,
   Zap,
-  Settings
+  Settings,
+  Check,
+  Edit3
 } from 'lucide-react';
 import RepositorySelector from './RepositorySelector';
 import FileFolderPicker from './FileFolderPicker';
@@ -69,11 +72,16 @@ export default function GitInputSection({
 
   // Token estimate
   estimatedTokens = 0,
-  isTruncated = false
+  isTruncated = false,
+
+  // Compact mode - hide file picker, show summary
+  compactMode = false,
+  selectedGoal = null
 }) {
   const [inputMode, setInputMode] = useState('github'); // github, paste, upload
   const [isDragging, setIsDragging] = useState(false);
   const [showRepoSelector, setShowRepoSelector] = useState(true); // Always start expanded
+  const [showFilePicker, setShowFilePicker] = useState(!compactMode); // Hide in compact mode
 
   const handleDrop = (e) => {
     e.preventDefault();
@@ -217,21 +225,63 @@ export default function GitInputSection({
                   )}
 
                   {/* File Selection - Right side (or full width if repo selector hidden) */}
-                  <div className={`min-h-[400px] ${!showRepoSelector && selectedRepo ? 'xl:col-span-2' : ''}`}>
-                    <FileFolderPicker
-                      fileTree={fileTree}
-                      selectedFiles={selectedFiles}
-                      onToggleFile={onToggleFile}
-                      onBatchToggleFiles={onBatchToggleFiles}
-                      onSelectAllCodeFiles={onSelectAllCodeFiles}
-                      onSelectByPattern={onSelectByPattern}
-                      onClearSelection={onClearSelection}
-                      onSaveToCache={onSaveToCache}
-                      isSavingCache={isSavingCache}
-                      cachedFiles={cachedFiles}
-                      loading={filesLoading}
-                      selectedRepo={selectedRepo}
-                    />
+                  <div className={`${!showRepoSelector && selectedRepo ? 'xl:col-span-2' : ''}`}>
+                    {/* Compact mode: Show summary when goal is selected */}
+                    {compactMode && selectedGoal && selectedGoal.id !== 'custom' && selectedFiles.length > 0 && !showFilePicker ? (
+                      <div className="bg-bg-dark/50 border border-white/10 rounded-xl p-4">
+                        <div className="flex items-center justify-between mb-3">
+                          <div className="flex items-center gap-2">
+                            <Check className="w-5 h-5 text-green-400" />
+                            <span className="text-sm font-medium text-white">
+                              {selectedFiles.length} files selected
+                            </span>
+                            <span className="text-xs text-text-secondary-dark">
+                              ({selectedGoal.name})
+                            </span>
+                          </div>
+                          <button
+                            onClick={() => setShowFilePicker(true)}
+                            className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-primary hover:bg-primary/10 rounded-lg transition-colors"
+                          >
+                            <Edit3 className="w-3.5 h-3.5" />
+                            Edit selection
+                          </button>
+                        </div>
+                        <div className="text-xs text-text-secondary-dark">
+                          Files auto-selected based on your goal. Click "Edit selection" to customize.
+                        </div>
+                      </div>
+                    ) : (
+                      /* Full file picker */
+                      <div className="min-h-[400px]">
+                        {compactMode && showFilePicker && (
+                          <div className="flex items-center justify-between mb-3">
+                            <span className="text-sm font-medium text-white">File Selection</span>
+                            <button
+                              onClick={() => setShowFilePicker(false)}
+                              className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-text-secondary-dark hover:text-white hover:bg-white/5 rounded-lg transition-colors"
+                            >
+                              <ChevronDown className="w-3.5 h-3.5" />
+                              Collapse
+                            </button>
+                          </div>
+                        )}
+                        <FileFolderPicker
+                          fileTree={fileTree}
+                          selectedFiles={selectedFiles}
+                          onToggleFile={onToggleFile}
+                          onBatchToggleFiles={onBatchToggleFiles}
+                          onSelectAllCodeFiles={onSelectAllCodeFiles}
+                          onSelectByPattern={onSelectByPattern}
+                          onClearSelection={onClearSelection}
+                          onSaveToCache={onSaveToCache}
+                          isSavingCache={isSavingCache}
+                          cachedFiles={cachedFiles}
+                          loading={filesLoading}
+                          selectedRepo={selectedRepo}
+                        />
+                      </div>
+                    )}
                   </div>
                 </div>
               </>

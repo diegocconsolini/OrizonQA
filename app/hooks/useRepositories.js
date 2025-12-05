@@ -13,6 +13,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useSession } from 'next-auth/react';
 import useIndexedDB from './useIndexedDB';
+import { analyzeRepository } from '@/lib/repoAnalyzer';
 
 export default function useRepositories() {
   const { data: session } = useSession();
@@ -30,6 +31,10 @@ export default function useRepositories() {
   const [error, setError] = useState(null);
   const [connection, setConnection] = useState(null);
   const [isConnected, setIsConnected] = useState(false);
+
+  // Pre-analysis state
+  const [repoAnalysis, setRepoAnalysis] = useState(null);
+  const [analysisLoading, setAnalysisLoading] = useState(false);
 
   // IndexedDB integration
   const {
@@ -402,20 +407,105 @@ export default function useRepositories() {
   }, [connection, cacheRepository]);
 
   /**
+   * Fetch package.json for a repository
+   */
+  const fetchPackageJson = useCallback(async (owner, name, branch) => {
+    try {
+      let content = null;
+
+      // Try authenticated API first
+      if (connection?.id) {
+        const response = await fetch('/api/oauth/github/content', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            connectionId: connection.id,
+            owner,
+            repo: name,
+            branch,
+            paths: ['package.json']
+          })
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          if (data.files && data.files.length > 0) {
+            content = data.files[0].content;
+          }
+        }
+      }
+
+      // Fallback to public API
+      if (!content) {
+        const response = await fetch(
+          `https://raw.githubusercontent.com/${owner}/${name}/${branch}/package.json`
+        );
+        if (response.ok) {
+          content = await response.text();
+        }
+      }
+
+      // Parse JSON
+      if (content) {
+        return JSON.parse(content);
+      }
+      return null;
+    } catch (err) {
+      console.log('No package.json found or failed to parse:', err.message);
+      return null;
+    }
+  }, [connection]);
+
+  /**
+   * Run pre-analysis on the repository
+   */
+  const runRepoAnalysis = useCallback(async (owner, name, branch, tree) => {
+    try {
+      setAnalysisLoading(true);
+
+      // Get file paths from tree
+      const filePaths = flattenTree(tree)
+        .filter(item => item.type === 'blob')
+        .map(item => item.path);
+
+      // Fetch package.json
+      const packageJson = await fetchPackageJson(owner, name, branch);
+
+      // Run analysis
+      const analysis = await analyzeRepository(filePaths, packageJson);
+
+      setRepoAnalysis(analysis);
+      return analysis;
+    } catch (err) {
+      console.error('Failed to analyze repository:', err);
+      setRepoAnalysis(null);
+      return null;
+    } finally {
+      setAnalysisLoading(false);
+    }
+  }, [fetchPackageJson]);
+
+  /**
    * Select a repository
    */
   const selectRepository = useCallback(async (repo) => {
     setSelectedRepo(repo);
     setSelectedFiles([]);
     setFileTree([]);
+    setRepoAnalysis(null);
 
     if (repo) {
       // Fetch branches first
       await fetchBranches(repo.owner, repo.name);
-      // Then fetch file tree
-      await fetchFileTree(repo.owner, repo.name, repo.default_branch || 'main');
+
+      // Fetch file tree
+      const branch = repo.default_branch || 'main';
+      const tree = await fetchFileTree(repo.owner, repo.name, branch);
+
+      // Run pre-analysis in background (don't block UI)
+      runRepoAnalysis(repo.owner, repo.name, branch, tree);
     }
-  }, [fetchBranches, fetchFileTree]);
+  }, [fetchBranches, fetchFileTree, runRepoAnalysis]);
 
   /**
    * Change selected branch
@@ -568,7 +658,12 @@ export default function useRepositories() {
     cachedRepos,
 
     // Privacy
-    privacyNotice
+    privacyNotice,
+
+    // Pre-analysis
+    repoAnalysis,
+    analysisLoading,
+    runRepoAnalysis
   };
 }
 

@@ -23,7 +23,7 @@
 import { useState, useEffect, useCallback, Suspense } from 'react';
 import { useSession } from 'next-auth/react';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { Loader2, Sparkles, Settings, Shield, Zap, ArrowRight } from 'lucide-react';
+import { Loader2, Sparkles, Settings, Shield, Zap, ArrowRight, ChevronDown, ChevronUp, Check } from 'lucide-react';
 
 // UI Components
 import {
@@ -46,10 +46,14 @@ import OutputSettingsPanel from './components/OutputSettingsPanel';
 import AnalysisPlanIndicator from './components/AnalysisPlanIndicator';
 import AnalysisProgress from './components/AnalysisProgress';
 import AnalysisDashboard from './components/AnalysisDashboard';
+import AnalysisPreview from './components/AnalysisPreview';
+import RepoAnalysisSummary from './components/RepoAnalysisSummary';
+import GoalSelector from './components/GoalSelector';
 
 // Hooks
 import useAnalysis from '@/app/hooks/useAnalysis';
 import useAnalysisStream, { AnalysisStatus } from '@/app/hooks/useAnalysisStream';
+import { applyGoalConfig, getGoalFiles } from '@/lib/analysisGoals';
 import useFileUpload from '@/app/hooks/useFileUpload';
 import useRepositories from '@/app/hooks/useRepositories';
 import useIndexedDB from '@/app/hooks/useIndexedDB';
@@ -113,7 +117,9 @@ function AnalyzePageContent() {
     fetchRepositories,
     getFilesForAnalysis,
     cachedRepos,
-    privacyNotice
+    privacyNotice,
+    repoAnalysis,
+    analysisLoading: repoAnalysisLoading
   } = useRepositories();
 
   // IndexedDB state for cache management
@@ -233,6 +239,8 @@ function AnalyzePageContent() {
   const [activePreset, setActivePreset] = useState(null);
   const [smartConfig, setSmartConfig] = useState(null);
   const [outputSettings, setOutputSettings] = useState(null);
+  const [selectedGoal, setSelectedGoal] = useState(null);
+  const [showAdvancedOptions, setShowAdvancedOptions] = useState(false);
 
   // Per-card file selection (expert mode)
   const [cardFiles, setCardFiles] = useState({
@@ -279,6 +287,44 @@ function AnalyzePageContent() {
       }));
     }
   }, [selectedFiles]);
+
+  // Auto-suggest test framework when repo analysis detects one
+  useEffect(() => {
+    if (repoAnalysis?.testFramework?.id && config.testFramework === 'generic') {
+      setConfig(prev => ({
+        ...prev,
+        testFramework: repoAnalysis.testFramework.id
+      }));
+    }
+  }, [repoAnalysis]);
+
+  // Handle goal selection - auto-configure files and settings
+  const handleSelectGoal = useCallback((goal) => {
+    setSelectedGoal(goal);
+
+    if (goal.id === 'custom') {
+      // Custom goal - don't change anything, user will select manually
+      return;
+    }
+
+    // Get files for this goal from repo analysis
+    const goalFiles = getGoalFiles(goal, repoAnalysis);
+    if (goalFiles.length > 0) {
+      // Clear existing selection and add goal files
+      clearSelection();
+      batchToggleFiles(goalFiles, 'add');
+    }
+
+    // Apply goal config settings
+    if (goal.config) {
+      setConfig(prev => applyGoalConfig(goal, prev));
+    }
+  }, [repoAnalysis, clearSelection, batchToggleFiles]);
+
+  // Reset goal when repo changes
+  useEffect(() => {
+    setSelectedGoal(null);
+  }, [selectedRepo]);
 
   // API states (loaded from Settings - single source of truth)
   const [provider, setProvider] = useState('claude');
@@ -686,7 +732,31 @@ function AnalyzePageContent() {
                   onSaveToCache={handleSaveToCache}
                   isSavingCache={isSavingCache}
                   cachedFiles={cachedFilePaths}
+                  // Compact mode when goal is selected
+                  compactMode={selectedGoal && selectedGoal.id !== 'custom'}
+                  selectedGoal={selectedGoal}
                 />
+
+                {/* Goal Selector - Shows after repo analysis is complete */}
+                {selectedRepo && repoAnalysis && !repoAnalysisLoading && (
+                  <div className="mt-6">
+                    <GoalSelector
+                      repoAnalysis={repoAnalysis}
+                      selectedGoal={selectedGoal}
+                      onSelectGoal={handleSelectGoal}
+                    />
+                  </div>
+                )}
+
+                {/* Loading state for repo analysis */}
+                {selectedRepo && repoAnalysisLoading && (
+                  <div className="mt-6 bg-surface-dark border border-white/10 rounded-xl p-6">
+                    <div className="flex items-center gap-3">
+                      <div className="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                      <span className="text-sm text-text-secondary-dark">Analyzing repository...</span>
+                    </div>
+                  </div>
+                )}
 
                 {/* Analysis Plan Indicator - Shows when files are selected (before analysis) */}
                 {selectedFiles.length > 0 && !streamIsAnalyzing && streamStatus === AnalysisStatus.IDLE && (
@@ -712,7 +782,39 @@ function AnalyzePageContent() {
 
               {/* Configure Tab */}
               <TabPanel value="configure">
-                {/* AI Provider Status - Editable on this page */}
+                {/* Goal Summary - Show when a goal is selected */}
+                {selectedGoal && selectedGoal.id !== 'custom' && (
+                  <div className="bg-primary/5 border border-primary/20 rounded-xl p-4 mb-6">
+                    <div className="flex items-start justify-between">
+                      <div className="flex items-start gap-3">
+                        <div className="p-2 bg-primary/10 rounded-lg">
+                          <Check className="w-5 h-5 text-primary" />
+                        </div>
+                        <div>
+                          <h3 className="text-sm font-semibold text-white">
+                            {selectedGoal.name}
+                          </h3>
+                          <p className="text-xs text-text-secondary-dark mt-0.5">
+                            {selectedGoal.description} • {selectedFiles.length} files selected
+                          </p>
+                          {selectedGoal.executable && (
+                            <p className="text-xs text-green-400 mt-1">
+                              Tests will be executable
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => handleTabChange('input')}
+                        className="text-xs text-primary hover:underline"
+                      >
+                        Change goal
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {/* AI Provider Status - Always visible */}
                 <AIProviderStatus
                   provider={provider}
                   hasApiKey={hasApiKey}
@@ -727,30 +829,87 @@ function AnalyzePageContent() {
                   onLmStudioModelChange={setLmStudioModel}
                 />
 
-                {/* Smart Configuration Panel - File Classification & Goal-based Config */}
-                <div className="mt-6">
-                  <SmartConfigPanel
-                    selectedFiles={selectedFiles}
-                    config={config}
-                    setConfig={setConfig}
-                    onSmartConfigChange={setSmartConfig}
-                    fileTree={fileTree}
-                    cardFiles={cardFiles}
-                    onCardFilesChange={handleCardFilesChange}
-                    onToggleSharedFiles={toggleSharedFiles}
-                  />
-                </div>
+                {/* Analysis Preview - Always show when files selected */}
+                {selectedFiles.length > 0 && (
+                  <div className="mt-6">
+                    <AnalysisPreview
+                      selectedFiles={selectedFiles}
+                      config={config}
+                    />
+                  </div>
+                )}
 
-                {/* Output Settings Panel - Format, Framework, Context */}
-                <div className="mt-6">
-                  <h3 className="text-lg font-medium text-white mb-4">Output Settings</h3>
-                  <OutputSettingsPanel
-                    selectedFiles={selectedFiles}
-                    config={config}
-                    setConfig={setConfig}
-                    onOutputSettingsChange={setOutputSettings}
-                  />
-                </div>
+                {/* Advanced Options Toggle - Only show when goal selected */}
+                {selectedGoal && selectedGoal.id !== 'custom' ? (
+                  <div className="mt-6">
+                    <button
+                      onClick={() => setShowAdvancedOptions(!showAdvancedOptions)}
+                      className="flex items-center gap-2 text-sm text-text-secondary-dark hover:text-white transition-colors"
+                    >
+                      {showAdvancedOptions ? (
+                        <ChevronUp className="w-4 h-4" />
+                      ) : (
+                        <ChevronDown className="w-4 h-4" />
+                      )}
+                      <span>Advanced Options</span>
+                    </button>
+
+                    {showAdvancedOptions && (
+                      <div className="mt-4 space-y-6">
+                        {/* Smart Configuration Panel */}
+                        <SmartConfigPanel
+                          selectedFiles={selectedFiles}
+                          config={config}
+                          setConfig={setConfig}
+                          onSmartConfigChange={setSmartConfig}
+                          fileTree={fileTree}
+                          cardFiles={cardFiles}
+                          onCardFilesChange={handleCardFilesChange}
+                          onToggleSharedFiles={toggleSharedFiles}
+                        />
+
+                        {/* Output Settings Panel */}
+                        <div>
+                          <h3 className="text-lg font-medium text-white mb-4">Output Settings</h3>
+                          <OutputSettingsPanel
+                            selectedFiles={selectedFiles}
+                            config={config}
+                            setConfig={setConfig}
+                            onOutputSettingsChange={setOutputSettings}
+                          />
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  /* Show all options when no goal or custom goal */
+                  <>
+                    {/* Smart Configuration Panel */}
+                    <div className="mt-6">
+                      <SmartConfigPanel
+                        selectedFiles={selectedFiles}
+                        config={config}
+                        setConfig={setConfig}
+                        onSmartConfigChange={setSmartConfig}
+                        fileTree={fileTree}
+                        cardFiles={cardFiles}
+                        onCardFilesChange={handleCardFilesChange}
+                        onToggleSharedFiles={toggleSharedFiles}
+                      />
+                    </div>
+
+                    {/* Output Settings Panel */}
+                    <div className="mt-6">
+                      <h3 className="text-lg font-medium text-white mb-4">Output Settings</h3>
+                      <OutputSettingsPanel
+                        selectedFiles={selectedFiles}
+                        config={config}
+                        setConfig={setConfig}
+                        onOutputSettingsChange={setOutputSettings}
+                      />
+                    </div>
+                  </>
+                )}
               </TabPanel>
 
               {/* Results Tab */}
