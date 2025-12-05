@@ -48,7 +48,8 @@
       "Bash(docker-compose ps:*)",
       "Bash(grep:*)",
       "Bash(vercel --prod --yes:*)",
-      "Bash(git merge-base:*)"
+      "Bash(git merge-base:*)",
+      "Skill(example-skills:webapp-testing)"
     ],
     "deny": [],
     "ask": []
