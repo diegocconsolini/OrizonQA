@@ -508,6 +508,26 @@ The application supports **two methods** for API keys:
 - Simple single-column forms with few fields
 - Landing page content sections
 
+### Video Background (Landing/Auth Pages)
+
+**CRITICAL**: The landing page video background plays ONCE and stops - it should NOT loop continuously.
+
+**File**: `app/components/layout/VideoBackground.jsx`
+
+**Behavior**:
+- Video autoplays muted on landing and auth pages (/, /login, /signup, etc.)
+- Video plays once and pauses on the last frame when finished
+- If user navigates away and back, video resets and plays once more
+- Video should NEVER have a `loop` attribute
+
+**If video appears to loop**:
+1. Check that `loop` attribute is NOT present on the `<video>` element
+2. Verify `onEnded` handler calls `videoRef.current.pause()`
+3. Clear browser cache (Ctrl+Shift+R) as old JS may be cached
+4. Check Vercel deployment has the latest version
+
+**Why no loop**: Continuous video motion is distracting and increases CPU/battery usage. Playing once creates an elegant entrance effect without ongoing distraction.
+
 ### Client-Side State Management
 
 All state is managed via React `useState` hooks in the main `page.js` component. No external state management library is used.
