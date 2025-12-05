@@ -775,7 +775,7 @@ Transform Orizon into an AI Agent Testing Platform with:
 3. Agent Testing Platform (test AI agents from various frameworks)
 4. Framework Integrations (Google ADK, Claude SDK, LangChain, CrewAI, AutoGen, Solace)
 
-### Phase 0: Global Floating Assistant (~20h) 🔄 IN PROGRESS
+### Phase 0: Global Floating Assistant (~20h) ✅ COMPLETE
 | Task | Status |
 |------|--------|
 | Install Zustand for state management | ✅ |
@@ -784,15 +784,16 @@ Transform Orizon into an AI Agent Testing Platform with:
 | Create `app/hooks/usePageContext.js` | ✅ |
 | Build `app/components/assistant/CollapsedButton.jsx` | ✅ |
 | Build `app/components/assistant/ContextBar.jsx` | ✅ |
-| Build `app/components/assistant/FloatingPanel.jsx` | ⏳ |
-| Build `app/components/assistant/SidebarPanel.jsx` | ⏳ |
-| Build `app/components/assistant/ChatMessages.jsx` | ⏳ |
-| Build `app/components/assistant/ChatInput.jsx` | ⏳ |
-| Build `app/components/assistant/FloatingAssistant.jsx` | ⏳ |
-| Integrate with `AppLayout.jsx` | ⏳ |
-| Add keyboard shortcuts (⌘J, Escape) | ⏳ |
+| Build `app/components/assistant/FloatingPanel.jsx` | ✅ |
+| Build `app/components/assistant/SidebarPanel.jsx` | ✅ |
+| Build `app/components/assistant/ChatMessages.jsx` | ✅ |
+| Build `app/components/assistant/ChatInput.jsx` | ✅ |
+| Build `app/components/assistant/QuickActions.jsx` | ✅ |
+| Build `app/components/assistant/FloatingAssistant.jsx` | ✅ |
+| Integrate with `AppLayout.jsx` | ✅ |
+| Add keyboard shortcuts (⌘J, ⌘⇧J, Escape) | ✅ |
 
-### Phase 1: V2 Chat Improvements (~19h)
+### Phase 1: V2 Chat Improvements (~19h) 🔄 NEXT
 | Task | Status |
 |------|--------|
 | Fix P0 issues (reset, steps, navigation) | ⏳ |
@@ -842,11 +843,15 @@ app/
 ├── providers/AssistantProvider.jsx   # Context provider + keyboard shortcuts
 ├── hooks/usePageContext.js           # Pages provide context to assistant
 └── components/assistant/
+    ├── index.js                      # Barrel export
+    ├── FloatingAssistant.jsx         # Main component (renders all modes)
     ├── CollapsedButton.jsx           # Floating trigger button
+    ├── FloatingPanel.jsx             # Expandable chat window
+    ├── SidebarPanel.jsx              # Docked sidebar version
     ├── ContextBar.jsx                # Page context display
-    ├── FloatingPanel.jsx             # (pending)
-    ├── SidebarPanel.jsx              # (pending)
-    └── FloatingAssistant.jsx         # (pending)
+    ├── ChatMessages.jsx              # Message list with auto-scroll
+    ├── ChatInput.jsx                 # Input with API integration
+    └── QuickActions.jsx              # Context-aware suggestions
 ```
 
 ---
