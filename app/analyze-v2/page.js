@@ -12,7 +12,7 @@
  * This exists alongside the original /analyze page for comparison.
  */
 
-import { useState, useEffect, useCallback, Suspense } from 'react';
+import { useState, useEffect, useCallback, useRef, Suspense } from 'react';
 import { useSession } from 'next-auth/react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import {
@@ -192,8 +192,8 @@ function AnalyzeV2Content() {
   const canAnalyze = (provider === 'lmstudio' || apiKey) &&
     (codeInput.trim() || uploadedFiles.length > 0 || selectedFiles.length > 0);
 
-  // Handle analysis
-  const handleAnalyze = async () => {
+  // Handle analysis - memoized to prevent infinite loops
+  const handleAnalyze = useCallback(async () => {
     const model = provider === 'lmstudio' ? lmStudioModel : claudeModel;
     const streamConfig = { ...config, model };
 
@@ -219,15 +219,72 @@ function AnalyzeV2Content() {
       const files = uploadedFiles.map(f => ({ path: f.name, content: f.content }));
       await startStreamAnalysis(files, streamConfig, apiKey, provider, lmStudioUrl);
     }
-  };
+  }, [provider, lmStudioModel, claudeModel, config, selectedFiles, selectedRepo, getFilesForAnalysis, startStreamAnalysis, apiKey, lmStudioUrl, codeInput, uploadedFiles]);
 
-  // Handle reset
-  const handleReset = () => {
+  // Handle reset - memoized to prevent infinite loops
+  const handleReset = useCallback(() => {
     resetStream();
-  };
+  }, [resetStream]);
 
   // Get assistant store actions
   const { setPageContext, setPageActions } = useAssistantStore();
+
+  // Ref to hold latest state for getState() without causing re-renders
+  const stateRef = useRef({
+    selectedRepo,
+    selectedBranch,
+    selectedFiles,
+    fileTree,
+    config,
+    isAnalyzing: streamIsAnalyzing,
+    isComplete: streamIsComplete,
+    progress: streamProgress,
+    results: streamResults,
+    hasApiKey,
+    canAnalyze,
+  });
+
+  // Ref to hold latest function references
+  const actionsRef = useRef({
+    toggleFileSelection,
+    batchToggleFiles,
+    selectAllCodeFiles,
+    clearSelection,
+    setConfig,
+    handleAnalyze,
+    cancelStreamAnalysis,
+    handleReset,
+  });
+
+  // Update refs when values change (no re-renders triggered)
+  useEffect(() => {
+    stateRef.current = {
+      selectedRepo,
+      selectedBranch,
+      selectedFiles,
+      fileTree,
+      config,
+      isAnalyzing: streamIsAnalyzing,
+      isComplete: streamIsComplete,
+      progress: streamProgress,
+      results: streamResults,
+      hasApiKey,
+      canAnalyze,
+    };
+  }, [selectedRepo, selectedBranch, selectedFiles, fileTree, config, streamIsAnalyzing, streamIsComplete, streamProgress, streamResults, hasApiKey, canAnalyze]);
+
+  useEffect(() => {
+    actionsRef.current = {
+      toggleFileSelection,
+      batchToggleFiles,
+      selectAllCodeFiles,
+      clearSelection,
+      setConfig,
+      handleAnalyze,
+      cancelStreamAnalysis,
+      handleReset,
+    };
+  }, [toggleFileSelection, batchToggleFiles, selectAllCodeFiles, clearSelection, setConfig, handleAnalyze, cancelStreamAnalysis, handleReset]);
 
   // Sync page context with assistant store
   useEffect(() => {
@@ -259,57 +316,25 @@ function AnalyzeV2Content() {
     setPageContext,
   ]);
 
-  // Provide page actions to assistant for tool execution
+  // Provide page actions to assistant for tool execution - only runs once on mount
   useEffect(() => {
+    // Create stable wrapper functions that read from refs
     const actions = {
-      toggleFileSelection,
-      batchToggleFiles,
-      selectAllCodeFiles,
-      clearSelection,
-      setConfig,
-      onAnalyze: handleAnalyze,
-      onCancel: cancelStreamAnalysis,
-      onReset: handleReset,
-      getState: () => ({
-        selectedRepo,
-        selectedBranch,
-        selectedFiles,
-        fileTree,
-        config,
-        isAnalyzing: streamIsAnalyzing,
-        isComplete: streamIsComplete,
-        progress: streamProgress,
-        results: streamResults,
-        hasApiKey,
-        canAnalyze,
-      }),
+      toggleFileSelection: (path) => actionsRef.current.toggleFileSelection(path),
+      batchToggleFiles: (paths, select) => actionsRef.current.batchToggleFiles(paths, select),
+      selectAllCodeFiles: () => actionsRef.current.selectAllCodeFiles(),
+      clearSelection: () => actionsRef.current.clearSelection(),
+      setConfig: (updater) => actionsRef.current.setConfig(updater),
+      onAnalyze: () => actionsRef.current.handleAnalyze(),
+      onCancel: () => actionsRef.current.cancelStreamAnalysis(),
+      onReset: () => actionsRef.current.handleReset(),
+      getState: () => stateRef.current,
     };
     setPageActions(actions);
 
     // Cleanup on unmount
     return () => setPageActions(null);
-  }, [
-    toggleFileSelection,
-    batchToggleFiles,
-    selectAllCodeFiles,
-    clearSelection,
-    setConfig,
-    handleAnalyze,
-    cancelStreamAnalysis,
-    handleReset,
-    selectedRepo,
-    selectedBranch,
-    selectedFiles,
-    fileTree,
-    config,
-    streamIsAnalyzing,
-    streamIsComplete,
-    streamProgress,
-    streamResults,
-    hasApiKey,
-    canAnalyze,
-    setPageActions,
-  ]);
+  }, [setPageActions]);
 
   return (
     <AppLayout>
