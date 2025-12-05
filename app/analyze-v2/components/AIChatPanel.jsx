@@ -151,9 +151,19 @@ export default function AIChatPanel({
 
   // Handle chat message (uses Haiku for fast, cheap responses)
   const handleSendChat = useCallback(async () => {
-    if (!chatInput.trim() || !hasApiKey || isChatting) return;
+    if (!chatInput.trim() || isChatting) return;
 
     const userMessage = chatInput.trim();
+
+    // Check for API key
+    if (!apiKey) {
+      setChatMessages(prev => [...prev,
+        { type: 'user', content: userMessage },
+        { type: 'error', content: 'Please add your Claude API key in Settings to use chat.' }
+      ]);
+      setChatInput('');
+      return;
+    }
     setChatInput('');
     setChatMessages(prev => [...prev, { type: 'user', content: userMessage }]);
     setIsChatting(true);
@@ -223,7 +233,7 @@ export default function AIChatPanel({
     } finally {
       setIsChatting(false);
     }
-  }, [chatInput, hasApiKey, isChatting, source, config, selectedAction, apiKey, setConfig]);
+  }, [chatInput, isChatting, source, config, selectedAction, apiKey, setConfig]);
 
   // Handle key press
   const handleKeyPress = (e) => {
@@ -771,15 +781,14 @@ export default function AIChatPanel({
             value={chatInput}
             onChange={(e) => setChatInput(e.target.value)}
             onKeyPress={handleKeyPress}
-            placeholder={hasApiKey ? "Ask me anything or type a command..." : "Add API key in Settings to chat"}
+            placeholder="Ask me anything or type a command..."
             className="w-full px-3 py-2.5 pr-10 bg-bg-dark border border-white/10 rounded-lg
                      text-sm text-white placeholder-text-secondary-dark
-                     focus:outline-none focus:border-primary/50 disabled:opacity-50"
-            disabled={!hasApiKey || isChatting}
+                     focus:outline-none focus:border-primary/50"
           />
           <button
             onClick={handleSendChat}
-            disabled={!hasApiKey || !chatInput.trim() || isChatting}
+            disabled={!chatInput.trim() || isChatting}
             className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 bg-primary hover:bg-primary/80
                      rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
