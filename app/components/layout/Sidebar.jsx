@@ -73,6 +73,12 @@ export default function Sidebar({ collapsed = false, onToggle }) {
       badge: 'Git',
     },
     {
+      label: 'Analyze V2',
+      href: '/analyze-v2',
+      icon: <Zap className="w-5 h-5" />,
+      badge: 'Beta',
+    },
+    {
       label: 'Execute',
       href: '/execute',
       icon: <Play className="w-5 h-5" />,
