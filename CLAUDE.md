@@ -762,6 +762,95 @@ Select Repo → Auto-Analyze Repo → Choose Goal → Review & Run
 
 ---
 
+## 🚨 ACTIVE IMPLEMENTATION: V2 Global Assistant + Agent Testing
+
+**Status**: IN PROGRESS
+**Tracker**: `docs/V2_COMPREHENSIVE_PLAN.md`
+**Summary**: `docs/V2_MASTER_SUMMARY.md`
+
+### Overview
+Transform Orizon into an AI Agent Testing Platform with:
+1. Global Floating Assistant (available on all pages)
+2. V2 Chat Panel Redesign (adaptive flows)
+3. Agent Testing Platform (test AI agents from various frameworks)
+4. Framework Integrations (Google ADK, Claude SDK, LangChain, CrewAI, AutoGen, Solace)
+
+### Phase 0: Global Floating Assistant (~20h) 🔄 IN PROGRESS
+| Task | Status |
+|------|--------|
+| Install Zustand for state management | ✅ |
+| Create `app/stores/assistantStore.js` | ✅ |
+| Create `app/providers/AssistantProvider.jsx` | ✅ |
+| Create `app/hooks/usePageContext.js` | ✅ |
+| Build `app/components/assistant/CollapsedButton.jsx` | ✅ |
+| Build `app/components/assistant/ContextBar.jsx` | ✅ |
+| Build `app/components/assistant/FloatingPanel.jsx` | ⏳ |
+| Build `app/components/assistant/SidebarPanel.jsx` | ⏳ |
+| Build `app/components/assistant/ChatMessages.jsx` | ⏳ |
+| Build `app/components/assistant/ChatInput.jsx` | ⏳ |
+| Build `app/components/assistant/FloatingAssistant.jsx` | ⏳ |
+| Integrate with `AppLayout.jsx` | ⏳ |
+| Add keyboard shortcuts (⌘J, Escape) | ⏳ |
+
+### Phase 1: V2 Chat Improvements (~19h)
+| Task | Status |
+|------|--------|
+| Fix P0 issues (reset, steps, navigation) | ⏳ |
+| Implement adaptive chat flows (GitHub/Paste/Upload) | ⏳ |
+| Add context bar with source info | ⏳ |
+| Chat history opt-in | ⏳ |
+| Integrate V2 with global assistant | ⏳ |
+
+### Phase 2: Agent Testing Foundation (~26h)
+| Task | Status |
+|------|--------|
+| Agent upload UI & parsing | ⏳ |
+| Agent description mode | ⏳ |
+| Test case generation (functional) | ⏳ |
+| Basic results display | ⏳ |
+
+### Phase 3: Framework Adapters (~36h)
+| Task | Status |
+|------|--------|
+| LangChain adapter | ⏳ |
+| CrewAI adapter | ⏳ |
+| AutoGen adapter | ⏳ |
+| Google ADK adapter | ⏳ |
+| Claude Agent SDK adapter | ⏳ |
+| Solace Agent Mesh adapter | ⏳ |
+
+### Phase 4: Advanced Testing (~26h)
+| Task | Status |
+|------|--------|
+| Safety/security tests | ⏳ |
+| Performance benchmarks | ⏳ |
+| Red team testing | ⏳ |
+| Multi-run statistics | ⏳ |
+
+### Phase 5: Integration & Polish (~18h)
+| Task | Status |
+|------|--------|
+| LangSmith export | ⏳ |
+| AutoGenBench export | ⏳ |
+| Report generation (PDF) | ⏳ |
+| API endpoint for CI/CD | ⏳ |
+
+### Key Files Created
+```
+app/
+├── stores/assistantStore.js          # Zustand global state
+├── providers/AssistantProvider.jsx   # Context provider + keyboard shortcuts
+├── hooks/usePageContext.js           # Pages provide context to assistant
+└── components/assistant/
+    ├── CollapsedButton.jsx           # Floating trigger button
+    ├── ContextBar.jsx                # Page context display
+    ├── FloatingPanel.jsx             # (pending)
+    ├── SidebarPanel.jsx              # (pending)
+    └── FloatingAssistant.jsx         # (pending)
+```
+
+---
+
 ### Remaining Work 📋
 
 **Polish:**
