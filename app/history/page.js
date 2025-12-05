@@ -144,7 +144,7 @@ export default function HistoryPage() {
 
   return (
     <AppLayout>
-      <div className="max-w-[1400px] mx-auto p-4 md:p-6 lg:p-8">
+      <div className="w-full">
         {/* Page Header */}
         <div className="mb-8">
           <div className="flex items-center gap-3 mb-2">

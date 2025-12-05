@@ -246,7 +246,7 @@ export default function AnalysisDetailPage() {
   if (error) {
     return (
       <AppLayout>
-        <div className="max-w-[1400px] mx-auto p-4 md:p-6 lg:p-8">
+        <div className="w-full">
           <Button
             variant="ghost"
             onClick={() => router.push('/history')}
