@@ -617,40 +617,45 @@ function AnalyzePageContent() {
 
   return (
     <AppLayout>
-      <div className="w-full">
-        <main className="p-4 md:p-6 lg:p-8">
-          {/* Page Header */}
-          <div className="flex items-start justify-between mb-8">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-gradient-to-br from-primary to-cyan-500 rounded-xl flex items-center justify-center">
-                <Sparkles className="w-6 h-6 text-white" />
+      <div className="min-h-screen bg-bg-dark">
+        {/* Sticky Header */}
+        <div className="border-b border-white/10 bg-surface-dark/50 backdrop-blur-sm">
+          <div className="px-6 py-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 bg-gradient-to-br from-primary to-cyan-500 rounded-xl flex items-center justify-center">
+                  <Sparkles className="w-6 h-6 text-white" />
+                </div>
+                <div>
+                  <h1 className="text-2xl font-bold text-white">Code Analysis</h1>
+                  <p className="text-sm text-text-secondary-dark">
+                    Analyze code from GitHub repositories, paste, or upload files
+                  </p>
+                </div>
               </div>
-              <div>
-                <h1 className="text-2xl font-bold text-white font-primary">Code Analysis</h1>
-                <p className="text-text-secondary-dark font-secondary mt-1">
-                  Analyze code from GitHub repositories, paste, or upload files
-                </p>
+              <div className="flex items-center gap-3">
+                <div className="flex items-center gap-1.5 px-3 py-1.5 bg-primary/10
+                              border border-primary/20 rounded-full text-xs text-primary">
+                  <Shield className="w-3.5 h-3.5" />
+                  <span>Local Storage Only</span>
+                </div>
+                {!isConnected && (
+                  <a
+                    href="/settings?tab=github"
+                    className="flex items-center gap-2 px-4 py-2 bg-surface-dark border border-white/10
+                             rounded-lg text-sm text-white hover:bg-white/10 transition-all"
+                  >
+                    <Settings className="w-4 h-4" />
+                    Connect GitHub
+                  </a>
+                )}
               </div>
-            </div>
-            <div className="flex items-center gap-3">
-              <div className="flex items-center gap-1.5 px-3 py-1.5 bg-primary/10
-                            border border-primary/20 rounded-full text-xs text-primary">
-                <Shield className="w-3.5 h-3.5" />
-                <span>Local Storage Only</span>
-              </div>
-              {!isConnected && (
-                <a
-                  href="/settings?tab=integrations"
-                  className="flex items-center gap-2 px-4 py-2 bg-white/5 border border-white/10
-                           rounded-lg text-sm text-white hover:bg-white/10 transition-all"
-                >
-                  <Settings className="w-4 h-4" />
-                  Connect GitHub
-                </a>
-              )}
             </div>
           </div>
+        </div>
 
+        {/* Content Area */}
+        <div className="px-6 py-8">
           {/* Alerts */}
           {error && <Alert type="error" message={error} />}
           {success && <Alert type="success" message={success} />}
@@ -1110,7 +1115,7 @@ function AnalyzePageContent() {
             <Shield className="w-3.5 h-3.5" />
             <span>Your code stays local • Built with Claude AI</span>
           </div>
-        </main>
+        </div>
 
         {/* Cache Status Bar - Always visible at bottom */}
         <div className="sticky bottom-0 z-40">
@@ -1136,12 +1141,11 @@ function AnalyzePageContent() {
 function AnalyzePageLoading() {
   return (
     <AppLayout>
-      <div className="w-full">
-        <main className="p-4 md:p-6 lg:p-8">
-          <div className="flex items-center justify-center h-64">
-            <Loader2 className="w-8 h-8 animate-spin text-primary" />
-          </div>
-        </main>
+      <div className="min-h-screen bg-bg-dark flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="w-8 h-8 text-primary animate-spin mx-auto mb-4" />
+          <p className="text-text-secondary-dark">Loading analysis...</p>
+        </div>
       </div>
     </AppLayout>
   );

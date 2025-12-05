@@ -167,22 +167,21 @@ export default function ReportDetailPage() {
 
   return (
     <AppLayout>
-      <div className="w-full">
-        <main className="p-4 md:p-6 lg:p-8">
-          {/* Header */}
-          <div className="flex items-start justify-between mb-8">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-gradient-to-br from-primary to-cyan-500 rounded-xl flex items-center justify-center">
-                <FileText className="w-6 h-6 text-white" />
+      <div className="min-h-screen bg-bg-dark">
+        {/* Sticky Header */}
+        <div className="border-b border-white/10 bg-surface-dark/50 backdrop-blur-sm">
+          <div className="px-6 py-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 bg-gradient-to-br from-primary to-cyan-500 rounded-xl flex items-center justify-center">
+                  <FileText className="w-6 h-6 text-white" />
+                </div>
+                <div>
+                  <h1 className="text-2xl font-bold text-white">Test Report</h1>
+                  <p className="text-sm text-text-secondary-dark font-mono">ID: {executionId}</p>
+                </div>
               </div>
-              <div>
-                <h1 className="text-2xl font-bold text-white font-primary">Test Report</h1>
-                <p className="text-text-secondary-dark font-secondary mt-1 font-mono text-sm">ID: {executionId}</p>
-              </div>
-            </div>
-
-          {/* Actions */}
-          <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2">
             <button
               onClick={exportJson}
               className="flex items-center gap-2 px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg transition-colors"
@@ -199,17 +198,21 @@ export default function ReportDetailPage() {
                 Re-run Failed
               </button>
             )}
-            <button
-              onClick={reRunExecution}
-              className="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary/90 text-white rounded-lg transition-colors"
-            >
-              <RefreshCw className="w-4 h-4" />
-              Re-run All
-            </button>
+                <button
+                  onClick={reRunExecution}
+                  className="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary/90 text-white rounded-lg transition-colors"
+                >
+                  <RefreshCw className="w-4 h-4" />
+                  Re-run All
+                </button>
+              </div>
+            </div>
           </div>
         </div>
 
-        {/* Tabs */}
+        {/* Content Area */}
+        <div className="px-6 py-8">
+          {/* Tabs */}
         <div className="flex gap-2 mb-6 border-b border-slate-700 pb-2">
           <button
             onClick={() => setActiveTab('summary')}
