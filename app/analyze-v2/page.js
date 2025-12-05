@@ -355,6 +355,7 @@ function AnalyzeV2Content() {
               provider={provider}
               claudeModel={claudeModel}
               hasApiKey={hasApiKey}
+              apiKey={apiKey}
             />
           </div>
         </div>
