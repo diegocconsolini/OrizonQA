@@ -28,7 +28,8 @@
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "redis": "^5.10.0",
-    "resend": "^6.5.2"
+    "resend": "^6.5.2",
+    "zustand": "^5.0.9"
   },
   "devDependencies": {
     "autoprefixer": "^10.4.20",
