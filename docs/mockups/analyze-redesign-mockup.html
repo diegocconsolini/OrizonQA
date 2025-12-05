@@ -1,0 +1,904 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Analyze Page UX Redesign - Interactive Mockup</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'bg-dark': '#0a0a0f',
+            'surface-dark': '#12121a',
+            'primary': '#6366f1',
+            'text-secondary-dark': '#71717a',
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+    body { font-family: 'Inter', sans-serif; }
+
+    /* Custom scrollbar */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: #12121a; }
+    ::-webkit-scrollbar-thumb { background: #27272a; border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: #3f3f46; }
+
+    /* Animations */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-fade-in { animation: fadeIn 0.3s ease-out forwards; }
+
+    @keyframes pulse-ring {
+      0% { transform: scale(0.8); opacity: 1; }
+      100% { transform: scale(1.3); opacity: 0; }
+    }
+    .pulse-ring::before {
+      content: '';
+      position: absolute;
+      inset: -4px;
+      border-radius: 50%;
+      border: 2px solid currentColor;
+      animation: pulse-ring 1.5s ease-out infinite;
+    }
+
+    @keyframes progress-bar {
+      0% { width: 0%; }
+      100% { width: var(--progress); }
+    }
+    .animate-progress { animation: progress-bar 2s ease-out forwards; }
+
+    /* Gradient text */
+    .gradient-text {
+      background: linear-gradient(135deg, #6366f1 0%, #06b6d4 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+  </style>
+</head>
+<body class="bg-bg-dark min-h-screen text-white">
+
+  <!-- Sidebar (simplified) -->
+  <aside class="fixed left-0 top-0 bottom-0 w-16 bg-surface-dark border-r border-white/10 flex flex-col items-center py-4 z-50">
+    <div class="w-10 h-10 bg-gradient-to-br from-primary to-cyan-500 rounded-xl flex items-center justify-center mb-8">
+      <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+      </svg>
+    </div>
+    <nav class="flex flex-col gap-2">
+      <button class="p-3 rounded-xl text-text-secondary-dark hover:text-white hover:bg-white/5 transition-colors">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+      </button>
+      <button class="p-3 rounded-xl bg-primary/10 text-primary">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
+      </button>
+      <button class="p-3 rounded-xl text-text-secondary-dark hover:text-white hover:bg-white/5 transition-colors">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/></svg>
+      </button>
+      <button class="p-3 rounded-xl text-text-secondary-dark hover:text-white hover:bg-white/5 transition-colors">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+      </button>
+    </nav>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="ml-16">
+
+    <!-- Sticky Header -->
+    <header class="sticky top-0 z-40 border-b border-white/10 bg-surface-dark/80 backdrop-blur-xl">
+      <div class="px-6 py-4">
+        <div class="flex items-center justify-between">
+          <!-- Left: Title + Step Indicator -->
+          <div class="flex items-center gap-8">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 bg-gradient-to-br from-primary to-cyan-500 rounded-xl flex items-center justify-center">
+                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
+                </svg>
+              </div>
+              <div>
+                <h1 class="text-lg font-bold text-white">Code Analysis</h1>
+                <p class="text-xs text-text-secondary-dark">Generate QA artifacts from your code</p>
+              </div>
+            </div>
+
+            <!-- Step Progress Indicator -->
+            <div class="flex items-center gap-2" id="stepIndicator">
+              <button onclick="goToStep(1)" class="step-badge flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium transition-all bg-primary/20 text-primary border border-primary/30" data-step="1">
+                <span class="w-5 h-5 rounded-full bg-primary text-white flex items-center justify-center text-[10px] font-bold">1</span>
+                Source
+              </button>
+              <svg class="w-4 h-4 text-white/20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+              <button onclick="goToStep(2)" class="step-badge flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium transition-all text-text-secondary-dark hover:text-white" data-step="2">
+                <span class="w-5 h-5 rounded-full bg-white/10 flex items-center justify-center text-[10px] font-bold">2</span>
+                Goal
+              </button>
+              <svg class="w-4 h-4 text-white/20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+              <button onclick="goToStep(3)" class="step-badge flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium transition-all text-text-secondary-dark hover:text-white" data-step="3">
+                <span class="w-5 h-5 rounded-full bg-white/10 flex items-center justify-center text-[10px] font-bold">3</span>
+                Analyze
+              </button>
+            </div>
+          </div>
+
+          <!-- Right: Privacy badge + Actions -->
+          <div class="flex items-center gap-3">
+            <div class="flex items-center gap-1.5 px-2.5 py-1 bg-green-500/10 border border-green-500/20 rounded-full">
+              <svg class="w-3.5 h-3.5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+              <span class="text-[10px] font-medium text-green-400">Code stays local</span>
+            </div>
+            <button class="flex items-center gap-2 px-3 py-1.5 text-xs text-text-secondary-dark hover:text-white hover:bg-white/5 rounded-lg transition-colors">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+              History
+            </button>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Content Area -->
+    <div class="px-6 py-8 max-w-6xl mx-auto">
+
+      <!-- ==================== STEP 1: SOURCE ==================== -->
+      <section id="step1" class="step-content space-y-6 animate-fade-in">
+
+        <!-- Source Type Selector -->
+        <div class="flex items-center gap-3 p-2 bg-surface-dark rounded-xl border border-white/10">
+          <button onclick="setSourceMode('github')" class="source-btn flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-lg text-sm font-medium transition-all bg-primary/10 text-primary border border-primary/30" data-mode="github">
+            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+            GitHub Repository
+            <span class="w-1.5 h-1.5 bg-green-500 rounded-full"></span>
+          </button>
+          <button onclick="setSourceMode('paste')" class="source-btn flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-lg text-sm font-medium transition-all text-text-secondary-dark hover:text-white hover:bg-white/5" data-mode="paste">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+            Paste Code
+          </button>
+          <button onclick="setSourceMode('upload')" class="source-btn flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-lg text-sm font-medium transition-all text-text-secondary-dark hover:text-white hover:bg-white/5" data-mode="upload">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+            Upload Files
+          </button>
+        </div>
+
+        <!-- GitHub Content -->
+        <div id="github-content" class="source-content space-y-4">
+          <!-- Repository + Branch Row -->
+          <div class="flex gap-4">
+            <div class="flex-1">
+              <label class="block text-xs font-medium text-text-secondary-dark mb-2">Repository</label>
+              <div class="relative">
+                <button class="w-full flex items-center justify-between px-4 py-3 bg-surface-dark border border-white/10 rounded-xl hover:border-white/20 transition-colors text-left">
+                  <div class="flex items-center gap-3">
+                    <svg class="w-5 h-5 text-text-secondary-dark" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+                    <span class="text-white font-medium">diegocc/OrizonQA</span>
+                  </div>
+                  <svg class="w-4 h-4 text-text-secondary-dark" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                </button>
+              </div>
+            </div>
+            <div class="w-48">
+              <label class="block text-xs font-medium text-text-secondary-dark mb-2">Branch</label>
+              <button class="w-full flex items-center justify-between px-4 py-3 bg-surface-dark border border-white/10 rounded-xl hover:border-white/20 transition-colors">
+                <div class="flex items-center gap-2">
+                  <svg class="w-4 h-4 text-text-secondary-dark" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>
+                  <span class="text-white">main</span>
+                </div>
+                <svg class="w-4 h-4 text-text-secondary-dark" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- File Tree Preview (collapsed by default) -->
+          <div class="bg-surface-dark border border-white/10 rounded-xl overflow-hidden">
+            <div class="px-4 py-3 border-b border-white/10 flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <svg class="w-4 h-4 text-text-secondary-dark" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/></svg>
+                <span class="text-sm font-medium text-white">Repository Files</span>
+                <span class="text-xs text-text-secondary-dark">(45 files)</span>
+              </div>
+              <button class="text-xs text-primary hover:underline">Browse files</button>
+            </div>
+            <div class="p-4 text-sm text-text-secondary-dark">
+              <p>Files will be automatically selected based on your goal in the next step.</p>
+            </div>
+          </div>
+
+          <!-- Continue Button -->
+          <div class="flex justify-end pt-4">
+            <button onclick="goToStep(2)" class="flex items-center gap-2 px-6 py-3 bg-primary hover:bg-primary/90 text-white font-semibold rounded-xl transition-colors">
+              Continue to Goal
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Paste Content -->
+        <div id="paste-content" class="source-content hidden space-y-4">
+          <div class="relative">
+            <textarea
+              placeholder="Paste your code here...
+
+You can paste multiple files with separators like:
+=== FILE: example.py ===
+def hello():
+    print('Hello!')
+
+=== FILE: utils.py ===
+def helper():
+    pass"
+              class="w-full h-80 bg-surface-dark border border-white/10 rounded-xl p-4 text-sm font-mono text-white placeholder-text-secondary-dark resize-none focus:outline-none focus:border-primary/50 focus:ring-2 focus:ring-primary/20 transition-all"
+            ></textarea>
+            <div class="absolute bottom-4 right-4 text-xs text-text-secondary-dark">
+              0 characters
+            </div>
+          </div>
+          <div class="flex justify-end pt-4">
+            <button onclick="goToStep(2)" class="flex items-center gap-2 px-6 py-3 bg-primary hover:bg-primary/90 text-white font-semibold rounded-xl transition-colors">
+              Continue to Goal
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Upload Content -->
+        <div id="upload-content" class="source-content hidden space-y-4">
+          <div class="border-2 border-dashed border-white/10 rounded-xl p-12 text-center hover:border-white/20 hover:bg-white/5 transition-all cursor-pointer">
+            <div class="mx-auto mb-4 p-4 rounded-2xl bg-white/5 inline-block">
+              <svg class="w-8 h-8 text-text-secondary-dark" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+            </div>
+            <p class="text-white mb-2 font-medium">Drag & drop files here</p>
+            <p class="text-xs text-text-secondary-dark mb-4">
+              .zip, .txt, .md, .json, .py, .js, .ts, .jsx, .tsx, .java, .cs, .go, .rb
+            </p>
+            <button class="px-5 py-2.5 bg-white/5 border border-white/10 hover:bg-white/10 rounded-xl text-sm font-medium text-white transition-colors">
+              Browse Files
+            </button>
+          </div>
+          <div class="flex justify-end pt-4">
+            <button onclick="goToStep(2)" class="flex items-center gap-2 px-6 py-3 bg-primary hover:bg-primary/90 text-white font-semibold rounded-xl transition-colors">
+              Continue to Goal
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==================== STEP 2: GOAL ==================== -->
+      <section id="step2" class="step-content hidden space-y-6">
+
+        <!-- Goal Selection Header -->
+        <div class="text-center mb-2">
+          <h2 class="text-xl font-semibold text-white mb-2">What do you want to generate?</h2>
+          <p class="text-sm text-text-secondary-dark">
+            Select a goal and we'll auto-configure everything for you
+          </p>
+        </div>
+
+        <!-- Goal Cards Grid -->
+        <div class="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
+
+          <!-- API Tests -->
+          <button onclick="selectGoal('api')" class="goal-card group p-4 bg-surface-dark border border-white/10 rounded-xl hover:border-blue-500/50 hover:bg-blue-500/5 transition-all text-left" data-goal="api">
+            <div class="w-10 h-10 rounded-lg bg-blue-500/10 flex items-center justify-center mb-3 group-hover:bg-blue-500/20 transition-colors">
+              <svg class="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+            </div>
+            <h3 class="text-sm font-semibold text-white mb-1">API Tests</h3>
+            <p class="text-xs text-text-secondary-dark mb-2">Routes & endpoints</p>
+            <div class="flex items-center gap-2">
+              <span class="text-xs text-blue-400">12 files</span>
+              <span class="px-1.5 py-0.5 bg-green-500/10 text-green-400 text-[10px] rounded">Executable</span>
+            </div>
+          </button>
+
+          <!-- Frontend Tests -->
+          <button onclick="selectGoal('frontend')" class="goal-card group p-4 bg-surface-dark border border-white/10 rounded-xl hover:border-purple-500/50 hover:bg-purple-500/5 transition-all text-left" data-goal="frontend">
+            <div class="w-10 h-10 rounded-lg bg-purple-500/10 flex items-center justify-center mb-3 group-hover:bg-purple-500/20 transition-colors">
+              <svg class="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+            </div>
+            <h3 class="text-sm font-semibold text-white mb-1">Frontend Tests</h3>
+            <p class="text-xs text-text-secondary-dark mb-2">Components & UI</p>
+            <div class="flex items-center gap-2">
+              <span class="text-xs text-purple-400">8 files</span>
+              <span class="px-1.5 py-0.5 bg-green-500/10 text-green-400 text-[10px] rounded">Executable</span>
+            </div>
+          </button>
+
+          <!-- Backend Tests -->
+          <button onclick="selectGoal('backend')" class="goal-card group p-4 bg-surface-dark border border-white/10 rounded-xl hover:border-emerald-500/50 hover:bg-emerald-500/5 transition-all text-left" data-goal="backend">
+            <div class="w-10 h-10 rounded-lg bg-emerald-500/10 flex items-center justify-center mb-3 group-hover:bg-emerald-500/20 transition-colors">
+              <svg class="w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2m-2-4h.01M17 16h.01"/></svg>
+            </div>
+            <h3 class="text-sm font-semibold text-white mb-1">Backend Tests</h3>
+            <p class="text-xs text-text-secondary-dark mb-2">Services & logic</p>
+            <div class="flex items-center gap-2">
+              <span class="text-xs text-emerald-400">15 files</span>
+              <span class="px-1.5 py-0.5 bg-green-500/10 text-green-400 text-[10px] rounded">Executable</span>
+            </div>
+          </button>
+
+          <!-- Full Coverage -->
+          <button onclick="selectGoal('full')" class="goal-card group p-4 bg-surface-dark border border-white/10 rounded-xl hover:border-amber-500/50 hover:bg-amber-500/5 transition-all text-left" data-goal="full">
+            <div class="w-10 h-10 rounded-lg bg-amber-500/10 flex items-center justify-center mb-3 group-hover:bg-amber-500/20 transition-colors">
+              <svg class="w-5 h-5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/></svg>
+            </div>
+            <h3 class="text-sm font-semibold text-white mb-1">Full Coverage</h3>
+            <p class="text-xs text-text-secondary-dark mb-2">Everything</p>
+            <div class="flex items-center gap-2">
+              <span class="text-xs text-amber-400">35 files</span>
+              <span class="px-1.5 py-0.5 bg-green-500/10 text-green-400 text-[10px] rounded">Executable</span>
+            </div>
+          </button>
+
+          <!-- User Stories -->
+          <button onclick="selectGoal('stories')" class="goal-card group p-4 bg-surface-dark border border-white/10 rounded-xl hover:border-pink-500/50 hover:bg-pink-500/5 transition-all text-left" data-goal="stories">
+            <div class="w-10 h-10 rounded-lg bg-pink-500/10 flex items-center justify-center mb-3 group-hover:bg-pink-500/20 transition-colors">
+              <svg class="w-5 h-5 text-pink-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
+            </div>
+            <h3 class="text-sm font-semibold text-white mb-1">User Stories</h3>
+            <p class="text-xs text-text-secondary-dark mb-2">Requirements only</p>
+            <div class="flex items-center gap-2">
+              <span class="text-xs text-pink-400">All files</span>
+              <span class="px-1.5 py-0.5 bg-white/5 text-text-secondary-dark text-[10px] rounded">Docs</span>
+            </div>
+          </button>
+
+          <!-- Custom -->
+          <button onclick="selectGoal('custom')" class="goal-card group p-4 bg-surface-dark border border-white/10 rounded-xl hover:border-cyan-500/50 hover:bg-cyan-500/5 transition-all text-left" data-goal="custom">
+            <div class="w-10 h-10 rounded-lg bg-cyan-500/10 flex items-center justify-center mb-3 group-hover:bg-cyan-500/20 transition-colors">
+              <svg class="w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/></svg>
+            </div>
+            <h3 class="text-sm font-semibold text-white mb-1">Custom</h3>
+            <p class="text-xs text-text-secondary-dark mb-2">Pick files manually</p>
+            <div class="flex items-center gap-2">
+              <span class="text-xs text-cyan-400">You choose</span>
+            </div>
+          </button>
+        </div>
+
+        <!-- Selected Goal Confirmation -->
+        <div id="goalConfirmation" class="hidden mt-6 p-4 bg-gradient-to-r from-primary/10 to-cyan-500/10 border border-primary/20 rounded-xl animate-fade-in">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <div class="w-8 h-8 rounded-full bg-green-500/20 flex items-center justify-center">
+                <svg class="w-4 h-4 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+              </div>
+              <div>
+                <p class="text-sm font-medium text-white" id="selectedGoalName">API Tests - 12 files selected</p>
+                <p class="text-xs text-text-secondary-dark" id="selectedGoalDesc">Tests will be executable in browser</p>
+              </div>
+            </div>
+            <div class="flex items-center gap-3">
+              <button class="text-xs text-primary hover:underline" onclick="showFilePicker()">
+                View/Edit files
+              </button>
+              <button onclick="goToStep(3)" class="flex items-center gap-2 px-5 py-2.5 bg-primary hover:bg-primary/90 text-white font-semibold rounded-xl transition-colors">
+                Review & Analyze
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Back Button -->
+        <div class="flex justify-start pt-4">
+          <button onclick="goToStep(1)" class="flex items-center gap-2 px-4 py-2 text-text-secondary-dark hover:text-white transition-colors">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+            Back to Source
+          </button>
+        </div>
+      </section>
+
+      <!-- ==================== STEP 3: REVIEW & ANALYZE ==================== -->
+      <section id="step3" class="step-content hidden space-y-6">
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+          <!-- Summary Card (Left) -->
+          <div class="lg:col-span-2 bg-surface-dark border border-white/10 rounded-xl overflow-hidden">
+            <div class="px-6 py-4 border-b border-white/10">
+              <h3 class="text-sm font-semibold text-white">Analysis Summary</h3>
+            </div>
+
+            <!-- Stats Row -->
+            <div class="grid grid-cols-4 gap-4 p-6 border-b border-white/10">
+              <div class="text-center">
+                <div class="text-2xl font-bold text-white">12</div>
+                <div class="text-xs text-text-secondary-dark">Files</div>
+              </div>
+              <div class="text-center">
+                <div class="text-2xl font-bold text-white">~15K</div>
+                <div class="text-xs text-text-secondary-dark">Tokens</div>
+              </div>
+              <div class="text-center">
+                <div class="text-2xl font-bold text-primary">$0.05</div>
+                <div class="text-xs text-text-secondary-dark">Est. Cost</div>
+              </div>
+              <div class="text-center">
+                <div class="text-2xl font-bold text-green-400">Yes</div>
+                <div class="text-xs text-text-secondary-dark">Executable</div>
+              </div>
+            </div>
+
+            <!-- File Categories -->
+            <div class="p-6">
+              <h4 class="text-xs font-medium text-text-secondary-dark uppercase tracking-wide mb-4">Files by Category</h4>
+              <div class="space-y-3">
+                <div class="flex items-center justify-between py-2 border-b border-white/5">
+                  <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 rounded-lg bg-blue-500/10 flex items-center justify-center">
+                      <svg class="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                    </div>
+                    <span class="text-sm text-white">API Routes</span>
+                  </div>
+                  <span class="text-sm text-text-secondary-dark">8 files</span>
+                </div>
+                <div class="flex items-center justify-between py-2 border-b border-white/5">
+                  <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center">
+                      <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"/></svg>
+                    </div>
+                    <span class="text-sm text-white">Utilities</span>
+                  </div>
+                  <span class="text-sm text-text-secondary-dark">3 files</span>
+                </div>
+                <div class="flex items-center justify-between py-2">
+                  <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 rounded-lg bg-amber-500/10 flex items-center justify-center">
+                      <svg class="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4"/></svg>
+                    </div>
+                    <span class="text-sm text-white">Database</span>
+                  </div>
+                  <span class="text-sm text-text-secondary-dark">1 file</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right Column: AI Provider + Action -->
+          <div class="space-y-4">
+
+            <!-- AI Provider Card -->
+            <div class="bg-surface-dark border border-white/10 rounded-xl p-5">
+              <div class="flex items-center justify-between mb-4">
+                <h3 class="text-sm font-semibold text-white">AI Provider</h3>
+                <a href="/settings" class="text-xs text-primary hover:underline">Configure</a>
+              </div>
+
+              <div class="flex items-center gap-3 p-3 bg-white/5 rounded-lg mb-4">
+                <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-orange-500 to-amber-500 flex items-center justify-center">
+                  <span class="text-white font-bold text-sm">C</span>
+                </div>
+                <div>
+                  <p class="text-sm font-medium text-white">Claude Sonnet 4</p>
+                  <p class="text-xs text-green-400">API Key saved</p>
+                </div>
+                <svg class="w-5 h-5 text-green-400 ml-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+              </div>
+
+              <!-- Output Format -->
+              <div class="mb-4">
+                <label class="block text-xs font-medium text-text-secondary-dark mb-2">Output Format</label>
+                <select class="w-full px-3 py-2 bg-bg-dark border border-white/10 rounded-lg text-sm text-white focus:outline-none focus:border-primary/50">
+                  <option>Markdown</option>
+                  <option>JSON</option>
+                  <option>Jira/Xray</option>
+                  <option>TestRail CSV</option>
+                  <option>Gherkin/BDD</option>
+                </select>
+              </div>
+
+              <!-- Advanced Options Toggle -->
+              <details class="group">
+                <summary class="flex items-center justify-between p-3 bg-white/5 rounded-lg cursor-pointer hover:bg-white/10 transition-colors">
+                  <span class="text-xs text-text-secondary-dark">Advanced Options</span>
+                  <svg class="w-4 h-4 text-text-secondary-dark group-open:rotate-180 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                </summary>
+                <div class="mt-3 space-y-3">
+                  <label class="flex items-center justify-between">
+                    <span class="text-xs text-text-secondary-dark">Include edge cases</span>
+                    <input type="checkbox" checked class="w-4 h-4 rounded border-white/20 bg-surface-dark text-primary focus:ring-primary/50">
+                  </label>
+                  <label class="flex items-center justify-between">
+                    <span class="text-xs text-text-secondary-dark">Security tests</span>
+                    <input type="checkbox" class="w-4 h-4 rounded border-white/20 bg-surface-dark text-primary focus:ring-primary/50">
+                  </label>
+                  <div>
+                    <label class="block text-xs text-text-secondary-dark mb-2">Test Framework</label>
+                    <select class="w-full px-3 py-2 bg-bg-dark border border-white/10 rounded-lg text-xs text-white">
+                      <option>Auto-detect</option>
+                      <option>Jest</option>
+                      <option>Vitest</option>
+                      <option>Mocha</option>
+                    </select>
+                  </div>
+                </div>
+              </details>
+            </div>
+
+            <!-- THE Primary Action Button -->
+            <button onclick="startAnalysis()" class="w-full py-4 bg-gradient-to-r from-primary to-cyan-500 text-white font-semibold rounded-xl hover:shadow-lg hover:shadow-primary/25 transition-all duration-300 flex items-center justify-center gap-2">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
+              Analyze Code
+            </button>
+
+            <!-- Back Link -->
+            <button onclick="goToStep(2)" class="w-full flex items-center justify-center gap-2 py-2 text-text-secondary-dark hover:text-white transition-colors text-sm">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+              Back to Goal Selection
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==================== ANALYSIS RUNNING OVERLAY ==================== -->
+      <div id="analysisOverlay" class="hidden fixed inset-0 bg-bg-dark/95 backdrop-blur-sm z-50 flex items-center justify-center p-6">
+        <div class="w-full max-w-lg">
+          <div class="bg-surface-dark border border-white/10 rounded-2xl p-8 text-center">
+
+            <!-- Animated Icon -->
+            <div class="relative w-20 h-20 mx-auto mb-6">
+              <div class="absolute inset-0 rounded-full bg-primary/20 animate-ping"></div>
+              <div class="relative w-20 h-20 rounded-full bg-gradient-to-br from-primary to-cyan-500 flex items-center justify-center">
+                <svg class="w-10 h-10 text-white animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
+              </div>
+            </div>
+
+            <h2 class="text-xl font-bold text-white mb-2">Analyzing Your Code</h2>
+            <p class="text-sm text-text-secondary-dark mb-8">Generating QA artifacts with Claude AI</p>
+
+            <!-- Progress Bar -->
+            <div class="mb-6">
+              <div class="flex justify-between text-xs text-text-secondary-dark mb-2">
+                <span>Processing...</span>
+                <span id="progressPercent">65%</span>
+              </div>
+              <div class="h-2 bg-white/10 rounded-full overflow-hidden">
+                <div class="h-full bg-gradient-to-r from-primary to-cyan-500 rounded-full transition-all duration-300" style="width: 65%"></div>
+              </div>
+            </div>
+
+            <!-- Current File -->
+            <div class="p-4 bg-white/5 rounded-xl mb-6">
+              <div class="flex items-center justify-center gap-2 text-sm">
+                <svg class="w-4 h-4 text-primary animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                <span class="text-white font-mono text-xs">app/api/execute-tests/route.js</span>
+              </div>
+            </div>
+
+            <!-- Stats -->
+            <div class="grid grid-cols-3 gap-4 mb-6 text-center">
+              <div>
+                <div class="text-lg font-bold text-white">2/5</div>
+                <div class="text-xs text-text-secondary-dark">Chunks</div>
+              </div>
+              <div>
+                <div class="text-lg font-bold text-white">00:45</div>
+                <div class="text-xs text-text-secondary-dark">Elapsed</div>
+              </div>
+              <div>
+                <div class="text-lg font-bold text-white">~8.5K</div>
+                <div class="text-xs text-text-secondary-dark">Tokens</div>
+              </div>
+            </div>
+
+            <!-- Cancel Button -->
+            <button onclick="cancelAnalysis()" class="px-6 py-2 text-sm text-text-secondary-dark hover:text-white hover:bg-white/5 rounded-lg transition-colors">
+              Cancel
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ==================== RESULTS VIEW ==================== -->
+      <section id="resultsView" class="hidden space-y-6 animate-fade-in">
+
+        <!-- Success Header -->
+        <div class="bg-green-500/10 border border-green-500/20 rounded-xl p-6">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-4">
+              <div class="w-12 h-12 rounded-full bg-green-500/20 flex items-center justify-center">
+                <svg class="w-6 h-6 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+              </div>
+              <div>
+                <h2 class="text-lg font-semibold text-white">Analysis Complete!</h2>
+                <p class="text-sm text-text-secondary-dark">Generated in 1m 23s &bull; 15,234 tokens used</p>
+              </div>
+            </div>
+            <div class="flex items-center gap-3">
+              <button onclick="resetWizard()" class="px-4 py-2 text-sm text-text-secondary-dark hover:text-white hover:bg-white/5 rounded-lg transition-colors">
+                New Analysis
+              </button>
+              <button class="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary/90 text-white font-medium rounded-lg transition-colors">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                Execute Tests
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Output Card -->
+        <div class="bg-surface-dark border border-white/10 rounded-xl overflow-hidden">
+
+          <!-- Output Tabs -->
+          <div class="flex border-b border-white/10">
+            <button onclick="setOutputTab('stories')" class="output-tab flex-1 px-4 py-3 text-sm font-medium text-primary border-b-2 border-primary bg-primary/5" data-tab="stories">
+              User Stories
+              <span class="ml-1 text-xs opacity-70">(8)</span>
+            </button>
+            <button onclick="setOutputTab('tests')" class="output-tab flex-1 px-4 py-3 text-sm font-medium text-text-secondary-dark hover:text-white border-b-2 border-transparent hover:bg-white/5 transition-colors" data-tab="tests">
+              Test Cases
+              <span class="ml-1 text-xs opacity-70">(24)</span>
+            </button>
+            <button onclick="setOutputTab('criteria')" class="output-tab flex-1 px-4 py-3 text-sm font-medium text-text-secondary-dark hover:text-white border-b-2 border-transparent hover:bg-white/5 transition-colors" data-tab="criteria">
+              Acceptance Criteria
+              <span class="ml-1 text-xs opacity-70">(16)</span>
+            </button>
+          </div>
+
+          <!-- Output Content -->
+          <div class="p-6 max-h-96 overflow-y-auto">
+            <div id="output-stories" class="output-content prose prose-invert prose-sm max-w-none">
+              <h3>US-001: User Authentication</h3>
+              <p><strong>As a</strong> user<br>
+              <strong>I want to</strong> authenticate with my credentials<br>
+              <strong>So that</strong> I can access protected resources</p>
+
+              <h4>Acceptance Criteria:</h4>
+              <ul>
+                <li>User can login with email and password</li>
+                <li>System validates credentials against database</li>
+                <li>JWT token is returned on successful login</li>
+                <li>Invalid credentials return 401 error</li>
+              </ul>
+
+              <hr class="border-white/10 my-6">
+
+              <h3>US-002: Test Execution</h3>
+              <p><strong>As a</strong> QA engineer<br>
+              <strong>I want to</strong> execute generated tests in browser<br>
+              <strong>So that</strong> I can verify code quality without setup</p>
+
+              <h4>Acceptance Criteria:</h4>
+              <ul>
+                <li>Tests run in WebContainer sandbox</li>
+                <li>Real-time progress is shown via SSE</li>
+                <li>Results are parsed and displayed</li>
+                <li>Execution can be cancelled</li>
+              </ul>
+            </div>
+            <div id="output-tests" class="output-content hidden prose prose-invert prose-sm max-w-none">
+              <pre class="bg-bg-dark p-4 rounded-lg overflow-x-auto text-xs"><code class="language-javascript">describe('Authentication API', () => {
+  describe('POST /api/auth/login', () => {
+    it('should return JWT token for valid credentials', async () => {
+      const response = await request(app)
+        .post('/api/auth/login')
+        .send({ email: 'test@example.com', password: 'password123' });
+
+      expect(response.status).toBe(200);
+      expect(response.body).toHaveProperty('token');
+    });
+
+    it('should return 401 for invalid credentials', async () => {
+      const response = await request(app)
+        .post('/api/auth/login')
+        .send({ email: 'test@example.com', password: 'wrong' });
+
+      expect(response.status).toBe(401);
+      expect(response.body.error).toBe('Invalid credentials');
+    });
+  });
+});</code></pre>
+            </div>
+            <div id="output-criteria" class="output-content hidden prose prose-invert prose-sm max-w-none">
+              <h3>Authentication Module</h3>
+              <table class="w-full text-sm">
+                <thead>
+                  <tr class="border-b border-white/10">
+                    <th class="text-left py-2">ID</th>
+                    <th class="text-left py-2">Criteria</th>
+                    <th class="text-left py-2">Priority</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr class="border-b border-white/5">
+                    <td class="py-2">AC-001</td>
+                    <td class="py-2">Valid credentials return 200 with JWT</td>
+                    <td class="py-2"><span class="px-2 py-0.5 bg-red-500/10 text-red-400 rounded text-xs">High</span></td>
+                  </tr>
+                  <tr class="border-b border-white/5">
+                    <td class="py-2">AC-002</td>
+                    <td class="py-2">Invalid credentials return 401</td>
+                    <td class="py-2"><span class="px-2 py-0.5 bg-red-500/10 text-red-400 rounded text-xs">High</span></td>
+                  </tr>
+                  <tr class="border-b border-white/5">
+                    <td class="py-2">AC-003</td>
+                    <td class="py-2">Token expires after 30 days</td>
+                    <td class="py-2"><span class="px-2 py-0.5 bg-amber-500/10 text-amber-400 rounded text-xs">Medium</span></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Actions Footer -->
+          <div class="px-6 py-4 bg-bg-dark/50 border-t border-white/10 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <button class="flex items-center gap-2 px-3 py-2 text-sm text-text-secondary-dark hover:text-white hover:bg-white/5 rounded-lg transition-colors">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                Copy
+              </button>
+              <button class="flex items-center gap-2 px-3 py-2 text-sm text-text-secondary-dark hover:text-white hover:bg-white/5 rounded-lg transition-colors">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                Download
+              </button>
+            </div>
+            <button class="flex items-center gap-2 px-3 py-2 text-sm text-primary hover:bg-primary/10 rounded-lg transition-colors">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/></svg>
+              Share Results
+            </button>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <script>
+    let currentStep = 1;
+    let selectedGoal = null;
+
+    function goToStep(step) {
+      currentStep = step;
+
+      // Hide all steps
+      document.querySelectorAll('.step-content').forEach(el => el.classList.add('hidden'));
+
+      // Show target step
+      const targetStep = document.getElementById(`step${step}`);
+      if (targetStep) {
+        targetStep.classList.remove('hidden');
+        targetStep.classList.add('animate-fade-in');
+      }
+
+      // Update step indicators
+      document.querySelectorAll('.step-badge').forEach(badge => {
+        const badgeStep = parseInt(badge.dataset.step);
+        const numberSpan = badge.querySelector('span');
+
+        if (badgeStep === step) {
+          badge.className = 'step-badge flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium transition-all bg-primary/20 text-primary border border-primary/30';
+          numberSpan.className = 'w-5 h-5 rounded-full bg-primary text-white flex items-center justify-center text-[10px] font-bold';
+        } else if (badgeStep < step) {
+          badge.className = 'step-badge flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium transition-all bg-green-500/20 text-green-400';
+          numberSpan.className = 'w-5 h-5 rounded-full bg-green-500 text-white flex items-center justify-center text-[10px] font-bold';
+          numberSpan.innerHTML = '<svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>';
+        } else {
+          badge.className = 'step-badge flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium transition-all text-text-secondary-dark hover:text-white';
+          numberSpan.className = 'w-5 h-5 rounded-full bg-white/10 flex items-center justify-center text-[10px] font-bold';
+          numberSpan.textContent = badgeStep;
+        }
+      });
+    }
+
+    function setSourceMode(mode) {
+      // Update buttons
+      document.querySelectorAll('.source-btn').forEach(btn => {
+        if (btn.dataset.mode === mode) {
+          btn.className = 'source-btn flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-lg text-sm font-medium transition-all bg-primary/10 text-primary border border-primary/30';
+        } else {
+          btn.className = 'source-btn flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-lg text-sm font-medium transition-all text-text-secondary-dark hover:text-white hover:bg-white/5';
+        }
+      });
+
+      // Show/hide content
+      document.querySelectorAll('.source-content').forEach(el => el.classList.add('hidden'));
+      document.getElementById(`${mode}-content`).classList.remove('hidden');
+    }
+
+    function selectGoal(goal) {
+      selectedGoal = goal;
+
+      // Update goal cards
+      document.querySelectorAll('.goal-card').forEach(card => {
+        if (card.dataset.goal === goal) {
+          card.classList.add('border-primary', 'bg-primary/10');
+          card.classList.remove('border-white/10');
+        } else {
+          card.classList.remove('border-primary', 'bg-primary/10');
+          card.classList.add('border-white/10');
+        }
+      });
+
+      // Show confirmation
+      const confirmation = document.getElementById('goalConfirmation');
+      confirmation.classList.remove('hidden');
+
+      // Update confirmation text
+      const goalInfo = {
+        api: { name: 'API Tests - 12 files selected', desc: 'Tests will be executable in browser' },
+        frontend: { name: 'Frontend Tests - 8 files selected', desc: 'Tests will be executable in browser' },
+        backend: { name: 'Backend Tests - 15 files selected', desc: 'Tests will be executable in browser' },
+        full: { name: 'Full Coverage - 35 files selected', desc: 'Tests will be executable in browser' },
+        stories: { name: 'User Stories - All files analyzed', desc: 'Documentation output only' },
+        custom: { name: 'Custom Selection', desc: 'Choose files manually' }
+      };
+
+      document.getElementById('selectedGoalName').textContent = goalInfo[goal].name;
+      document.getElementById('selectedGoalDesc').textContent = goalInfo[goal].desc;
+    }
+
+    function showFilePicker() {
+      alert('File picker modal would open here');
+    }
+
+    function startAnalysis() {
+      // Show overlay
+      document.getElementById('analysisOverlay').classList.remove('hidden');
+
+      // Simulate progress
+      let progress = 0;
+      const interval = setInterval(() => {
+        progress += Math.random() * 15;
+        if (progress >= 100) {
+          progress = 100;
+          clearInterval(interval);
+          setTimeout(showResults, 500);
+        }
+        document.querySelector('#analysisOverlay .h-full').style.width = `${progress}%`;
+        document.getElementById('progressPercent').textContent = `${Math.round(progress)}%`;
+      }, 500);
+    }
+
+    function cancelAnalysis() {
+      document.getElementById('analysisOverlay').classList.add('hidden');
+    }
+
+    function showResults() {
+      document.getElementById('analysisOverlay').classList.add('hidden');
+      document.querySelectorAll('.step-content').forEach(el => el.classList.add('hidden'));
+      document.getElementById('resultsView').classList.remove('hidden');
+    }
+
+    function setOutputTab(tab) {
+      // Update tab buttons
+      document.querySelectorAll('.output-tab').forEach(t => {
+        if (t.dataset.tab === tab) {
+          t.className = 'output-tab flex-1 px-4 py-3 text-sm font-medium text-primary border-b-2 border-primary bg-primary/5';
+        } else {
+          t.className = 'output-tab flex-1 px-4 py-3 text-sm font-medium text-text-secondary-dark hover:text-white border-b-2 border-transparent hover:bg-white/5 transition-colors';
+        }
+      });
+
+      // Show/hide content
+      document.querySelectorAll('.output-content').forEach(el => el.classList.add('hidden'));
+      document.getElementById(`output-${tab}`).classList.remove('hidden');
+    }
+
+    function resetWizard() {
+      selectedGoal = null;
+      document.getElementById('resultsView').classList.add('hidden');
+      document.getElementById('goalConfirmation').classList.add('hidden');
+      document.querySelectorAll('.goal-card').forEach(card => {
+        card.classList.remove('border-primary', 'bg-primary/10');
+        card.classList.add('border-white/10');
+      });
+
+      // Reset step indicators
+      document.querySelectorAll('.step-badge').forEach(badge => {
+        const badgeStep = parseInt(badge.dataset.step);
+        const numberSpan = badge.querySelector('span');
+        numberSpan.textContent = badgeStep;
+      });
+
+      goToStep(1);
+    }
+  </script>
+
+</body>
+</html>
