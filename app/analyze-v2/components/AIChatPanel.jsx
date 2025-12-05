@@ -413,8 +413,8 @@ export default function AIChatPanel({
               })}
             </div>
 
-            {/* Quick Actions */}
-            {source && status === AnalysisStatus.IDLE && (
+            {/* Quick Actions - only show when source is selected */}
+            {source && status === AnalysisStatus.IDLE && canAnalyze && (
               <div className="flex flex-wrap gap-2 mt-3">
                 {quickActions.map(action => (
                   <button
@@ -461,8 +461,8 @@ export default function AIChatPanel({
           </ChatMessage>
         )}
 
-        {/* Action Selected Message */}
-        {selectedAction && status === AnalysisStatus.IDLE && !chatMessages.some(m => m.content?.includes('Generate')) && (
+        {/* Action Selected Message - only show when source is selected */}
+        {selectedAction && source && status === AnalysisStatus.IDLE && !chatMessages.some(m => m.content?.includes('Generate')) && (
           <>
             <ChatMessage type="user">
               <p className="text-sm">Generate {selectedAction.label}</p>
