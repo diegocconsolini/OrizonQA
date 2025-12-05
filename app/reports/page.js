@@ -129,8 +129,11 @@ export default function ReportsPage() {
   if (authStatus === 'loading' || loading) {
     return (
       <AppLayout>
-        <div className="flex items-center justify-center min-h-[60vh]">
-          <Loader2 className="w-8 h-8 text-primary animate-spin" />
+        <div className="min-h-screen bg-bg-dark flex items-center justify-center">
+          <div className="text-center">
+            <Loader2 className="w-8 h-8 text-primary animate-spin mx-auto mb-4" />
+            <p className="text-text-secondary-dark">Loading reports...</p>
+          </div>
         </div>
       </AppLayout>
     );
@@ -140,30 +143,34 @@ export default function ReportsPage() {
 
   return (
     <AppLayout>
-      <div className="w-full">
-        <main className="p-4 md:p-6 lg:p-8">
-          {/* Header */}
-          <div className="flex items-start justify-between mb-8">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-gradient-to-br from-primary to-cyan-500 rounded-xl flex items-center justify-center">
-                <FileText className="w-6 h-6 text-white" />
+      <div className="min-h-screen bg-bg-dark">
+        {/* Sticky Header */}
+        <div className="border-b border-white/10 bg-surface-dark/50 backdrop-blur-sm">
+          <div className="px-6 py-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 bg-gradient-to-br from-primary to-cyan-500 rounded-xl flex items-center justify-center">
+                  <FileText className="w-6 h-6 text-white" />
+                </div>
+                <div>
+                  <h1 className="text-2xl font-bold text-white">Test Reports</h1>
+                  <p className="text-sm text-text-secondary-dark">View your test execution history</p>
+                </div>
               </div>
-              <div>
-                <h1 className="text-2xl font-bold text-white font-primary">Test Reports</h1>
-                <p className="text-text-secondary-dark font-secondary mt-1">View your test execution history</p>
-              </div>
+              <button
+                onClick={() => router.push('/execute')}
+                className="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary/90 text-white rounded-lg transition-colors"
+              >
+                <Play className="w-4 h-4" />
+                New Execution
+              </button>
             </div>
-
-            <button
-              onClick={() => router.push('/execute')}
-              className="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary/90 text-white rounded-lg transition-colors"
-            >
-              <Play className="w-4 h-4" />
-              New Execution
-            </button>
           </div>
+        </div>
 
-        {/* Error */}
+        {/* Content Area */}
+        <div className="px-6 py-8">
+          {/* Error */}
         {error && (
           <div className="mb-6 p-4 bg-red-500/10 border border-red-500/30 rounded-lg flex items-center gap-3">
             <AlertCircle className="w-5 h-5 text-red-400" />
@@ -322,7 +329,7 @@ export default function ReportsPage() {
             })}
           </div>
         )}
-        </main>
+        </div>
       </div>
     </AppLayout>
   );

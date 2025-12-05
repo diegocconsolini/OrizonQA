@@ -46,7 +46,8 @@
       "WebFetch(domain:arize.com)",
       "Bash(npm install:*)",
       "Bash(docker-compose ps:*)",
-      "Bash(grep:*)"
+      "Bash(grep:*)",
+      "Bash(vercel --prod --yes:*)"
     ],
     "deny": [],
     "ask": []
