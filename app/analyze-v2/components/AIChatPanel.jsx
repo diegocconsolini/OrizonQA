@@ -312,20 +312,6 @@ export default function AIChatPanel({
     URL.revokeObjectURL(url);
   };
 
-  // Get step indicators
-  const getStepStatus = (step) => {
-    if (status === AnalysisStatus.IDLE) {
-      return step === 1 ? 'current' : 'pending';
-    }
-    if (isAnalyzing) {
-      return step <= 2 ? 'complete' : step === 3 ? 'current' : 'pending';
-    }
-    if (isComplete) {
-      return 'complete';
-    }
-    return 'pending';
-  };
-
   // Calculate chat cost
   const chatCost = (chatTokens.input * MODELS.chat.costPer1kInput / 1000) +
                    (chatTokens.output * MODELS.chat.costPer1kOutput / 1000);
@@ -902,6 +888,36 @@ function ResultPreview({ title, content }) {
         {expanded ? content : preview}
         {!expanded && content.length > 500 && '...'}
       </pre>
+    </div>
+  );
+}
+
+/**
+ * Step Item Component for flow visualization
+ */
+function StepItem({ num, title, desc, status }) {
+  return (
+    <div
+      className={`flex items-center gap-3 p-2 rounded-lg border transition-all
+        ${status === 'current'
+          ? 'bg-primary/10 border-primary/30'
+          : status === 'complete'
+            ? 'bg-green-500/10 border-green-500/30'
+            : 'bg-white/5 border-white/10'}`}
+    >
+      <div className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold
+        ${status === 'current'
+          ? 'bg-gradient-to-br from-primary to-cyan-500 text-white'
+          : status === 'complete'
+            ? 'bg-green-500 text-white'
+            : 'bg-white/10 text-text-secondary-dark'}`}
+      >
+        {status === 'complete' ? <Check className="w-3 h-3" /> : num}
+      </div>
+      <div className="flex-1 min-w-0">
+        <p className="text-xs font-medium text-white truncate">{title}</p>
+        <p className="text-[10px] text-text-secondary-dark truncate">{desc}</p>
+      </div>
     </div>
   );
 }
