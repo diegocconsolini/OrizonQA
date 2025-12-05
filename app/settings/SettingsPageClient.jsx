@@ -428,34 +428,41 @@ export default function SettingsPageClient() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-bg-dark flex items-center justify-center">
-        <div className="text-center">
-          <Loader2 className="w-8 h-8 text-primary animate-spin mx-auto mb-4" />
-          <p className="text-text-secondary-dark font-secondary">Loading settings...</p>
+      <AppLayout>
+        <div className="min-h-screen bg-bg-dark flex items-center justify-center">
+          <div className="text-center">
+            <Loader2 className="w-8 h-8 text-primary animate-spin mx-auto mb-4" />
+            <p className="text-text-secondary-dark">Loading settings...</p>
+          </div>
         </div>
-      </div>
+      </AppLayout>
     );
   }
 
   return (
     <AppLayout>
-      <div className="w-full">
-        <main className="p-4 md:p-6 lg:p-8">
-          {/* Page Header */}
-          <div className="flex items-start justify-between mb-8">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-gradient-to-br from-primary to-cyan-500 rounded-xl flex items-center justify-center">
-                <SettingsIcon className="w-6 h-6 text-white" />
-              </div>
-              <div>
-                <h1 className="text-2xl font-bold text-white font-primary">Settings</h1>
-                <p className="text-text-secondary-dark font-secondary mt-1">
-                  Manage your account preferences and API configurations
-                </p>
+      <div className="min-h-screen bg-bg-dark">
+        {/* Sticky Header */}
+        <div className="border-b border-white/10 bg-surface-dark/50 backdrop-blur-sm">
+          <div className="px-6 py-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 bg-gradient-to-br from-primary to-cyan-500 rounded-xl flex items-center justify-center">
+                  <SettingsIcon className="w-6 h-6 text-white" />
+                </div>
+                <div>
+                  <h1 className="text-2xl font-bold text-white">Settings</h1>
+                  <p className="text-sm text-text-secondary-dark">
+                    Manage your account preferences and API configurations
+                  </p>
+                </div>
               </div>
             </div>
           </div>
+        </div>
 
+        {/* Content Area */}
+        <div className="px-6 py-8">
           {/* Success/Error Messages */}
           {success && (
             <div className="mb-6 p-4 bg-green-400/10 border border-green-400/20 rounded-lg flex items-center gap-3">
@@ -604,7 +611,7 @@ export default function SettingsPageClient() {
                                 setClaudeKeyError('');
                               }}
                               placeholder="sk-ant-..."
-                              className="w-full px-4 py-3 pr-12 bg-bg-dark border-2 border-white/10 rounded-lg text-white placeholder-text-secondary-dark focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary font-mono text-sm"
+                              className="w-full px-4 py-3 pr-12 bg-surface-dark border border-white/10 rounded-lg text-white placeholder-text-secondary-dark focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary font-mono text-sm"
                             />
                             <button
                               type="button"
@@ -735,7 +742,7 @@ export default function SettingsPageClient() {
                             value={lmStudioUrl}
                             onChange={(e) => setLmStudioUrl(e.target.value)}
                             placeholder="http://localhost:1234"
-                            className="flex-1 px-4 py-3 bg-bg-dark border-2 border-white/10 rounded-lg text-white placeholder-text-secondary-dark focus:outline-none focus:ring-2 focus:ring-accent/30 focus:border-accent font-mono text-sm"
+                            className="flex-1 px-4 py-3 bg-surface-dark border border-white/10 rounded-lg text-white placeholder-text-secondary-dark focus:outline-none focus:ring-2 focus:ring-accent/30 focus:border-accent font-mono text-sm"
                           />
                           <button
                             onClick={() => fetchModels('lmstudio', lmStudioUrl)}
@@ -924,7 +931,7 @@ export default function SettingsPageClient() {
                       {/* Email (read-only) */}
                       <div>
                         <label className="block text-sm text-text-secondary-dark mb-2">Email</label>
-                        <div className="px-4 py-3 bg-bg-dark border-2 border-white/10 rounded-lg text-white/70 font-secondary">
+                        <div className="px-4 py-3 bg-surface-dark border border-white/10 rounded-lg text-white/70 font-secondary">
                           {profile.email || session?.user?.email}
                         </div>
                         <p className="text-xs text-text-secondary-dark mt-1">
@@ -942,7 +949,7 @@ export default function SettingsPageClient() {
                               value={newName}
                               onChange={(e) => setNewName(e.target.value)}
                               placeholder="Your name"
-                              className="flex-1 px-4 py-3 bg-bg-dark border-2 border-white/10 rounded-lg text-white placeholder-text-secondary-dark focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary font-secondary"
+                              className="flex-1 px-4 py-3 bg-surface-dark border border-white/10 rounded-lg text-white placeholder-text-secondary-dark focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary font-secondary"
                             />
                             <Button
                               variant="primary"
@@ -963,7 +970,7 @@ export default function SettingsPageClient() {
                           </div>
                         ) : (
                           <div className="flex items-center gap-2">
-                            <div className="flex-1 px-4 py-3 bg-bg-dark border-2 border-white/10 rounded-lg text-white font-secondary">
+                            <div className="flex-1 px-4 py-3 bg-surface-dark border border-white/10 rounded-lg text-white font-secondary">
                               {profile.fullName || 'Not set'}
                             </div>
                             <Button
@@ -982,7 +989,7 @@ export default function SettingsPageClient() {
                       {/* Member Since */}
                       <div>
                         <label className="block text-sm text-text-secondary-dark mb-2">Member Since</label>
-                        <div className="px-4 py-3 bg-bg-dark border-2 border-white/10 rounded-lg text-white/70 font-secondary">
+                        <div className="px-4 py-3 bg-surface-dark border border-white/10 rounded-lg text-white/70 font-secondary">
                           {profile.createdAt
                             ? new Date(profile.createdAt).toLocaleDateString('en-US', {
                                 year: 'numeric',
@@ -1122,7 +1129,7 @@ export default function SettingsPageClient() {
                             type="password"
                             value={passwordForm.currentPassword}
                             onChange={(e) => setPasswordForm(prev => ({ ...prev, currentPassword: e.target.value }))}
-                            className="w-full px-4 py-3 bg-bg-dark border-2 border-white/10 rounded-lg text-white placeholder-text-secondary-dark focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
+                            className="w-full px-4 py-3 bg-surface-dark border border-white/10 rounded-lg text-white placeholder-text-secondary-dark focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
                           />
                         </div>
 
@@ -1132,7 +1139,7 @@ export default function SettingsPageClient() {
                             type="password"
                             value={passwordForm.newPassword}
                             onChange={(e) => setPasswordForm(prev => ({ ...prev, newPassword: e.target.value }))}
-                            className="w-full px-4 py-3 bg-bg-dark border-2 border-white/10 rounded-lg text-white placeholder-text-secondary-dark focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
+                            className="w-full px-4 py-3 bg-surface-dark border border-white/10 rounded-lg text-white placeholder-text-secondary-dark focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
                           />
                           <p className="text-xs text-text-secondary-dark mt-1">
                             Min 8 characters, uppercase, lowercase, number, special character
@@ -1145,7 +1152,7 @@ export default function SettingsPageClient() {
                             type="password"
                             value={passwordForm.confirmPassword}
                             onChange={(e) => setPasswordForm(prev => ({ ...prev, confirmPassword: e.target.value }))}
-                            className="w-full px-4 py-3 bg-bg-dark border-2 border-white/10 rounded-lg text-white placeholder-text-secondary-dark focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
+                            className="w-full px-4 py-3 bg-surface-dark border border-white/10 rounded-lg text-white placeholder-text-secondary-dark focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
                           />
                         </div>
                       </div>
@@ -1205,7 +1212,7 @@ export default function SettingsPageClient() {
                             type="password"
                             value={passwordForm.newPassword}
                             onChange={(e) => setPasswordForm(prev => ({ ...prev, newPassword: e.target.value }))}
-                            className="w-full px-4 py-3 bg-bg-dark border-2 border-white/10 rounded-lg text-white placeholder-text-secondary-dark focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
+                            className="w-full px-4 py-3 bg-surface-dark border border-white/10 rounded-lg text-white placeholder-text-secondary-dark focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
                           />
                           <p className="text-xs text-text-secondary-dark mt-1">
                             Min 8 characters, uppercase, lowercase, number, special character
@@ -1218,7 +1225,7 @@ export default function SettingsPageClient() {
                             type="password"
                             value={passwordForm.confirmPassword}
                             onChange={(e) => setPasswordForm(prev => ({ ...prev, confirmPassword: e.target.value }))}
-                            className="w-full px-4 py-3 bg-bg-dark border-2 border-white/10 rounded-lg text-white placeholder-text-secondary-dark focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
+                            className="w-full px-4 py-3 bg-surface-dark border border-white/10 rounded-lg text-white placeholder-text-secondary-dark focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
                           />
                         </div>
                       </div>
@@ -1285,7 +1292,7 @@ export default function SettingsPageClient() {
                           value={deletePassword}
                           onChange={(e) => setDeletePassword(e.target.value)}
                           placeholder="Your password"
-                          className="w-full px-4 py-3 bg-bg-dark border-2 border-white/10 rounded-lg text-white placeholder-text-secondary-dark focus:outline-none focus:ring-2 focus:ring-red-500/30 focus:border-red-500"
+                          className="w-full px-4 py-3 bg-surface-dark border border-white/10 rounded-lg text-white placeholder-text-secondary-dark focus:outline-none focus:ring-2 focus:ring-red-500/30 focus:border-red-500"
                         />
                       </div>
 
@@ -1342,7 +1349,7 @@ export default function SettingsPageClient() {
               </li>
             </ul>
           </div>
-        </main>
+        </div>
       </div>
     </AppLayout>
   );
