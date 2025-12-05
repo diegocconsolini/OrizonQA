@@ -148,7 +148,7 @@ export default function ReportDetailPage() {
   if (error) {
     return (
       <AppLayout>
-        <div className="max-w-4xl mx-auto">
+        <div className="w-full">
           <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-8 text-center">
             <AlertCircle className="w-12 h-12 text-red-400 mx-auto mb-4" />
             <h2 className="text-xl font-medium text-white mb-2">Report Not Found</h2>
@@ -167,7 +167,7 @@ export default function ReportDetailPage() {
 
   return (
     <AppLayout>
-      <div className="max-w-6xl mx-auto">
+      <div className="w-full">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-4">

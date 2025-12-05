@@ -68,7 +68,7 @@ export default function TodosPage() {
 
   return (
     <AppLayout>
-      <div className="max-w-5xl mx-auto">
+      <div className="w-full">
         {/* Page Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-white mb-2">Todos</h1>
