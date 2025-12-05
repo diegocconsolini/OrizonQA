@@ -2513,30 +2513,979 @@ CREATE INDEX idx_pending_conf_expires ON ai_pending_confirmations(expires_at) WH
 
 ---
 
-## Security Measures
+## Security Architecture (SECURITY-FIRST)
 
-1. **Permission Validation**: Every tool call validates user permission level
-2. **Rate Limiting**: Configurable per-tool rate limits with default fallbacks
-3. **Input Validation**: JSON Schema validation for all tool inputs
-4. **Audit Logging**: Every action logged with user, input, result, timing
-5. **Confirmation Queue**: Dangerous actions require explicit approval with timeout
-6. **Session Binding**: Tools only operate on authenticated user's data
-7. **Admin Oversight**: Full visibility into tool usage via admin panel
-8. **Soft Deletes**: Archive operations where possible before hard delete
-9. **IP Logging**: Track IP addresses for security analysis
-10. **Expiring Confirmations**: Pending confirmations expire after 5 minutes
+### Layer 1: Input Validation & Sanitization
+
+Every tool input goes through multiple validation layers:
+
+```javascript
+// lib/assistantTools/security/inputValidator.js
+
+const VALIDATION_PIPELINE = [
+  'schemaValidation',      // JSON Schema validation
+  'typeCoercion',          // Safe type conversion
+  'sanitization',          // Remove dangerous chars
+  'sizeValidation',        // Check input size limits
+  'patternValidation',     // Regex pattern checks
+  'referenceValidation',   // Verify IDs exist and belong to user
+];
+```
+
+#### 1.1 Schema Validation
+```javascript
+// Every tool input validated against strict JSON Schema
+{
+  "project_id": {
+    "type": "string",
+    "format": "uuid",
+    "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+  }
+}
+```
+
+#### 1.2 String Sanitization
+```javascript
+function sanitizeString(input, options = {}) {
+  let sanitized = input;
+
+  // Remove null bytes
+  sanitized = sanitized.replace(/\0/g, '');
+
+  // Prevent SQL injection patterns
+  sanitized = sanitized.replace(/(['";])/g, '');
+
+  // Prevent NoSQL injection
+  sanitized = sanitized.replace(/[${}]/g, '');
+
+  // Limit length
+  if (sanitized.length > (options.maxLength || 1000)) {
+    throw new ValidationError('Input exceeds maximum length');
+  }
+
+  // Check for suspicious patterns
+  const BLOCKED_PATTERNS = [
+    /\beval\b/i,
+    /\bexec\b/i,
+    /\bFunction\b/,
+    /__proto__/,
+    /constructor\s*\(/,
+    /\bprocess\b/,
+    /\brequire\b/,
+    /\bimport\b/,
+  ];
+
+  for (const pattern of BLOCKED_PATTERNS) {
+    if (pattern.test(sanitized)) {
+      throw new ValidationError('Input contains blocked pattern');
+    }
+  }
+
+  return sanitized;
+}
+```
+
+#### 1.3 Path Traversal Prevention
+```javascript
+function validateFilePath(path) {
+  // Block absolute paths
+  if (path.startsWith('/') || path.match(/^[A-Z]:\\/)) {
+    throw new ValidationError('Absolute paths not allowed');
+  }
+
+  // Block path traversal
+  if (path.includes('..')) {
+    throw new ValidationError('Path traversal not allowed');
+  }
+
+  // Block special characters
+  if (!/^[a-zA-Z0-9_\-./]+$/.test(path)) {
+    throw new ValidationError('Invalid characters in path');
+  }
+
+  // Normalize and re-check
+  const normalized = path.replace(/\/+/g, '/');
+  if (normalized !== path) {
+    throw new ValidationError('Path normalization detected suspicious input');
+  }
+
+  return normalized;
+}
+```
+
+#### 1.4 Glob Pattern Validation
+```javascript
+function validateGlobPattern(pattern) {
+  // Limit wildcards to prevent ReDoS
+  const wildcardCount = (pattern.match(/\*/g) || []).length;
+  if (wildcardCount > 3) {
+    throw new ValidationError('Too many wildcards in pattern');
+  }
+
+  // Block dangerous glob patterns
+  const BLOCKED_GLOBS = [
+    '**/../**',      // Path traversal via glob
+    '**/**/***',     // Excessive recursion
+    '{,,,,,}',       // Brace expansion abuse
+  ];
+
+  for (const blocked of BLOCKED_GLOBS) {
+    if (pattern.includes(blocked)) {
+      throw new ValidationError('Blocked glob pattern');
+    }
+  }
+
+  return pattern;
+}
+```
+
+### Layer 2: Authorization & Permission Checking
+
+```javascript
+// lib/assistantTools/security/permissionChecker.js
+
+async function checkPermission(userId, toolName, toolInput) {
+  // 1. Get user's AI settings
+  const settings = await getAISettings(userId);
+
+  // 2. Get tool definition
+  const tool = getToolDefinition(toolName);
+
+  // 3. Determine effective permission level
+  const section = tool.category;
+  const sectionOverride = settings[`${section}_permission`];
+  const effectiveLevel = sectionOverride || settings.global_permission_level;
+
+  // 4. Convert to numeric level
+  const PERMISSION_LEVELS = {
+    'read_only': 1,
+    'read_suggest': 2,
+    'read_write': 3,
+    'full_access': 4
+  };
+
+  const userLevel = PERMISSION_LEVELS[effectiveLevel];
+  const requiredLevel = tool.permission_level;
+
+  // 5. Check permission
+  if (userLevel < requiredLevel) {
+    return {
+      allowed: false,
+      reason: `Requires permission level ${requiredLevel}, you have ${userLevel}`,
+      suggestedAction: 'Upgrade permissions in Settings → AI Assistant'
+    };
+  }
+
+  // 6. Check resource ownership (CRITICAL)
+  if (toolInput.project_id) {
+    const ownsProject = await verifyOwnership(userId, 'project', toolInput.project_id);
+    if (!ownsProject) {
+      await logSecurityEvent(userId, 'OWNERSHIP_VIOLATION', { toolName, toolInput });
+      return { allowed: false, reason: 'Access denied' }; // Don't reveal why
+    }
+  }
+
+  return { allowed: true };
+}
+```
+
+### Layer 3: Rate Limiting & Abuse Prevention
+
+```javascript
+// lib/assistantTools/security/rateLimiter.js
+
+// Multi-tier rate limiting
+const RATE_LIMITS = {
+  // Per-tool limits
+  tool: {
+    'delete_project': { windowMs: 60000, max: 3 },
+    'bulk_import_tests': { windowMs: 60000, max: 5 },
+    'start_analysis': { windowMs: 60000, max: 10 },
+    'default': { windowMs: 1000, max: 30 },
+  },
+
+  // Per-user global limits
+  user: {
+    windowMs: 60000,
+    maxTotal: 100,           // 100 calls per minute
+    maxDangerous: 10,        // 10 dangerous actions per minute
+    maxWriteOps: 50,         // 50 write ops per minute
+  },
+
+  // IP-based limits (prevent multi-account abuse)
+  ip: {
+    windowMs: 60000,
+    max: 200,
+  },
+
+  // Burst protection
+  burst: {
+    windowMs: 1000,
+    max: 10,                 // Max 10 calls per second
+  }
+};
+
+// Abuse detection
+const ABUSE_PATTERNS = [
+  {
+    name: 'rapid_deletion',
+    condition: (history) => {
+      const deletions = history.filter(h => h.tool.includes('delete'));
+      return deletions.length > 5 &&
+             (Date.now() - deletions[0].timestamp) < 30000;
+    },
+    action: 'block_user_temporarily',
+    duration: 300000, // 5 minutes
+  },
+  {
+    name: 'bulk_enumeration',
+    condition: (history) => {
+      const lists = history.filter(h => h.tool.includes('list_'));
+      return lists.length > 20 &&
+             (Date.now() - lists[0].timestamp) < 60000;
+    },
+    action: 'require_captcha',
+  },
+  {
+    name: 'permission_probing',
+    condition: (history) => {
+      const denied = history.filter(h => h.status === 'denied');
+      return denied.length > 10;
+    },
+    action: 'alert_admin',
+  }
+];
+```
+
+### Layer 4: Ownership Verification
+
+```javascript
+// lib/assistantTools/security/ownershipVerifier.js
+
+// CRITICAL: Verify user owns every resource they try to access
+async function verifyOwnership(userId, resourceType, resourceId) {
+  const queries = {
+    project: `SELECT id FROM projects WHERE id = $1 AND user_id = $2`,
+    requirement: `
+      SELECT r.id FROM requirements r
+      JOIN projects p ON r.project_id = p.id
+      WHERE r.id = $1 AND p.user_id = $2
+    `,
+    test_case: `
+      SELECT tc.id FROM test_cases tc
+      JOIN projects p ON tc.project_id = p.id
+      WHERE tc.id = $1 AND p.user_id = $2
+    `,
+    execution: `SELECT id FROM test_executions WHERE id = $1 AND user_id = $2`,
+    analysis: `SELECT id FROM analyses WHERE id = $1 AND user_id = $2`,
+    todo: `SELECT id FROM todos WHERE id = $1 AND user_id = $2`,
+  };
+
+  const query = queries[resourceType];
+  if (!query) {
+    throw new Error(`Unknown resource type: ${resourceType}`);
+  }
+
+  const result = await db.query(query, [resourceId, userId]);
+  return result.rows.length > 0;
+}
+
+// Batch ownership verification
+async function verifyBatchOwnership(userId, resourceType, resourceIds) {
+  // Verify ALL resources in batch belong to user
+  for (const id of resourceIds) {
+    const owns = await verifyOwnership(userId, resourceType, id);
+    if (!owns) {
+      return { valid: false, invalidId: id };
+    }
+  }
+  return { valid: true };
+}
+```
+
+### Layer 5: Audit Logging
+
+```javascript
+// lib/assistantTools/security/auditLogger.js
+
+async function logToolExecution(context) {
+  const logEntry = {
+    id: generateUUID(),
+    user_id: context.userId,
+
+    // Tool info
+    tool_name: context.toolName,
+    tool_category: context.toolCategory,
+    permission_level: context.permissionLevel,
+
+    // Input (sanitized - remove sensitive data)
+    tool_input: sanitizeForLogging(context.toolInput),
+
+    // Result
+    tool_result: context.result ? sanitizeForLogging(context.result) : null,
+    status: context.status,
+    error_message: context.error || null,
+
+    // Context
+    page_path: context.pagePath,
+    session_id: context.sessionId,
+    ip_address: context.ipAddress,
+    user_agent: context.userAgent,
+
+    // Confirmation tracking
+    required_confirmation: context.requiredConfirmation || false,
+    user_confirmed: context.userConfirmed,
+
+    // Timing
+    started_at: context.startedAt,
+    completed_at: new Date(),
+    duration_ms: Date.now() - context.startedAt.getTime(),
+  };
+
+  await db.query(`
+    INSERT INTO ai_action_log (
+      id, user_id, tool_name, tool_category, permission_level,
+      tool_input, tool_result, status, error_message,
+      page_path, session_id, ip_address, user_agent,
+      required_confirmation, user_confirmed,
+      started_at, completed_at, duration_ms
+    ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18)
+  `, [/* ... values ... */]);
+
+  // Alert on suspicious activity
+  if (context.status === 'denied' || context.error?.includes('security')) {
+    await alertSecurityTeam(logEntry);
+  }
+
+  return logEntry.id;
+}
+
+// Sanitize sensitive data before logging
+function sanitizeForLogging(data) {
+  const sanitized = JSON.parse(JSON.stringify(data));
+
+  // Remove sensitive fields
+  const SENSITIVE_FIELDS = ['password', 'api_key', 'token', 'secret', 'credential'];
+
+  function removeSensitive(obj) {
+    if (typeof obj !== 'object' || obj === null) return;
+
+    for (const key of Object.keys(obj)) {
+      if (SENSITIVE_FIELDS.some(f => key.toLowerCase().includes(f))) {
+        obj[key] = '[REDACTED]';
+      } else {
+        removeSensitive(obj[key]);
+      }
+    }
+  }
+
+  removeSensitive(sanitized);
+  return sanitized;
+}
+```
+
+### Layer 6: Confirmation System Security
+
+```javascript
+// lib/assistantTools/security/confirmationManager.js
+
+const CONFIRMATION_CONFIG = {
+  // Timeout for pending confirmations
+  timeoutMs: 300000, // 5 minutes
+
+  // Max pending confirmations per user
+  maxPending: 3,
+
+  // Actions that ALWAYS require confirmation (cannot be disabled)
+  MANDATORY_CONFIRMATION: [
+    'delete_project',
+    'disconnect_integration',
+    'update_ai_permissions',
+  ],
+
+  // Anti-automation measures
+  requireInteraction: true,  // Must click button, not just API call
+  requireSessionMatch: true, // Confirmation must come from same session
+};
+
+async function createConfirmation(userId, toolName, toolInput, context) {
+  // Check max pending
+  const pending = await db.query(
+    `SELECT COUNT(*) FROM ai_pending_confirmations
+     WHERE user_id = $1 AND status = 'pending'`,
+    [userId]
+  );
+
+  if (pending.rows[0].count >= CONFIRMATION_CONFIG.maxPending) {
+    throw new Error('Too many pending confirmations. Please respond to existing ones first.');
+  }
+
+  const confirmation = {
+    id: generateUUID(),
+    user_id: userId,
+    tool_name: toolName,
+    tool_input: toolInput,
+    confirmation_message: await generateConfirmationMessage(toolName, toolInput),
+    affected_items: await getAffectedItems(toolName, toolInput),
+    session_id: context.sessionId, // Must match on confirmation
+    expires_at: new Date(Date.now() + CONFIRMATION_CONFIG.timeoutMs),
+  };
+
+  await db.query(`INSERT INTO ai_pending_confirmations ...`, [/* ... */]);
+
+  return confirmation;
+}
+
+async function processConfirmation(confirmationId, userId, sessionId, confirmed) {
+  // Get confirmation
+  const result = await db.query(
+    `SELECT * FROM ai_pending_confirmations WHERE id = $1`,
+    [confirmationId]
+  );
+
+  const confirmation = result.rows[0];
+  if (!confirmation) {
+    throw new Error('Confirmation not found');
+  }
+
+  // Security checks
+  if (confirmation.user_id !== userId) {
+    await logSecurityEvent(userId, 'CONFIRMATION_USER_MISMATCH', { confirmationId });
+    throw new Error('Access denied');
+  }
+
+  if (confirmation.session_id !== sessionId) {
+    await logSecurityEvent(userId, 'CONFIRMATION_SESSION_MISMATCH', { confirmationId });
+    throw new Error('Session mismatch. Please try again.');
+  }
+
+  if (confirmation.status !== 'pending') {
+    throw new Error('Confirmation already processed');
+  }
+
+  if (new Date() > new Date(confirmation.expires_at)) {
+    await db.query(
+      `UPDATE ai_pending_confirmations SET status = 'expired' WHERE id = $1`,
+      [confirmationId]
+    );
+    throw new Error('Confirmation expired. Please try again.');
+  }
+
+  // Process
+  if (confirmed) {
+    // Execute the action
+    const result = await executeTool(
+      confirmation.tool_name,
+      confirmation.tool_input,
+      { userId, confirmed: true }
+    );
+
+    await db.query(
+      `UPDATE ai_pending_confirmations
+       SET status = 'confirmed', responded_at = NOW()
+       WHERE id = $1`,
+      [confirmationId]
+    );
+
+    return result;
+  } else {
+    await db.query(
+      `UPDATE ai_pending_confirmations
+       SET status = 'cancelled', responded_at = NOW()
+       WHERE id = $1`,
+      [confirmationId]
+    );
+
+    return { cancelled: true };
+  }
+}
+```
+
+### Security Event Types & Responses
+
+| Event | Severity | Auto Response |
+|-------|----------|---------------|
+| `OWNERSHIP_VIOLATION` | Critical | Block user, alert admin |
+| `RATE_LIMIT_EXCEEDED` | High | Throttle for 1 min |
+| `PERMISSION_DENIED` | Medium | Log only |
+| `CONFIRMATION_BYPASS_ATTEMPT` | Critical | Block user, alert admin |
+| `SESSION_MISMATCH` | High | Invalidate session |
+| `SUSPICIOUS_INPUT` | High | Block request, log |
+| `BULK_ENUMERATION` | Medium | Require CAPTCHA |
+| `RAPID_DELETION` | High | 5-min cooldown |
+
+---
+
+## Testing Strategy
+
+### Test Categories
+
+#### 1. Unit Tests (lib/assistantTools/__tests__/)
+
+```javascript
+// Test file structure
+lib/assistantTools/__tests__/
+├── security/
+│   ├── inputValidator.test.js
+│   ├── permissionChecker.test.js
+│   ├── rateLimiter.test.js
+│   ├── ownershipVerifier.test.js
+│   └── auditLogger.test.js
+├── tools/
+│   ├── projectTools.test.js
+│   ├── requirementTools.test.js
+│   ├── testCaseTools.test.js
+│   ├── executionTools.test.js
+│   ├── analysisTools.test.js
+│   ├── historyTools.test.js
+│   ├── dashboardTools.test.js
+│   ├── todoTools.test.js
+│   ├── settingsTools.test.js
+│   └── navigationTools.test.js
+└── integration/
+    ├── toolExecution.test.js
+    └── confirmationFlow.test.js
+```
+
+#### 2. Security Tests
+
+```javascript
+// __tests__/security/inputValidation.test.js
+
+describe('Input Validation Security', () => {
+  describe('SQL Injection Prevention', () => {
+    const sqlInjectionPayloads = [
+      "'; DROP TABLE users; --",
+      "1 OR 1=1",
+      "UNION SELECT * FROM users",
+      "'; INSERT INTO users VALUES('hacker', 'pw'); --",
+      "1; UPDATE users SET role='admin' WHERE id=1",
+    ];
+
+    sqlInjectionPayloads.forEach(payload => {
+      it(`should block SQL injection: ${payload.substring(0, 30)}...`, async () => {
+        await expect(
+          executeTool('search_projects', { query: payload }, mockContext)
+        ).rejects.toThrow(/validation|blocked|invalid/i);
+      });
+    });
+  });
+
+  describe('NoSQL Injection Prevention', () => {
+    const nosqlPayloads = [
+      '{"$gt": ""}',
+      '{"$ne": null}',
+      '{"$where": "this.password == this.passwordConfirm"}',
+    ];
+
+    nosqlPayloads.forEach(payload => {
+      it(`should block NoSQL injection: ${payload}`, async () => {
+        await expect(
+          executeTool('get_project', { project_id: payload }, mockContext)
+        ).rejects.toThrow();
+      });
+    });
+  });
+
+  describe('Path Traversal Prevention', () => {
+    const traversalPayloads = [
+      '../../../etc/passwd',
+      '..\\..\\..\\windows\\system32\\config\\sam',
+      'src/../../../package.json',
+      'src/....//....//etc/passwd',
+      '/etc/passwd',
+      'C:\\Windows\\System32\\',
+    ];
+
+    traversalPayloads.forEach(payload => {
+      it(`should block path traversal: ${payload}`, async () => {
+        await expect(
+          executeTool('get_file_content', { file_path: payload }, mockContext)
+        ).rejects.toThrow(/path|traversal|invalid/i);
+      });
+    });
+  });
+
+  describe('XSS Prevention', () => {
+    const xssPayloads = [
+      '<script>alert("xss")</script>',
+      '<img src=x onerror=alert("xss")>',
+      'javascript:alert("xss")',
+      '<svg onload=alert("xss")>',
+    ];
+
+    xssPayloads.forEach(payload => {
+      it(`should sanitize XSS: ${payload.substring(0, 30)}...`, async () => {
+        const result = await executeTool(
+          'create_project',
+          { name: payload },
+          mockContext
+        );
+
+        // Should either reject or sanitize
+        if (result.success) {
+          expect(result.data.name).not.toContain('<script>');
+          expect(result.data.name).not.toContain('onerror=');
+        }
+      });
+    });
+  });
+
+  describe('Prototype Pollution Prevention', () => {
+    const pollutionPayloads = [
+      { '__proto__': { 'isAdmin': true } },
+      { 'constructor': { 'prototype': { 'isAdmin': true } } },
+      { '__proto__.isAdmin': true },
+    ];
+
+    pollutionPayloads.forEach(payload => {
+      it(`should prevent prototype pollution`, async () => {
+        await expect(
+          executeTool('update_project', payload, mockContext)
+        ).rejects.toThrow();
+
+        // Verify global objects not polluted
+        expect(({}).isAdmin).toBeUndefined();
+      });
+    });
+  });
+});
+```
+
+#### 3. Permission Tests
+
+```javascript
+// __tests__/security/permissions.test.js
+
+describe('Permission System', () => {
+  const testCases = [
+    // Level 1 - Read Only
+    { level: 1, tool: 'list_projects', shouldAllow: true },
+    { level: 1, tool: 'create_project', shouldAllow: false },
+    { level: 1, tool: 'delete_project', shouldAllow: false },
+
+    // Level 2 - Read + Suggest
+    { level: 2, tool: 'select_file', shouldAllow: true },
+    { level: 2, tool: 'create_project', shouldAllow: false },
+
+    // Level 3 - Read + Write
+    { level: 3, tool: 'create_project', shouldAllow: true },
+    { level: 3, tool: 'delete_project', shouldAllow: false },
+
+    // Level 4 - Full Access
+    { level: 4, tool: 'delete_project', shouldAllow: true },
+  ];
+
+  testCases.forEach(({ level, tool, shouldAllow }) => {
+    it(`Level ${level} ${shouldAllow ? 'can' : 'cannot'} use ${tool}`, async () => {
+      const user = await createTestUser({ permissionLevel: level });
+      const context = { userId: user.id };
+
+      if (shouldAllow) {
+        await expect(checkPermission(user.id, tool)).resolves.toEqual({ allowed: true });
+      } else {
+        await expect(checkPermission(user.id, tool)).resolves.toMatchObject({ allowed: false });
+      }
+    });
+  });
+
+  describe('Ownership Verification', () => {
+    it('should deny access to other users projects', async () => {
+      const user1 = await createTestUser();
+      const user2 = await createTestUser();
+      const project = await createTestProject({ userId: user1.id });
+
+      await expect(
+        executeTool('get_project', { project_id: project.id }, { userId: user2.id })
+      ).rejects.toThrow(/denied/i);
+    });
+
+    it('should deny access to nested resources of other users', async () => {
+      const user1 = await createTestUser();
+      const user2 = await createTestUser();
+      const project = await createTestProject({ userId: user1.id });
+      const requirement = await createTestRequirement({ projectId: project.id });
+
+      await expect(
+        executeTool('get_requirement', { requirement_id: requirement.id }, { userId: user2.id })
+      ).rejects.toThrow(/denied/i);
+    });
+  });
+});
+```
+
+#### 4. Rate Limiting Tests
+
+```javascript
+// __tests__/security/rateLimiting.test.js
+
+describe('Rate Limiting', () => {
+  beforeEach(() => {
+    resetAllRateLimits();
+  });
+
+  it('should enforce per-tool rate limits', async () => {
+    const user = await createTestUser();
+    const context = { userId: user.id };
+
+    // delete_project: 3 per minute
+    for (let i = 0; i < 3; i++) {
+      const result = checkRateLimit(user.id, 'delete_project');
+      expect(result.allowed).toBe(true);
+    }
+
+    // 4th call should be blocked
+    const result = checkRateLimit(user.id, 'delete_project');
+    expect(result.allowed).toBe(false);
+    expect(result.retryAfter).toBeGreaterThan(0);
+  });
+
+  it('should enforce per-user global limits', async () => {
+    const user = await createTestUser();
+
+    // Make 100 calls (user limit)
+    for (let i = 0; i < 100; i++) {
+      checkRateLimit(user.id, 'list_projects');
+    }
+
+    // 101st call to ANY tool should be blocked
+    const result = checkRateLimit(user.id, 'get_dashboard_stats');
+    expect(result.allowed).toBe(false);
+  });
+
+  it('should detect abuse patterns', async () => {
+    const user = await createTestUser();
+
+    // Rapid deletion pattern
+    for (let i = 0; i < 6; i++) {
+      await executeTool('delete_test_case', { test_case_id: `tc-${i}` }, { userId: user.id });
+    }
+
+    // Should trigger abuse detection
+    const status = await getUserSecurityStatus(user.id);
+    expect(status.blocked).toBe(true);
+    expect(status.reason).toMatch(/rapid_deletion/i);
+  });
+});
+```
+
+#### 5. Confirmation Flow Tests
+
+```javascript
+// __tests__/security/confirmation.test.js
+
+describe('Confirmation Flow', () => {
+  it('should require confirmation for dangerous actions', async () => {
+    const user = await createTestUser({ permissionLevel: 4 });
+    const project = await createTestProject({ userId: user.id });
+
+    const result = await executeTool(
+      'delete_project',
+      { project_id: project.id },
+      { userId: user.id, sessionId: 'session-123' }
+    );
+
+    expect(result.requiresConfirmation).toBe(true);
+    expect(result.confirmationId).toBeDefined();
+    expect(result.message).toContain('confirmation');
+  });
+
+  it('should reject confirmation from different session', async () => {
+    const user = await createTestUser({ permissionLevel: 4 });
+    const project = await createTestProject({ userId: user.id });
+
+    // Create confirmation in session A
+    const result = await executeTool(
+      'delete_project',
+      { project_id: project.id },
+      { userId: user.id, sessionId: 'session-A' }
+    );
+
+    // Try to confirm from session B
+    await expect(
+      processConfirmation(result.confirmationId, user.id, 'session-B', true)
+    ).rejects.toThrow(/session/i);
+  });
+
+  it('should expire confirmations after timeout', async () => {
+    const user = await createTestUser({ permissionLevel: 4 });
+    const project = await createTestProject({ userId: user.id });
+
+    // Create confirmation
+    const result = await executeTool(
+      'delete_project',
+      { project_id: project.id },
+      { userId: user.id, sessionId: 'session-123' }
+    );
+
+    // Fast-forward time
+    jest.advanceTimersByTime(6 * 60 * 1000); // 6 minutes
+
+    // Try to confirm
+    await expect(
+      processConfirmation(result.confirmationId, user.id, 'session-123', true)
+    ).rejects.toThrow(/expired/i);
+
+    // Verify project still exists
+    const projectExists = await db.query(
+      'SELECT id FROM projects WHERE id = $1',
+      [project.id]
+    );
+    expect(projectExists.rows.length).toBe(1);
+  });
+
+  it('should prevent bypass via API manipulation', async () => {
+    const user = await createTestUser({ permissionLevel: 4 });
+    const project = await createTestProject({ userId: user.id });
+
+    // Try to call delete directly without confirmation
+    await expect(
+      executeTool(
+        'delete_project',
+        { project_id: project.id },
+        { userId: user.id, bypassConfirmation: true } // Should be ignored
+      )
+    ).rejects.toThrow(/confirmation required/i);
+  });
+});
+```
+
+#### 6. Integration Tests
+
+```javascript
+// __tests__/integration/toolExecution.test.js
+
+describe('Tool Execution Integration', () => {
+  describe('Full CRUD Flow', () => {
+    it('should handle complete project lifecycle', async () => {
+      const user = await createTestUser({ permissionLevel: 4 });
+
+      // Create
+      const createResult = await executeTool(
+        'create_project',
+        { name: 'Test Project', description: 'Test' },
+        { userId: user.id }
+      );
+      expect(createResult.success).toBe(true);
+      const projectId = createResult.data.id;
+
+      // Read
+      const readResult = await executeTool(
+        'get_project',
+        { project_id: projectId },
+        { userId: user.id }
+      );
+      expect(readResult.data.name).toBe('Test Project');
+
+      // Update
+      const updateResult = await executeTool(
+        'update_project',
+        { project_id: projectId, name: 'Updated Project' },
+        { userId: user.id }
+      );
+      expect(updateResult.success).toBe(true);
+
+      // Delete (with confirmation)
+      const deleteResult = await executeTool(
+        'delete_project',
+        { project_id: projectId },
+        { userId: user.id, sessionId: 'test-session' }
+      );
+      expect(deleteResult.requiresConfirmation).toBe(true);
+
+      // Confirm delete
+      await processConfirmation(
+        deleteResult.confirmationId,
+        user.id,
+        'test-session',
+        true
+      );
+
+      // Verify deleted
+      await expect(
+        executeTool('get_project', { project_id: projectId }, { userId: user.id })
+      ).rejects.toThrow(/not found/i);
+    });
+  });
+
+  describe('Audit Trail', () => {
+    it('should log all tool executions', async () => {
+      const user = await createTestUser();
+
+      await executeTool('list_projects', {}, { userId: user.id });
+      await executeTool('get_dashboard_stats', {}, { userId: user.id });
+
+      const logs = await db.query(
+        `SELECT * FROM ai_action_log WHERE user_id = $1 ORDER BY created_at`,
+        [user.id]
+      );
+
+      expect(logs.rows.length).toBe(2);
+      expect(logs.rows[0].tool_name).toBe('list_projects');
+      expect(logs.rows[1].tool_name).toBe('get_dashboard_stats');
+    });
+  });
+});
+```
+
+### Test Coverage Requirements
+
+| Category | Target Coverage | Critical Paths |
+|----------|-----------------|----------------|
+| Input Validation | 100% | SQL/NoSQL injection, XSS, path traversal |
+| Permission System | 100% | All 4 levels × all 74 tools |
+| Ownership Verification | 100% | All resource types |
+| Rate Limiting | 95% | Per-tool, per-user, abuse patterns |
+| Confirmation Flow | 100% | Create, confirm, cancel, expire |
+| Tool Execution | 90% | All CRUD operations |
+| Audit Logging | 95% | All actions logged correctly |
+
+### Test Commands
+
+```bash
+# Run all security tests
+npm run test:security
+
+# Run with coverage
+npm run test:coverage
+
+# Run specific test file
+npm run test -- __tests__/security/inputValidation.test.js
+
+# Run integration tests
+npm run test:integration
+
+# Run performance tests (rate limiting)
+npm run test:performance
+```
 
 ---
 
 ## Success Criteria
 
+### Security Criteria
+1. ✅ Zero SQL/NoSQL injection vulnerabilities
+2. ✅ Zero path traversal vulnerabilities
+3. ✅ Zero XSS vulnerabilities in tool inputs
+4. ✅ 100% ownership verification on all resources
+5. ✅ Rate limiting prevents abuse scenarios
+6. ✅ Confirmations cannot be bypassed
+7. ✅ All actions have complete audit trail
+8. ✅ Security tests achieve 100% coverage on critical paths
+
+### Functional Criteria
 1. ✅ All 74 tools implemented and functional
 2. ✅ Admin panel shows complete tool catalog
 3. ✅ Permission levels enforced for every operation
 4. ✅ Dangerous actions require user confirmation
 5. ✅ All actions logged to audit log
 6. ✅ Usage statistics visible in admin panel
-7. ✅ Rate limiting prevents abuse
-8. ✅ No security vulnerabilities in tool execution
-9. ✅ Clean UX for confirmation flows
-10. ✅ Full documentation for all tools
+7. ✅ Clean UX for confirmation flows
+8. ✅ Full documentation for all tools
+
+### Testing Criteria
+1. ✅ Unit test coverage > 90%
+2. ✅ Security test coverage = 100% on critical paths
+3. ✅ Integration tests pass
+4. ✅ Performance tests validate rate limits
+5. ✅ All edge cases documented and tested
