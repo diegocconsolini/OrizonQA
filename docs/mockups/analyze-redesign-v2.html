@@ -1,0 +1,906 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Analyze Page UX Redesign V2 - Full Feature Mockup</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'bg-dark': '#0a0a0f',
+            'surface-dark': '#12121a',
+            'primary': '#6366f1',
+            'text-secondary-dark': '#71717a',
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+    body { font-family: 'Inter', sans-serif; }
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #12121a; }
+    ::-webkit-scrollbar-thumb { background: #27272a; border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: #3f3f46; }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-fade-in { animation: fadeIn 0.3s ease-out forwards; }
+
+    .tree-item:hover { background: rgba(255,255,255,0.03); }
+    .tree-item.selected { background: rgba(99, 102, 241, 0.1); }
+
+    /* Custom checkbox */
+    .custom-checkbox {
+      appearance: none;
+      width: 16px;
+      height: 16px;
+      border: 1px solid rgba(255,255,255,0.2);
+      border-radius: 4px;
+      background: transparent;
+      cursor: pointer;
+      position: relative;
+    }
+    .custom-checkbox:checked {
+      background: #6366f1;
+      border-color: #6366f1;
+    }
+    .custom-checkbox:checked::after {
+      content: '';
+      position: absolute;
+      left: 5px;
+      top: 2px;
+      width: 4px;
+      height: 8px;
+      border: solid white;
+      border-width: 0 2px 2px 0;
+      transform: rotate(45deg);
+    }
+    .custom-checkbox:indeterminate {
+      background: #6366f1;
+      border-color: #6366f1;
+    }
+    .custom-checkbox:indeterminate::after {
+      content: '';
+      position: absolute;
+      left: 3px;
+      top: 6px;
+      width: 8px;
+      height: 2px;
+      background: white;
+    }
+  </style>
+</head>
+<body class="bg-bg-dark min-h-screen text-white">
+
+  <!-- Sidebar -->
+  <aside class="fixed left-0 top-0 bottom-0 w-16 bg-surface-dark border-r border-white/10 flex flex-col items-center py-4 z-50">
+    <div class="w-10 h-10 bg-gradient-to-br from-primary to-cyan-500 rounded-xl flex items-center justify-center mb-8">
+      <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+      </svg>
+    </div>
+    <nav class="flex flex-col gap-2">
+      <button class="p-3 rounded-xl text-text-secondary-dark hover:text-white hover:bg-white/5 transition-colors" title="Dashboard">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+      </button>
+      <button class="p-3 rounded-xl bg-primary/10 text-primary" title="Analyze">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
+      </button>
+      <button class="p-3 rounded-xl text-text-secondary-dark hover:text-white hover:bg-white/5 transition-colors" title="Projects">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/></svg>
+      </button>
+      <button class="p-3 rounded-xl text-text-secondary-dark hover:text-white hover:bg-white/5 transition-colors" title="Execute">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+      </button>
+      <button class="p-3 rounded-xl text-text-secondary-dark hover:text-white hover:bg-white/5 transition-colors" title="Reports">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+      </button>
+    </nav>
+    <div class="mt-auto">
+      <button class="p-3 rounded-xl text-text-secondary-dark hover:text-white hover:bg-white/5 transition-colors" title="Settings">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+      </button>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="ml-16">
+
+    <!-- Sticky Header -->
+    <header class="sticky top-0 z-40 border-b border-white/10 bg-surface-dark/80 backdrop-blur-xl">
+      <div class="px-6 py-4">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-4">
+            <div class="w-10 h-10 bg-gradient-to-br from-primary to-cyan-500 rounded-xl flex items-center justify-center">
+              <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
+              </svg>
+            </div>
+            <div>
+              <h1 class="text-lg font-bold text-white">Code Analysis</h1>
+              <p class="text-xs text-text-secondary-dark">Generate QA artifacts from your codebase</p>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-3">
+            <!-- Cache Status -->
+            <button onclick="toggleCachePanel()" class="flex items-center gap-2 px-3 py-1.5 bg-surface-dark border border-white/10 rounded-lg hover:border-white/20 transition-colors">
+              <svg class="w-4 h-4 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4"/></svg>
+              <span class="text-xs text-text-secondary-dark">3 repos cached</span>
+            </button>
+
+            <!-- Privacy Badge -->
+            <div class="flex items-center gap-1.5 px-2.5 py-1.5 bg-green-500/10 border border-green-500/20 rounded-lg">
+              <svg class="w-3.5 h-3.5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+              <span class="text-[10px] font-medium text-green-400">Code stays local</span>
+            </div>
+
+            <!-- History -->
+            <button class="flex items-center gap-2 px-3 py-1.5 text-xs text-text-secondary-dark hover:text-white hover:bg-white/5 rounded-lg transition-colors">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+              History
+            </button>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Content Area -->
+    <div class="p-6">
+      <div class="grid grid-cols-12 gap-6">
+
+        <!-- ==================== LEFT COLUMN: INPUT ==================== -->
+        <div class="col-span-12 xl:col-span-8 space-y-6">
+
+          <!-- Source Selection Card -->
+          <div class="bg-surface-dark border border-white/10 rounded-xl overflow-hidden">
+
+            <!-- Source Tabs -->
+            <div class="flex items-center gap-2 p-3 border-b border-white/10 bg-bg-dark/50">
+              <button onclick="setSourceMode('github')" class="source-btn flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-all bg-primary/10 text-primary border border-primary/30" data-mode="github">
+                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+                GitHub
+                <span class="w-1.5 h-1.5 bg-green-500 rounded-full"></span>
+              </button>
+              <button onclick="setSourceMode('paste')" class="source-btn flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-all text-text-secondary-dark hover:text-white hover:bg-white/5" data-mode="paste">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                Paste Code
+              </button>
+              <button onclick="setSourceMode('upload')" class="source-btn flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-all text-text-secondary-dark hover:text-white hover:bg-white/5" data-mode="upload">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+                Upload Files
+              </button>
+            </div>
+
+            <!-- GitHub Content -->
+            <div id="github-content" class="source-content">
+              <div class="grid grid-cols-1 lg:grid-cols-2 divide-y lg:divide-y-0 lg:divide-x divide-white/10">
+
+                <!-- Left: Repository Selector -->
+                <div class="p-4">
+                  <div class="flex items-center justify-between mb-3">
+                    <h3 class="text-sm font-medium text-white">Repository</h3>
+                    <button class="text-xs text-primary hover:underline flex items-center gap-1">
+                      <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                      Refresh
+                    </button>
+                  </div>
+
+                  <!-- Search -->
+                  <div class="relative mb-3">
+                    <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-secondary-dark" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                    <input type="text" placeholder="Search repositories..." class="w-full pl-10 pr-4 py-2.5 bg-bg-dark border border-white/10 rounded-lg text-sm text-white placeholder-text-secondary-dark focus:outline-none focus:border-primary/50">
+                  </div>
+
+                  <!-- Tabs: All / Favorites / Recent -->
+                  <div class="flex gap-1 mb-3 p-1 bg-bg-dark rounded-lg">
+                    <button class="flex-1 px-3 py-1.5 text-xs font-medium bg-white/10 text-white rounded">All</button>
+                    <button class="flex-1 px-3 py-1.5 text-xs font-medium text-text-secondary-dark hover:text-white rounded">Favorites</button>
+                    <button class="flex-1 px-3 py-1.5 text-xs font-medium text-text-secondary-dark hover:text-white rounded">Recent</button>
+                  </div>
+
+                  <!-- Repository List -->
+                  <div class="space-y-1 max-h-[280px] overflow-y-auto">
+                    <!-- Selected Repo -->
+                    <div class="flex items-center gap-3 p-3 bg-primary/10 border border-primary/30 rounded-lg cursor-pointer">
+                      <input type="radio" name="repo" checked class="w-4 h-4 text-primary bg-transparent border-white/20">
+                      <div class="flex-1 min-w-0">
+                        <div class="flex items-center gap-2">
+                          <span class="text-sm font-medium text-white truncate">OrizonQA</span>
+                          <svg class="w-3.5 h-3.5 text-amber-400 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                        </div>
+                        <p class="text-xs text-text-secondary-dark truncate">QA platform with AI analysis</p>
+                      </div>
+                      <span class="text-xs text-text-secondary-dark">2h ago</span>
+                    </div>
+
+                    <!-- Other repos -->
+                    <div class="flex items-center gap-3 p-3 hover:bg-white/5 rounded-lg cursor-pointer transition-colors">
+                      <input type="radio" name="repo" class="w-4 h-4 text-primary bg-transparent border-white/20">
+                      <div class="flex-1 min-w-0">
+                        <div class="flex items-center gap-2">
+                          <span class="text-sm font-medium text-white truncate">react-dashboard</span>
+                          <svg class="w-3 h-3 text-text-secondary-dark" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+                        </div>
+                        <p class="text-xs text-text-secondary-dark truncate">Admin dashboard template</p>
+                      </div>
+                      <span class="text-xs text-text-secondary-dark">1d ago</span>
+                    </div>
+
+                    <div class="flex items-center gap-3 p-3 hover:bg-white/5 rounded-lg cursor-pointer transition-colors">
+                      <input type="radio" name="repo" class="w-4 h-4 text-primary bg-transparent border-white/20">
+                      <div class="flex-1 min-w-0">
+                        <span class="text-sm font-medium text-white truncate block">api-gateway</span>
+                        <p class="text-xs text-text-secondary-dark truncate">Express.js API gateway</p>
+                      </div>
+                      <span class="text-xs text-text-secondary-dark">3d ago</span>
+                    </div>
+
+                    <div class="flex items-center gap-3 p-3 hover:bg-white/5 rounded-lg cursor-pointer transition-colors">
+                      <input type="radio" name="repo" class="w-4 h-4 text-primary bg-transparent border-white/20">
+                      <div class="flex-1 min-w-0">
+                        <span class="text-sm font-medium text-white truncate block">mobile-app</span>
+                        <p class="text-xs text-text-secondary-dark truncate">React Native mobile app</p>
+                      </div>
+                      <span class="text-xs text-text-secondary-dark">1w ago</span>
+                    </div>
+
+                    <div class="flex items-center gap-3 p-3 hover:bg-white/5 rounded-lg cursor-pointer transition-colors">
+                      <input type="radio" name="repo" class="w-4 h-4 text-primary bg-transparent border-white/20">
+                      <div class="flex-1 min-w-0">
+                        <span class="text-sm font-medium text-white truncate block">shared-components</span>
+                        <p class="text-xs text-text-secondary-dark truncate">UI component library</p>
+                      </div>
+                      <span class="text-xs text-text-secondary-dark">2w ago</span>
+                    </div>
+                  </div>
+
+                  <!-- Branch Selector -->
+                  <div class="mt-4 pt-4 border-t border-white/10">
+                    <label class="block text-xs font-medium text-text-secondary-dark mb-2">Branch</label>
+                    <div class="relative">
+                      <button class="w-full flex items-center justify-between px-3 py-2.5 bg-bg-dark border border-white/10 rounded-lg hover:border-white/20 transition-colors">
+                        <div class="flex items-center gap-2">
+                          <svg class="w-4 h-4 text-text-secondary-dark" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>
+                          <span class="text-sm text-white">main</span>
+                        </div>
+                        <svg class="w-4 h-4 text-text-secondary-dark" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Right: File Tree -->
+                <div class="p-4">
+                  <div class="flex items-center justify-between mb-3">
+                    <h3 class="text-sm font-medium text-white">Files</h3>
+                    <div class="flex items-center gap-2">
+                      <span class="text-xs text-primary">12 selected</span>
+                      <button class="text-xs text-text-secondary-dark hover:text-white">Clear</button>
+                    </div>
+                  </div>
+
+                  <!-- Quick Select Actions -->
+                  <div class="flex flex-wrap gap-2 mb-3">
+                    <button class="px-2.5 py-1 text-xs bg-blue-500/10 text-blue-400 border border-blue-500/20 rounded-lg hover:bg-blue-500/20 transition-colors">
+                      API Routes
+                    </button>
+                    <button class="px-2.5 py-1 text-xs bg-white/5 text-text-secondary-dark border border-white/10 rounded-lg hover:bg-white/10 transition-colors">
+                      Components
+                    </button>
+                    <button class="px-2.5 py-1 text-xs bg-white/5 text-text-secondary-dark border border-white/10 rounded-lg hover:bg-white/10 transition-colors">
+                      Hooks
+                    </button>
+                    <button class="px-2.5 py-1 text-xs bg-white/5 text-text-secondary-dark border border-white/10 rounded-lg hover:bg-white/10 transition-colors">
+                      Libs
+                    </button>
+                    <button class="px-2.5 py-1 text-xs bg-white/5 text-text-secondary-dark border border-white/10 rounded-lg hover:bg-white/10 transition-colors">
+                      All Code
+                    </button>
+                  </div>
+
+                  <!-- Pattern Input -->
+                  <div class="relative mb-3">
+                    <input type="text" placeholder="Filter: *.js, src/**, !test/*" class="w-full px-3 py-2 bg-bg-dark border border-white/10 rounded-lg text-xs text-white placeholder-text-secondary-dark focus:outline-none focus:border-primary/50">
+                  </div>
+
+                  <!-- File Tree -->
+                  <div class="bg-bg-dark rounded-lg border border-white/10 max-h-[300px] overflow-y-auto">
+                    <!-- app folder -->
+                    <div class="tree-item flex items-center gap-2 px-3 py-2 cursor-pointer hover:bg-white/5">
+                      <svg class="w-4 h-4 text-text-secondary-dark transform rotate-90" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                      <input type="checkbox" checked class="custom-checkbox" style="opacity: 1;">
+                      <svg class="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/></svg>
+                      <span class="text-sm text-white">app</span>
+                      <span class="text-xs text-text-secondary-dark ml-auto">45 files</span>
+                    </div>
+
+                    <!-- app/api folder (nested) -->
+                    <div class="tree-item selected flex items-center gap-2 px-3 py-2 pl-8 cursor-pointer">
+                      <svg class="w-4 h-4 text-text-secondary-dark transform rotate-90" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                      <input type="checkbox" checked class="custom-checkbox">
+                      <svg class="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/></svg>
+                      <span class="text-sm text-primary">api</span>
+                      <span class="text-xs text-primary ml-auto">12 files</span>
+                    </div>
+
+                    <!-- API files (nested deeper) -->
+                    <div class="tree-item selected flex items-center gap-2 px-3 py-1.5 pl-14 cursor-pointer">
+                      <input type="checkbox" checked class="custom-checkbox">
+                      <svg class="w-4 h-4 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                      <span class="text-xs text-white">route.js</span>
+                      <span class="text-[10px] text-text-secondary-dark ml-auto">2.3KB</span>
+                    </div>
+
+                    <div class="tree-item selected flex items-center gap-2 px-3 py-1.5 pl-14 cursor-pointer">
+                      <input type="checkbox" checked class="custom-checkbox">
+                      <svg class="w-4 h-4 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                      <span class="text-xs text-white">analyze/route.js</span>
+                      <span class="text-[10px] text-text-secondary-dark ml-auto">4.1KB</span>
+                    </div>
+
+                    <div class="tree-item selected flex items-center gap-2 px-3 py-1.5 pl-14 cursor-pointer">
+                      <input type="checkbox" checked class="custom-checkbox">
+                      <svg class="w-4 h-4 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                      <span class="text-xs text-white">execute-tests/route.js</span>
+                      <span class="text-[10px] text-text-secondary-dark ml-auto">3.8KB</span>
+                    </div>
+
+                    <!-- app/components folder -->
+                    <div class="tree-item flex items-center gap-2 px-3 py-2 pl-8 cursor-pointer hover:bg-white/5">
+                      <svg class="w-4 h-4 text-text-secondary-dark" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                      <input type="checkbox" class="custom-checkbox">
+                      <svg class="w-4 h-4 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/></svg>
+                      <span class="text-sm text-white">components</span>
+                      <span class="text-xs text-text-secondary-dark ml-auto">28 files</span>
+                    </div>
+
+                    <!-- app/hooks folder -->
+                    <div class="tree-item flex items-center gap-2 px-3 py-2 pl-8 cursor-pointer hover:bg-white/5">
+                      <svg class="w-4 h-4 text-text-secondary-dark" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                      <input type="checkbox" class="custom-checkbox">
+                      <svg class="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/></svg>
+                      <span class="text-sm text-white">hooks</span>
+                      <span class="text-xs text-text-secondary-dark ml-auto">8 files</span>
+                    </div>
+
+                    <!-- lib folder -->
+                    <div class="tree-item flex items-center gap-2 px-3 py-2 cursor-pointer hover:bg-white/5">
+                      <svg class="w-4 h-4 text-text-secondary-dark" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                      <input type="checkbox" class="custom-checkbox">
+                      <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/></svg>
+                      <span class="text-sm text-white">lib</span>
+                      <span class="text-xs text-text-secondary-dark ml-auto">15 files</span>
+                    </div>
+                  </div>
+
+                  <!-- Save to Cache -->
+                  <div class="mt-3 flex items-center justify-between">
+                    <button class="flex items-center gap-2 px-3 py-1.5 text-xs text-text-secondary-dark hover:text-white hover:bg-white/5 rounded-lg transition-colors">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"/></svg>
+                      Save to cache
+                    </button>
+                    <span class="text-xs text-text-secondary-dark">Last cached: 2h ago</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Paste Content -->
+            <div id="paste-content" class="source-content hidden p-4">
+              <textarea
+                placeholder="Paste your code here...
+
+You can paste multiple files with separators:
+=== FILE: example.py ===
+def hello():
+    print('Hello!')
+
+=== FILE: utils.py ===
+def helper():
+    pass"
+                class="w-full h-80 bg-bg-dark border border-white/10 rounded-xl p-4 text-sm font-mono text-white placeholder-text-secondary-dark resize-none focus:outline-none focus:border-primary/50 focus:ring-2 focus:ring-primary/20"
+              ></textarea>
+            </div>
+
+            <!-- Upload Content -->
+            <div id="upload-content" class="source-content hidden p-4">
+              <div class="border-2 border-dashed border-white/10 rounded-xl p-10 text-center hover:border-white/20 hover:bg-white/5 transition-all cursor-pointer">
+                <div class="mx-auto mb-4 p-4 rounded-2xl bg-white/5 inline-block">
+                  <svg class="w-8 h-8 text-text-secondary-dark" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+                </div>
+                <p class="text-white mb-2 font-medium">Drag & drop files or folders</p>
+                <p class="text-xs text-text-secondary-dark mb-4">
+                  .zip, .txt, .md, .json, .py, .js, .ts, .jsx, .tsx, .java, .cs, .go
+                </p>
+                <button class="px-5 py-2.5 bg-white/5 border border-white/10 hover:bg-white/10 rounded-xl text-sm font-medium text-white">
+                  Browse Files
+                </button>
+              </div>
+            </div>
+
+            <!-- Token/Stats Footer -->
+            <div class="px-4 py-3 border-t border-white/10 bg-bg-dark/50 flex items-center justify-between">
+              <div class="flex items-center gap-4">
+                <div class="flex items-center gap-2">
+                  <svg class="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                  <span class="text-sm text-white font-medium">~15,234</span>
+                  <span class="text-xs text-text-secondary-dark">tokens</span>
+                </div>
+                <div class="w-px h-4 bg-white/10"></div>
+                <div class="flex items-center gap-2">
+                  <span class="text-sm text-white font-medium">$0.05</span>
+                  <span class="text-xs text-text-secondary-dark">est. cost</span>
+                </div>
+              </div>
+              <div class="flex items-center gap-2 text-xs text-text-secondary-dark">
+                <span>12 files</span>
+                <span class="text-white/30">|</span>
+                <span>48.2 KB</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Goal Selection Card -->
+          <div class="bg-surface-dark border border-white/10 rounded-xl overflow-hidden">
+            <div class="px-4 py-3 border-b border-white/10 flex items-center justify-between">
+              <h3 class="text-sm font-medium text-white">Analysis Goal</h3>
+              <span class="text-xs text-text-secondary-dark">What do you want to generate?</span>
+            </div>
+
+            <div class="p-4">
+              <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+                <!-- API Tests -->
+                <button onclick="selectGoal('api')" class="goal-card group p-3 bg-bg-dark border-2 border-primary rounded-xl text-left transition-all" data-goal="api">
+                  <div class="w-8 h-8 rounded-lg bg-blue-500/10 flex items-center justify-center mb-2 group-hover:bg-blue-500/20">
+                    <svg class="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                  </div>
+                  <h4 class="text-xs font-semibold text-white mb-0.5">API Tests</h4>
+                  <p class="text-[10px] text-text-secondary-dark">Routes & endpoints</p>
+                </button>
+
+                <!-- Frontend -->
+                <button onclick="selectGoal('frontend')" class="goal-card group p-3 bg-bg-dark border border-white/10 rounded-xl hover:border-white/20 text-left transition-all" data-goal="frontend">
+                  <div class="w-8 h-8 rounded-lg bg-purple-500/10 flex items-center justify-center mb-2 group-hover:bg-purple-500/20">
+                    <svg class="w-4 h-4 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                  </div>
+                  <h4 class="text-xs font-semibold text-white mb-0.5">Frontend</h4>
+                  <p class="text-[10px] text-text-secondary-dark">Components & UI</p>
+                </button>
+
+                <!-- Backend -->
+                <button onclick="selectGoal('backend')" class="goal-card group p-3 bg-bg-dark border border-white/10 rounded-xl hover:border-white/20 text-left transition-all" data-goal="backend">
+                  <div class="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center mb-2 group-hover:bg-emerald-500/20">
+                    <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2"/></svg>
+                  </div>
+                  <h4 class="text-xs font-semibold text-white mb-0.5">Backend</h4>
+                  <p class="text-[10px] text-text-secondary-dark">Services & logic</p>
+                </button>
+
+                <!-- Full Coverage -->
+                <button onclick="selectGoal('full')" class="goal-card group p-3 bg-bg-dark border border-white/10 rounded-xl hover:border-white/20 text-left transition-all" data-goal="full">
+                  <div class="w-8 h-8 rounded-lg bg-amber-500/10 flex items-center justify-center mb-2 group-hover:bg-amber-500/20">
+                    <svg class="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/></svg>
+                  </div>
+                  <h4 class="text-xs font-semibold text-white mb-0.5">Full Coverage</h4>
+                  <p class="text-[10px] text-text-secondary-dark">Everything</p>
+                </button>
+
+                <!-- User Stories -->
+                <button onclick="selectGoal('stories')" class="goal-card group p-3 bg-bg-dark border border-white/10 rounded-xl hover:border-white/20 text-left transition-all" data-goal="stories">
+                  <div class="w-8 h-8 rounded-lg bg-pink-500/10 flex items-center justify-center mb-2 group-hover:bg-pink-500/20">
+                    <svg class="w-4 h-4 text-pink-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
+                  </div>
+                  <h4 class="text-xs font-semibold text-white mb-0.5">User Stories</h4>
+                  <p class="text-[10px] text-text-secondary-dark">Requirements</p>
+                </button>
+
+                <!-- Custom -->
+                <button onclick="selectGoal('custom')" class="goal-card group p-3 bg-bg-dark border border-white/10 rounded-xl hover:border-white/20 text-left transition-all" data-goal="custom">
+                  <div class="w-8 h-8 rounded-lg bg-cyan-500/10 flex items-center justify-center mb-2 group-hover:bg-cyan-500/20">
+                    <svg class="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/></svg>
+                  </div>
+                  <h4 class="text-xs font-semibold text-white mb-0.5">Custom</h4>
+                  <p class="text-[10px] text-text-secondary-dark">Configure all</p>
+                </button>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- ==================== RIGHT COLUMN: CONFIG & ACTION ==================== -->
+        <div class="col-span-12 xl:col-span-4 space-y-6">
+
+          <!-- AI Provider Card -->
+          <div class="bg-surface-dark border border-white/10 rounded-xl overflow-hidden">
+            <div class="px-4 py-3 border-b border-white/10 flex items-center justify-between">
+              <h3 class="text-sm font-medium text-white">AI Configuration</h3>
+              <a href="/settings" class="text-xs text-primary hover:underline">Settings</a>
+            </div>
+
+            <div class="p-4 space-y-4">
+              <!-- Provider Selection -->
+              <div>
+                <label class="block text-xs font-medium text-text-secondary-dark mb-2">Provider</label>
+                <div class="flex gap-2">
+                  <button class="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 bg-primary/10 border border-primary/30 rounded-lg text-sm text-primary font-medium">
+                    <div class="w-5 h-5 rounded bg-gradient-to-br from-orange-500 to-amber-500 flex items-center justify-center">
+                      <span class="text-white font-bold text-[10px]">C</span>
+                    </div>
+                    Claude
+                  </button>
+                  <button class="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 bg-bg-dark border border-white/10 rounded-lg text-sm text-text-secondary-dark hover:text-white hover:border-white/20 transition-colors">
+                    <div class="w-5 h-5 rounded bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center">
+                      <span class="text-white font-bold text-[10px]">L</span>
+                    </div>
+                    LM Studio
+                  </button>
+                </div>
+              </div>
+
+              <!-- Model Selection -->
+              <div>
+                <label class="block text-xs font-medium text-text-secondary-dark mb-2">Model</label>
+                <select class="w-full px-3 py-2.5 bg-bg-dark border border-white/10 rounded-lg text-sm text-white focus:outline-none focus:border-primary/50">
+                  <option>Claude Sonnet 4 (Recommended)</option>
+                  <option>Claude Opus 4.5</option>
+                  <option>Claude Haiku 3.5</option>
+                </select>
+              </div>
+
+              <!-- API Key Status -->
+              <div class="flex items-center gap-3 p-3 bg-green-500/10 border border-green-500/20 rounded-lg">
+                <svg class="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                <div class="flex-1">
+                  <p class="text-sm text-white">API Key configured</p>
+                  <p class="text-xs text-text-secondary-dark">sk-ant-...7x4m</p>
+                </div>
+                <button class="text-xs text-text-secondary-dark hover:text-white">Edit</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Output Settings Card -->
+          <div class="bg-surface-dark border border-white/10 rounded-xl overflow-hidden">
+            <div class="px-4 py-3 border-b border-white/10">
+              <h3 class="text-sm font-medium text-white">Output Settings</h3>
+            </div>
+
+            <div class="p-4 space-y-4">
+              <!-- Output Format -->
+              <div>
+                <label class="block text-xs font-medium text-text-secondary-dark mb-2">Format</label>
+                <select class="w-full px-3 py-2.5 bg-bg-dark border border-white/10 rounded-lg text-sm text-white focus:outline-none focus:border-primary/50">
+                  <option>Markdown</option>
+                  <option>JSON</option>
+                  <option>HTML</option>
+                  <option>Jira/Xray JSON</option>
+                  <option>TestRail CSV</option>
+                  <option>Azure Test Plans XML</option>
+                  <option>Gherkin/BDD</option>
+                </select>
+              </div>
+
+              <!-- Test Framework -->
+              <div>
+                <label class="block text-xs font-medium text-text-secondary-dark mb-2">Test Framework</label>
+                <select class="w-full px-3 py-2.5 bg-bg-dark border border-white/10 rounded-lg text-sm text-white focus:outline-none focus:border-primary/50">
+                  <option>Auto-detect</option>
+                  <option>Jest</option>
+                  <option>Vitest</option>
+                  <option>Mocha</option>
+                  <option>Pytest</option>
+                  <option>JUnit</option>
+                </select>
+              </div>
+
+              <!-- Toggles -->
+              <div class="space-y-3">
+                <label class="flex items-center justify-between cursor-pointer">
+                  <span class="text-sm text-white">Include edge cases</span>
+                  <input type="checkbox" checked class="w-4 h-4 rounded border-white/20 bg-bg-dark text-primary focus:ring-primary/50">
+                </label>
+                <label class="flex items-center justify-between cursor-pointer">
+                  <span class="text-sm text-white">Security tests</span>
+                  <input type="checkbox" class="w-4 h-4 rounded border-white/20 bg-bg-dark text-primary focus:ring-primary/50">
+                </label>
+                <label class="flex items-center justify-between cursor-pointer">
+                  <span class="text-sm text-white">Performance tests</span>
+                  <input type="checkbox" class="w-4 h-4 rounded border-white/20 bg-bg-dark text-primary focus:ring-primary/50">
+                </label>
+              </div>
+
+              <!-- Additional Context -->
+              <div>
+                <label class="block text-xs font-medium text-text-secondary-dark mb-2">Additional context (optional)</label>
+                <textarea
+                  placeholder="Add any specific requirements, constraints, or context..."
+                  class="w-full px-3 py-2.5 bg-bg-dark border border-white/10 rounded-lg text-sm text-white placeholder-text-secondary-dark resize-none h-20 focus:outline-none focus:border-primary/50"
+                ></textarea>
+              </div>
+            </div>
+          </div>
+
+          <!-- Summary & Action Card -->
+          <div class="bg-gradient-to-br from-primary/10 to-cyan-500/10 border border-primary/20 rounded-xl overflow-hidden">
+            <div class="p-4 space-y-4">
+              <!-- Summary Stats -->
+              <div class="grid grid-cols-3 gap-3 text-center">
+                <div class="p-3 bg-white/5 rounded-lg">
+                  <div class="text-lg font-bold text-white">12</div>
+                  <div class="text-xs text-text-secondary-dark">Files</div>
+                </div>
+                <div class="p-3 bg-white/5 rounded-lg">
+                  <div class="text-lg font-bold text-white">~15K</div>
+                  <div class="text-xs text-text-secondary-dark">Tokens</div>
+                </div>
+                <div class="p-3 bg-white/5 rounded-lg">
+                  <div class="text-lg font-bold text-primary">$0.05</div>
+                  <div class="text-xs text-text-secondary-dark">Est. Cost</div>
+                </div>
+              </div>
+
+              <!-- Selected Goal Badge -->
+              <div class="flex items-center gap-2 p-3 bg-white/5 rounded-lg">
+                <svg class="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                <div class="flex-1">
+                  <p class="text-sm text-white font-medium">API Tests</p>
+                  <p class="text-xs text-text-secondary-dark">Tests will be executable</p>
+                </div>
+                <span class="px-2 py-0.5 bg-green-500/10 text-green-400 text-xs rounded-full">Executable</span>
+              </div>
+
+              <!-- Primary Action -->
+              <button onclick="startAnalysis()" class="w-full py-4 bg-gradient-to-r from-primary to-cyan-500 text-white font-semibold rounded-xl hover:shadow-lg hover:shadow-primary/25 transition-all duration-300 flex items-center justify-center gap-2">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
+                Analyze Code
+              </button>
+
+              <!-- Keyboard Shortcut Hint -->
+              <p class="text-center text-xs text-text-secondary-dark">
+                Press <kbd class="px-1.5 py-0.5 bg-white/10 rounded text-[10px]">Cmd</kbd> + <kbd class="px-1.5 py-0.5 bg-white/10 rounded text-[10px]">Enter</kbd> to analyze
+              </p>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== CACHE PANEL (Slide-out) ==================== -->
+    <div id="cachePanel" class="hidden fixed right-0 top-0 bottom-0 w-96 bg-surface-dark border-l border-white/10 z-50 shadow-2xl">
+      <div class="flex items-center justify-between px-4 py-3 border-b border-white/10">
+        <h3 class="text-sm font-medium text-white">Local Cache</h3>
+        <button onclick="toggleCachePanel()" class="p-1.5 hover:bg-white/5 rounded-lg transition-colors">
+          <svg class="w-5 h-5 text-text-secondary-dark" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+
+      <div class="p-4 space-y-4">
+        <div class="p-4 bg-bg-dark rounded-xl">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-sm text-white">Storage Used</span>
+            <span class="text-sm text-primary">24.5 MB</span>
+          </div>
+          <div class="h-2 bg-white/10 rounded-full overflow-hidden">
+            <div class="h-full bg-primary rounded-full" style="width: 35%"></div>
+          </div>
+          <p class="text-xs text-text-secondary-dark mt-2">35% of 70 MB limit</p>
+        </div>
+
+        <h4 class="text-xs font-medium text-text-secondary-dark uppercase tracking-wide">Cached Repositories</h4>
+
+        <div class="space-y-2">
+          <div class="flex items-center gap-3 p-3 bg-bg-dark rounded-lg">
+            <svg class="w-5 h-5 text-text-secondary-dark" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+            <div class="flex-1 min-w-0">
+              <p class="text-sm text-white truncate">diegocc/OrizonQA</p>
+              <p class="text-xs text-text-secondary-dark">45 files • 12.3 MB</p>
+            </div>
+            <button class="p-1.5 text-text-secondary-dark hover:text-red-400 hover:bg-red-500/10 rounded transition-colors">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+            </button>
+          </div>
+
+          <div class="flex items-center gap-3 p-3 bg-bg-dark rounded-lg">
+            <svg class="w-5 h-5 text-text-secondary-dark" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+            <div class="flex-1 min-w-0">
+              <p class="text-sm text-white truncate">diegocc/react-dashboard</p>
+              <p class="text-xs text-text-secondary-dark">23 files • 8.1 MB</p>
+            </div>
+            <button class="p-1.5 text-text-secondary-dark hover:text-red-400 hover:bg-red-500/10 rounded transition-colors">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+            </button>
+          </div>
+
+          <div class="flex items-center gap-3 p-3 bg-bg-dark rounded-lg">
+            <svg class="w-5 h-5 text-text-secondary-dark" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+            <div class="flex-1 min-w-0">
+              <p class="text-sm text-white truncate">diegocc/api-gateway</p>
+              <p class="text-xs text-text-secondary-dark">18 files • 4.1 MB</p>
+            </div>
+            <button class="p-1.5 text-text-secondary-dark hover:text-red-400 hover:bg-red-500/10 rounded transition-colors">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <button class="w-full py-2.5 text-sm text-red-400 hover:bg-red-500/10 rounded-lg transition-colors">
+          Clear All Cache
+        </button>
+      </div>
+    </div>
+
+    <!-- ==================== ANALYSIS OVERLAY ==================== -->
+    <div id="analysisOverlay" class="hidden fixed inset-0 bg-bg-dark/95 backdrop-blur-sm z-50 flex items-center justify-center p-6">
+      <div class="w-full max-w-2xl">
+        <div class="bg-surface-dark border border-white/10 rounded-2xl overflow-hidden">
+
+          <!-- Header -->
+          <div class="px-6 py-4 border-b border-white/10 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-cyan-500 flex items-center justify-center">
+                <svg class="w-5 h-5 text-white animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
+              </div>
+              <div>
+                <h2 class="text-lg font-semibold text-white">Analyzing Code</h2>
+                <p class="text-xs text-text-secondary-dark">diegocc/OrizonQA • 12 files</p>
+              </div>
+            </div>
+            <button onclick="cancelAnalysis()" class="px-3 py-1.5 text-sm text-text-secondary-dark hover:text-white hover:bg-white/5 rounded-lg transition-colors">
+              Cancel
+            </button>
+          </div>
+
+          <!-- Progress -->
+          <div class="p-6">
+            <!-- Overall Progress -->
+            <div class="mb-6">
+              <div class="flex justify-between text-sm mb-2">
+                <span class="text-white font-medium">Overall Progress</span>
+                <span class="text-primary" id="progressPercent">65%</span>
+              </div>
+              <div class="h-3 bg-white/10 rounded-full overflow-hidden">
+                <div class="h-full bg-gradient-to-r from-primary to-cyan-500 rounded-full transition-all duration-500" style="width: 65%"></div>
+              </div>
+            </div>
+
+            <!-- Current Stage -->
+            <div class="mb-6 p-4 bg-bg-dark rounded-xl">
+              <div class="flex items-center gap-3 mb-3">
+                <div class="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center">
+                  <svg class="w-4 h-4 text-primary animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                </div>
+                <div>
+                  <p class="text-sm text-white font-medium">Generating Test Cases</p>
+                  <p class="text-xs text-text-secondary-dark">Processing chunk 2 of 5</p>
+                </div>
+              </div>
+
+              <!-- Current File -->
+              <div class="flex items-center gap-2 px-3 py-2 bg-white/5 rounded-lg">
+                <svg class="w-4 h-4 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                <span class="text-xs text-white font-mono">app/api/execute-tests/route.js</span>
+              </div>
+            </div>
+
+            <!-- Stage Steps -->
+            <div class="space-y-3">
+              <div class="flex items-center gap-3">
+                <div class="w-6 h-6 rounded-full bg-green-500 flex items-center justify-center">
+                  <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
+                </div>
+                <span class="text-sm text-white">Analyzing code structure</span>
+                <span class="text-xs text-green-400 ml-auto">Complete</span>
+              </div>
+              <div class="flex items-center gap-3">
+                <div class="w-6 h-6 rounded-full bg-green-500 flex items-center justify-center">
+                  <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
+                </div>
+                <span class="text-sm text-white">Generating user stories</span>
+                <span class="text-xs text-green-400 ml-auto">Complete</span>
+              </div>
+              <div class="flex items-center gap-3">
+                <div class="w-6 h-6 rounded-full bg-primary flex items-center justify-center">
+                  <div class="w-2 h-2 bg-white rounded-full animate-pulse"></div>
+                </div>
+                <span class="text-sm text-white">Generating test cases</span>
+                <span class="text-xs text-primary ml-auto">In progress...</span>
+              </div>
+              <div class="flex items-center gap-3">
+                <div class="w-6 h-6 rounded-full bg-white/10 flex items-center justify-center">
+                  <span class="text-xs text-text-secondary-dark">4</span>
+                </div>
+                <span class="text-sm text-text-secondary-dark">Generating acceptance criteria</span>
+                <span class="text-xs text-text-secondary-dark ml-auto">Pending</span>
+              </div>
+            </div>
+
+            <!-- Stats Footer -->
+            <div class="mt-6 pt-4 border-t border-white/10 grid grid-cols-3 gap-4 text-center">
+              <div>
+                <div class="text-lg font-bold text-white">00:47</div>
+                <div class="text-xs text-text-secondary-dark">Elapsed</div>
+              </div>
+              <div>
+                <div class="text-lg font-bold text-white">~8,500</div>
+                <div class="text-xs text-text-secondary-dark">Tokens Used</div>
+              </div>
+              <div>
+                <div class="text-lg font-bold text-white">~01:15</div>
+                <div class="text-xs text-text-secondary-dark">Remaining</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <script>
+    function setSourceMode(mode) {
+      document.querySelectorAll('.source-btn').forEach(btn => {
+        if (btn.dataset.mode === mode) {
+          btn.className = 'source-btn flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-all bg-primary/10 text-primary border border-primary/30';
+        } else {
+          btn.className = 'source-btn flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-all text-text-secondary-dark hover:text-white hover:bg-white/5';
+        }
+      });
+
+      document.querySelectorAll('.source-content').forEach(el => el.classList.add('hidden'));
+      document.getElementById(`${mode}-content`).classList.remove('hidden');
+    }
+
+    function selectGoal(goal) {
+      document.querySelectorAll('.goal-card').forEach(card => {
+        if (card.dataset.goal === goal) {
+          card.classList.add('border-2', 'border-primary');
+          card.classList.remove('border', 'border-white/10');
+        } else {
+          card.classList.remove('border-2', 'border-primary');
+          card.classList.add('border', 'border-white/10');
+        }
+      });
+    }
+
+    function toggleCachePanel() {
+      const panel = document.getElementById('cachePanel');
+      panel.classList.toggle('hidden');
+    }
+
+    function startAnalysis() {
+      document.getElementById('analysisOverlay').classList.remove('hidden');
+
+      // Simulate progress
+      let progress = 0;
+      const interval = setInterval(() => {
+        progress += Math.random() * 10;
+        if (progress >= 100) {
+          progress = 100;
+          clearInterval(interval);
+          setTimeout(() => {
+            document.getElementById('analysisOverlay').classList.add('hidden');
+            alert('Analysis complete! Results would be shown here.');
+          }, 500);
+        }
+        document.querySelector('#analysisOverlay .h-3 > div').style.width = `${progress}%`;
+        document.getElementById('progressPercent').textContent = `${Math.round(progress)}%`;
+      }, 800);
+    }
+
+    function cancelAnalysis() {
+      document.getElementById('analysisOverlay').classList.add('hidden');
+    }
+  </script>
+
+</body>
+</html>
