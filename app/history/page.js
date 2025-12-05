@@ -145,15 +145,20 @@ export default function HistoryPage() {
   return (
     <AppLayout>
       <div className="w-full">
-        {/* Page Header */}
-        <div className="mb-8">
-          <div className="flex items-center gap-3 mb-2">
-            <HistoryIcon className="w-8 h-8 text-primary" />
-            <h1 className="text-3xl font-bold text-white font-primary">Analysis History</h1>
+        <main className="p-4 md:p-6 lg:p-8">
+          {/* Page Header */}
+        <div className="flex items-start justify-between mb-8">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 bg-gradient-to-br from-primary to-cyan-500 rounded-xl flex items-center justify-center">
+              <HistoryIcon className="w-6 h-6 text-white" />
+            </div>
+            <div>
+              <h1 className="text-2xl font-bold text-white font-primary">Analysis History</h1>
+              <p className="text-text-secondary-dark font-secondary mt-1">
+                View and manage your past codebase analyses
+              </p>
+            </div>
           </div>
-          <p className="text-text-secondary-dark font-secondary">
-            View and manage your past codebase analyses
-          </p>
         </div>
 
         {/* Stats Overview */}
@@ -318,6 +323,7 @@ export default function HistoryPage() {
             }
           />
         )}
+        </main>
       </div>
     </AppLayout>
   );

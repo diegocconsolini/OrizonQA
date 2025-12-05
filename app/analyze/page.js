@@ -620,33 +620,34 @@ function AnalyzePageContent() {
       <div className="w-full">
         <main className="p-4 md:p-6 lg:p-8">
           {/* Page Header */}
-          <div className="mb-6">
-            <div className="flex items-center justify-between mb-2">
+          <div className="flex items-start justify-between mb-8">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 bg-gradient-to-br from-primary to-cyan-500 rounded-xl flex items-center justify-center">
+                <Sparkles className="w-6 h-6 text-white" />
+              </div>
               <div>
-                <h1 className="text-2xl font-bold text-white font-primary">
-                  Code Analysis
-                </h1>
-                <p className="text-sm text-text-secondary-dark mt-1">
+                <h1 className="text-2xl font-bold text-white font-primary">Code Analysis</h1>
+                <p className="text-text-secondary-dark font-secondary mt-1">
                   Analyze code from GitHub repositories, paste, or upload files
                 </p>
               </div>
-              <div className="flex items-center gap-3">
-                <div className="flex items-center gap-1.5 px-3 py-1.5 bg-primary/10
-                              border border-primary/20 rounded-full text-xs text-primary">
-                  <Shield className="w-3.5 h-3.5" />
-                  <span>Local Storage Only</span>
-                </div>
-                {!isConnected && (
-                  <a
-                    href="/settings?tab=integrations"
-                    className="flex items-center gap-2 px-4 py-2 bg-white/5 border border-white/10
-                             rounded-lg text-sm text-white hover:bg-white/10 transition-all"
-                  >
-                    <Settings className="w-4 h-4" />
-                    Connect GitHub
-                  </a>
-                )}
+            </div>
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-1.5 px-3 py-1.5 bg-primary/10
+                            border border-primary/20 rounded-full text-xs text-primary">
+                <Shield className="w-3.5 h-3.5" />
+                <span>Local Storage Only</span>
               </div>
+              {!isConnected && (
+                <a
+                  href="/settings?tab=integrations"
+                  className="flex items-center gap-2 px-4 py-2 bg-white/5 border border-white/10
+                           rounded-lg text-sm text-white hover:bg-white/10 transition-all"
+                >
+                  <Settings className="w-4 h-4" />
+                  Connect GitHub
+                </a>
+              )}
             </div>
           </div>
 

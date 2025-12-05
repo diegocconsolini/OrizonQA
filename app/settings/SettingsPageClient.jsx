@@ -439,18 +439,21 @@ export default function SettingsPageClient() {
 
   return (
     <AppLayout>
-      {/* Main Content */}
-      <div className="pb-12 px-6 py-8">
-        <div>
+      <div className="w-full">
+        <main className="p-4 md:p-6 lg:p-8">
           {/* Page Header */}
-          <div className="mb-8">
-            <div className="flex items-center gap-3 mb-2">
-              <SettingsIcon className="w-8 h-8 text-primary" />
-              <h1 className="text-3xl font-bold text-white font-primary">Settings</h1>
+          <div className="flex items-start justify-between mb-8">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 bg-gradient-to-br from-primary to-cyan-500 rounded-xl flex items-center justify-center">
+                <SettingsIcon className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <h1 className="text-2xl font-bold text-white font-primary">Settings</h1>
+                <p className="text-text-secondary-dark font-secondary mt-1">
+                  Manage your account preferences and API configurations
+                </p>
+              </div>
             </div>
-            <p className="text-text-secondary-dark font-secondary">
-              Manage your account preferences and API configurations
-            </p>
           </div>
 
           {/* Success/Error Messages */}
@@ -1339,7 +1342,7 @@ export default function SettingsPageClient() {
               </li>
             </ul>
           </div>
-        </div>
+        </main>
       </div>
     </AppLayout>
   );

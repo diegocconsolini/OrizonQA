@@ -207,11 +207,16 @@ export default function Dashboard() {
         <main className="p-4 md:p-6 lg:p-8 relative z-10">
           {/* Page Header */}
           <div className="flex items-start justify-between mb-8">
-            <div>
-              <h1 className="text-2xl font-bold text-white font-primary">Dashboard</h1>
-              <p className="text-text-secondary-dark mt-1 font-secondary">
-                Monitor your code analysis usage and metrics
-              </p>
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 bg-gradient-to-br from-primary to-cyan-500 rounded-xl flex items-center justify-center">
+                <BarChart3 className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <h1 className="text-2xl font-bold text-white font-primary">Dashboard</h1>
+                <p className="text-text-secondary-dark mt-1 font-secondary">
+                  Monitor your code analysis usage and metrics
+                </p>
+              </div>
             </div>
             <div className="flex items-center gap-3">
               <PeriodSelector value={period} onChange={setPeriod} />
