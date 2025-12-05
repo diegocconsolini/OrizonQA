@@ -286,14 +286,18 @@ function AnalyzeV2Content() {
     };
   }, [toggleFileSelection, batchToggleFiles, selectAllCodeFiles, clearSelection, setConfig, handleAnalyze, cancelStreamAnalysis, handleReset]);
 
-  // Sync page context with assistant store
+  // Ref to track previous context for comparison
+  const prevContextRef = useRef(null);
+
+  // Sync page context with assistant store - only when values actually change
   useEffect(() => {
     const context = {
       currentPage: '/analyze-v2',
-      selectedRepo,
+      selectedRepo: selectedRepo?.id || null,
       selectedBranch,
-      selectedFiles,
-      fileTree,
+      selectedFilesCount: selectedFiles.length,
+      selectedFilePaths: selectedFiles.map(f => f.path || f),
+      fileTreeCount: fileTree?.length || 0,
       config,
       isAnalyzing: streamIsAnalyzing,
       isComplete: streamIsComplete,
@@ -301,7 +305,18 @@ function AnalyzeV2Content() {
       hasApiKey,
       canAnalyze,
     };
-    setPageContext(context);
+
+    // Only update if context has actually changed (shallow comparison of JSON)
+    const contextKey = JSON.stringify(context);
+    if (prevContextRef.current !== contextKey) {
+      prevContextRef.current = contextKey;
+      setPageContext({
+        ...context,
+        selectedFiles, // Include full array for actual usage
+        fileTree, // Include full array for actual usage
+        selectedRepo, // Include full object for actual usage
+      });
+    }
   }, [
     selectedRepo,
     selectedBranch,
