@@ -237,58 +237,60 @@ export default function ExecutionViewPage() {
 
   return (
     <AppLayout>
-      <div className="w-full">
-        <main className="p-4 md:p-6 lg:p-8">
-          {/* Header */}
-          <div className="flex items-start justify-between mb-8">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-gradient-to-br from-primary to-cyan-500 rounded-xl flex items-center justify-center">
-                <FileText className="w-6 h-6 text-white" />
+      <div className="min-h-screen bg-bg-dark">
+        {/* Sticky Header */}
+        <div className="border-b border-white/10 bg-surface-dark/50 backdrop-blur-sm">
+          <div className="px-6 py-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 bg-gradient-to-br from-primary to-cyan-500 rounded-xl flex items-center justify-center">
+                  <FileText className="w-6 h-6 text-white" />
+                </div>
+                <div>
+                  <h1 className="text-2xl font-bold text-white">Test Execution</h1>
+                  <p className="text-sm text-text-secondary-dark font-mono">ID: {executionId}</p>
+                </div>
               </div>
-              <div>
-                <h1 className="text-2xl font-bold text-white font-primary">Test Execution</h1>
-                <p className="text-text-secondary-dark font-secondary mt-1 font-mono text-sm">ID: {executionId}</p>
+              <div className="flex items-center gap-3">
+                {isComplete && (
+                  <>
+                    <button
+                      onClick={reRunExecution}
+                      className="flex items-center gap-2 px-4 py-2 bg-surface-dark border border-white/10 hover:bg-white/10 text-white rounded-lg transition-colors"
+                    >
+                      <RefreshCw className="w-4 h-4" />
+                      Re-run
+                    </button>
+                    <button
+                      onClick={viewReport}
+                      className="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary/90 text-white rounded-lg transition-colors"
+                    >
+                      <FileText className="w-4 h-4" />
+                      View Report
+                    </button>
+                  </>
+                )}
+                {/* Connection Status */}
+                {isRunning && (
+                  <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-sm ${
+                    isConnected
+                      ? 'bg-green-500/20 text-green-400'
+                      : 'bg-yellow-500/20 text-yellow-400'
+                  }`}>
+                    <div className={`w-2 h-2 rounded-full ${
+                      isConnected ? 'bg-green-400' : 'bg-yellow-400 animate-pulse'
+                    }`} />
+                    {isConnected ? 'Connected' : 'Reconnecting...'}
+                  </div>
+                )}
               </div>
             </div>
-
-          {/* Action Buttons */}
-          <div className="flex items-center gap-3">
-            {isComplete && (
-              <>
-                <button
-                  onClick={reRunExecution}
-                  className="flex items-center gap-2 px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg transition-colors"
-                >
-                  <RefreshCw className="w-4 h-4" />
-                  Re-run
-                </button>
-                <button
-                  onClick={viewReport}
-                  className="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary/90 text-white rounded-lg transition-colors"
-                >
-                  <FileText className="w-4 h-4" />
-                  View Report
-                </button>
-              </>
-            )}
-
-            {/* Connection Status */}
-            {isRunning && (
-              <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-sm ${
-                isConnected
-                  ? 'bg-green-500/20 text-green-400'
-                  : 'bg-yellow-500/20 text-yellow-400'
-              }`}>
-                <div className={`w-2 h-2 rounded-full ${
-                  isConnected ? 'bg-green-400' : 'bg-yellow-400 animate-pulse'
-                }`} />
-                {isConnected ? 'Connected' : 'Reconnecting...'}
-              </div>
-            )}
           </div>
         </div>
 
-        {/* Completion Banner */}
+        {/* Content Area */}
+        <div className="px-6 py-8">
+          {/* Completion Banner */}
         {execution?.status === 'complete' && (
           <div className="mb-6 p-4 bg-green-500/10 border border-green-500/30 rounded-lg flex items-center gap-3">
             <CheckCircle className="w-5 h-5 text-green-400" />
@@ -378,7 +380,7 @@ export default function ExecutionViewPage() {
             </div>
           </div>
         )}
-        </main>
+        </div>
       </div>
     </AppLayout>
   );

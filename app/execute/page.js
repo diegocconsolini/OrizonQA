@@ -144,8 +144,11 @@ function ExecutePageContent() {
   if (status === 'loading') {
     return (
       <AppLayout>
-        <div className="flex items-center justify-center min-h-[60vh]">
-          <Loader2 className="w-8 h-8 text-primary animate-spin" />
+        <div className="min-h-screen bg-bg-dark flex items-center justify-center">
+          <div className="text-center">
+            <Loader2 className="w-8 h-8 text-primary animate-spin mx-auto mb-4" />
+            <p className="text-text-secondary-dark">Loading...</p>
+          </div>
         </div>
       </AppLayout>
     );
@@ -155,41 +158,44 @@ function ExecutePageContent() {
 
   return (
     <AppLayout>
-      <div className="w-full">
-        <main className="p-4 md:p-6 lg:p-8">
-          {/* Header */}
-          <div className="flex items-start justify-between mb-8">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-gradient-to-br from-primary to-cyan-500 rounded-xl flex items-center justify-center">
-                <Play className="w-6 h-6 text-white" />
+      <div className="min-h-screen bg-bg-dark">
+        {/* Sticky Header */}
+        <div className="border-b border-white/10 bg-surface-dark/50 backdrop-blur-sm">
+          <div className="px-6 py-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 bg-gradient-to-br from-primary to-cyan-500 rounded-xl flex items-center justify-center">
+                  <Play className="w-6 h-6 text-white" />
+                </div>
+                <div>
+                  <h1 className="text-2xl font-bold text-white">Execute Tests</h1>
+                  <p className="text-sm text-text-secondary-dark">Configure and run your test suite</p>
+                </div>
               </div>
-              <div>
-                <h1 className="text-2xl font-bold text-white font-primary">Execute Tests</h1>
-                <p className="text-text-secondary-dark font-secondary mt-1">Configure and run your test suite</p>
-              </div>
+              <button
+                onClick={startExecution}
+                disabled={isStarting || !testCode || totalTests === 0}
+                className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-primary to-cyan-500 hover:from-primary/90 hover:to-cyan-500/90 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-xl font-medium transition-all"
+              >
+                {isStarting ? (
+                  <>
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                    Starting...
+                  </>
+                ) : (
+                  <>
+                    <Play className="w-5 h-5" />
+                    Run {totalTests} Test{totalTests !== 1 ? 's' : ''}
+                  </>
+                )}
+              </button>
             </div>
-
-          {/* Start Button */}
-          <button
-            onClick={startExecution}
-            disabled={isStarting || !testCode || totalTests === 0}
-            className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-primary to-cyan-500 hover:from-primary/90 hover:to-cyan-500/90 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-xl font-medium transition-all"
-          >
-            {isStarting ? (
-              <>
-                <Loader2 className="w-5 h-5 animate-spin" />
-                Starting...
-              </>
-            ) : (
-              <>
-                <Play className="w-5 h-5" />
-                Run {totalTests} Test{totalTests !== 1 ? 's' : ''}
-              </>
-            )}
-          </button>
+          </div>
         </div>
 
-        {/* Error Message */}
+        {/* Content Area */}
+        <div className="px-6 py-8">
+          {/* Error Message */}
         {error && (
           <div className="mb-6 p-4 bg-red-500/10 border border-red-500/30 rounded-lg flex items-start gap-3">
             <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
@@ -320,7 +326,7 @@ function ExecutePageContent() {
             </div>
           </>
         )}
-        </main>
+        </div>
       </div>
     </AppLayout>
   );

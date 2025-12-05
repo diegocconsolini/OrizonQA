@@ -182,22 +182,22 @@ export default function ReportDetailPage() {
                 </div>
               </div>
               <div className="flex items-center gap-2">
-            <button
-              onClick={exportJson}
-              className="flex items-center gap-2 px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg transition-colors"
-            >
-              <Download className="w-4 h-4" />
-              Export
-            </button>
-            {failedTests.length > 0 && (
-              <button
-                onClick={reRunFailed}
-                className="flex items-center gap-2 px-4 py-2 bg-red-500/20 hover:bg-red-500/30 text-red-400 rounded-lg transition-colors"
-              >
-                <RefreshCw className="w-4 h-4" />
-                Re-run Failed
-              </button>
-            )}
+                <button
+                  onClick={exportJson}
+                  className="flex items-center gap-2 px-4 py-2 bg-surface-dark border border-white/10 hover:bg-white/10 text-white rounded-lg transition-colors"
+                >
+                  <Download className="w-4 h-4" />
+                  Export
+                </button>
+                {failedTests.length > 0 && (
+                  <button
+                    onClick={reRunFailed}
+                    className="flex items-center gap-2 px-4 py-2 bg-red-500/20 hover:bg-red-500/30 text-red-400 rounded-lg transition-colors"
+                  >
+                    <RefreshCw className="w-4 h-4" />
+                    Re-run Failed
+                  </button>
+                )}
                 <button
                   onClick={reRunExecution}
                   className="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary/90 text-white rounded-lg transition-colors"
@@ -346,7 +346,7 @@ export default function ReportDetailPage() {
             </div>
           </div>
         )}
-        </main>
+        </div>
       </div>
     </AppLayout>
   );
