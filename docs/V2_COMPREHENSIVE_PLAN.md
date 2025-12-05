@@ -8,9 +8,437 @@
 ## Executive Summary
 
 This plan covers:
-1. **V2 Chat Panel Redesign** - Adaptive flows for GitHub/Paste/Upload
-2. **Agent Testing Platform** - New major feature for AI agent evaluation
-3. **Framework Integrations** - Google ADK, Anthropic SDK, Solace, LangChain, AutoGen, CrewAI
+1. **Global Floating Assistant** - Context-aware AI available on every page
+2. **V2 Chat Panel Redesign** - Adaptive flows for GitHub/Paste/Upload
+3. **Agent Testing Platform** - New major feature for AI agent evaluation
+4. **Framework Integrations** - Google ADK, Anthropic SDK, Solace, LangChain, AutoGen, CrewAI
+
+---
+
+## PART 0: Global Floating Assistant
+
+### Vision
+
+Transform the AI assistant from a page-specific component into a **global floating assistant** that:
+- Is accessible from ANY page in the application
+- Understands current page context automatically
+- Can be collapsed, expanded, or docked to sidebar
+- Persists conversation across page navigation
+
+### Design Inspiration
+
+| App | Implementation | Key Features |
+|-----|----------------|--------------|
+| [Notion AI](https://www.notion.com/help/guides/everything-you-can-do-with-notion-ai) | Floating widget + Sidebar | Context-aware, multiple access points |
+| [GitHub Copilot](https://code.visualstudio.com/docs/copilot/chat/copilot-chat) | Sidebar + Inline | Chat view, inline chat, dockable |
+| Gamma AI | Right sidebar panel | Clean panel, context display |
+
+### Access Points (Like Notion AI)
+
+```
+1. Floating Widget (Bottom-right) - Always visible
+2. Sidebar Panel (Right) - Dockable full panel
+3. Keyboard Shortcut - ⌘/Ctrl + J to toggle
+4. Page-specific integration - Inline on analyze pages
+```
+
+### View Modes
+
+```
+┌────────────────────────────────────────────────────────────────────┐
+│                          MODE 1: COLLAPSED                          │
+│                                                                     │
+│  Any page content...                                    ┌─────────┐│
+│                                                         │ ✨ ORIZON││
+│                                                         │  Ask AI ││
+│                                                         └─────────┘│
+└────────────────────────────────────────────────────────────────────┘
+
+┌────────────────────────────────────────────────────────────────────┐
+│                          MODE 2: FLOATING                           │
+│                                                                     │
+│  Any page content...                         ┌─────────────────────┐│
+│                                              │ ✨ Assistant    ─ ✕ ││
+│                                              ├─────────────────────┤│
+│                                              │ Context: /analyze   ││
+│                                              │ 12 files selected   ││
+│                                              ├─────────────────────┤│
+│                                              │ 🤖 How can I help?  ││
+│                                              │                     ││
+│                                              │ Quick actions:      ││
+│                                              │ • Generate tests    ││
+│                                              │ • Explain code      ││
+│                                              ├─────────────────────┤│
+│                                              │ [Ask anything...]   ││
+│                                              └─────────────────────┘│
+└────────────────────────────────────────────────────────────────────┘
+
+┌────────────────────────────────────────────────────────────────────┐
+│                          MODE 3: SIDEBAR                            │
+│                                                                     │
+│  ┌──────────────────────────────────┬─────────────────────────────┐│
+│  │                                  │ ✨ ORIZON Assistant   ─ ⤢ ✕ ││
+│  │                                  ├─────────────────────────────┤│
+│  │  Page content gets narrower      │                             ││
+│  │  when sidebar is open            │ Context: /projects/123      ││
+│  │                                  │ Project: My App             ││
+│  │                                  │ 5 requirements, 12 tests    ││
+│  │                                  ├─────────────────────────────┤│
+│  │                                  │ 🤖 I see you're viewing     ││
+│  │                                  │ project "My App".           ││
+│  │                                  │                             ││
+│  │                                  │ I can help you:             ││
+│  │                                  │ • Add new requirements      ││
+│  │                                  │ • Generate test cases       ││
+│  │                                  │ • Check coverage gaps       ││
+│  │                                  │ • Export to Jira            ││
+│  │                                  ├─────────────────────────────┤│
+│  │                                  │ [Ask anything...]           ││
+│  └──────────────────────────────────┴─────────────────────────────┘│
+└────────────────────────────────────────────────────────────────────┘
+```
+
+### Context Awareness by Page
+
+| Page | Context Detected | Suggested Actions |
+|------|------------------|-------------------|
+| `/analyze` | Selected files, repo, branch | Generate tests, explain code |
+| `/analyze-v2` | Source type, file count | Generate QA suite, security audit |
+| `/projects/[id]` | Project details, req count | Add requirements, generate tests |
+| `/projects/[id]/tests` | Test cases, coverage | Find gaps, suggest tests |
+| `/execute` | Test selection, framework | Run tests, debug failures |
+| `/reports/[id]` | Test results, failures | Explain failures, suggest fixes |
+| `/dashboard` | Analytics, usage | Summarize activity, recommendations |
+| `/settings` | User preferences | Help with configuration |
+
+### Architecture
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                         ARCHITECTURE                                 │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                     │
+│  ┌─────────────────────────────────────────────────────────────┐   │
+│  │                    AssistantProvider                         │   │
+│  │  (Context at app root - wraps all pages)                    │   │
+│  │                                                             │   │
+│  │  State (Zustand store):                                     │   │
+│  │  - isOpen: boolean                                          │   │
+│  │  - viewMode: 'collapsed' | 'floating' | 'sidebar'          │   │
+│  │  - messages: Message[]                                      │   │
+│  │  - pageContext: { path, data }                             │   │
+│  │  - settings: { position, theme, history }                  │   │
+│  │                                                             │   │
+│  │  Actions:                                                   │   │
+│  │  - toggle(), setViewMode(), sendMessage()                  │   │
+│  │  - setPageContext(), clearHistory()                        │   │
+│  └─────────────────────────────────────────────────────────────┘   │
+│                              │                                      │
+│                              ▼                                      │
+│  ┌─────────────────────────────────────────────────────────────┐   │
+│  │                    FloatingAssistant                         │   │
+│  │  (Rendered at app root, position: fixed)                    │   │
+│  │                                                             │   │
+│  │  Components:                                                │   │
+│  │  - CollapsedButton (floating trigger)                      │   │
+│  │  - FloatingPanel (expandable chat)                         │   │
+│  │  - SidebarPanel (docked version)                           │   │
+│  │  - ContextBar (shows page context)                         │   │
+│  │  - ChatMessages (conversation)                             │   │
+│  │  - ChatInput (with commands)                               │   │
+│  └─────────────────────────────────────────────────────────────┘   │
+│                              │                                      │
+│                              ▼                                      │
+│  ┌─────────────────────────────────────────────────────────────┐   │
+│  │                    usePageContext hook                       │   │
+│  │  (Used by each page to provide context)                     │   │
+│  │                                                             │   │
+│  │  // In /analyze page:                                       │   │
+│  │  usePageContext({                                           │   │
+│  │    page: 'analyze',                                         │   │
+│  │    data: { selectedFiles, repo, branch, config }           │   │
+│  │  });                                                        │   │
+│  │                                                             │   │
+│  │  // In /projects/[id] page:                                 │   │
+│  │  usePageContext({                                           │   │
+│  │    page: 'project',                                         │   │
+│  │    data: { project, requirements, tests }                  │   │
+│  │  });                                                        │   │
+│  └─────────────────────────────────────────────────────────────┘   │
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+### Implementation Files
+
+```
+app/
+├── providers/
+│   └── AssistantProvider.jsx      # Global context provider
+│
+├── stores/
+│   └── assistantStore.js          # Zustand store for assistant state
+│
+├── components/
+│   └── assistant/
+│       ├── FloatingAssistant.jsx  # Main floating component
+│       ├── CollapsedButton.jsx    # Minimized trigger button
+│       ├── FloatingPanel.jsx      # Floating chat window
+│       ├── SidebarPanel.jsx       # Docked sidebar version
+│       ├── ContextBar.jsx         # Page context display
+│       ├── ChatMessages.jsx       # Message list
+│       ├── ChatInput.jsx          # Input with commands
+│       ├── QuickActions.jsx       # Context-aware suggestions
+│       └── AssistantSettings.jsx  # View mode, theme, etc.
+│
+├── hooks/
+│   ├── useAssistant.js            # Hook to interact with assistant
+│   └── usePageContext.js          # Hook for pages to provide context
+│
+└── layout.js                       # Wrap app with AssistantProvider
+```
+
+### Zustand Store
+
+```javascript
+// stores/assistantStore.js
+import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
+
+export const useAssistantStore = create(
+  persist(
+    (set, get) => ({
+      // View state
+      isOpen: false,
+      viewMode: 'collapsed', // 'collapsed' | 'floating' | 'sidebar'
+
+      // Chat state
+      messages: [],
+      isTyping: false,
+
+      // Context
+      pageContext: null,
+
+      // Settings
+      settings: {
+        position: 'bottom-right', // 'bottom-right' | 'bottom-left'
+        saveHistory: false,
+        includeContext: true,
+      },
+
+      // Actions
+      toggle: () => set(state => ({ isOpen: !state.isOpen })),
+
+      setViewMode: (mode) => set({ viewMode: mode }),
+
+      setPageContext: (context) => set({ pageContext: context }),
+
+      addMessage: (message) => set(state => ({
+        messages: [...state.messages, { ...message, id: Date.now() }]
+      })),
+
+      clearMessages: () => set({ messages: [] }),
+
+      updateSettings: (newSettings) => set(state => ({
+        settings: { ...state.settings, ...newSettings }
+      })),
+    }),
+    {
+      name: 'orizon-assistant',
+      partialize: (state) => ({
+        viewMode: state.viewMode,
+        settings: state.settings,
+        messages: state.settings.saveHistory ? state.messages : [],
+      }),
+    }
+  )
+);
+```
+
+### Keyboard Shortcuts
+
+| Shortcut | Action |
+|----------|--------|
+| `⌘/Ctrl + J` | Toggle assistant |
+| `⌘/Ctrl + Shift + J` | Open in sidebar mode |
+| `Escape` | Close/minimize assistant |
+| `⌘/Ctrl + K` | Focus chat input |
+
+### Page Context Hook Usage
+
+```javascript
+// app/analyze/page.js
+import { usePageContext } from '@/app/hooks/usePageContext';
+
+export default function AnalyzePage() {
+  const { selectedFiles, selectedRepo } = useRepositories();
+
+  // Provide context to global assistant
+  usePageContext({
+    page: 'analyze',
+    title: 'Code Analysis',
+    data: {
+      hasSource: selectedFiles.length > 0,
+      sourceType: 'github',
+      repo: selectedRepo?.name,
+      fileCount: selectedFiles.length,
+      files: selectedFiles.slice(0, 5), // First 5 for context
+    },
+    suggestedActions: [
+      { id: 'generate-tests', label: 'Generate tests for selected files' },
+      { id: 'explain-code', label: 'Explain this codebase' },
+      { id: 'security-audit', label: 'Run security audit' },
+    ]
+  });
+
+  // ... rest of page
+}
+```
+
+### Floating Panel Component
+
+```jsx
+// components/assistant/FloatingPanel.jsx
+'use client';
+
+import { useAssistantStore } from '@/app/stores/assistantStore';
+import { X, Maximize2, Minimize2 } from 'lucide-react';
+import ContextBar from './ContextBar';
+import ChatMessages from './ChatMessages';
+import ChatInput from './ChatInput';
+import QuickActions from './QuickActions';
+
+export default function FloatingPanel() {
+  const { isOpen, viewMode, toggle, setViewMode, pageContext } = useAssistantStore();
+
+  if (!isOpen || viewMode !== 'floating') return null;
+
+  return (
+    <div className="fixed bottom-20 right-4 w-[380px] h-[500px]
+                    bg-surface-dark border border-white/10 rounded-2xl
+                    shadow-2xl flex flex-col z-50
+                    animate-in slide-in-from-bottom-4 duration-200">
+      {/* Header */}
+      <div className="flex items-center justify-between px-4 py-3 border-b border-white/10">
+        <div className="flex items-center gap-2">
+          <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-primary to-cyan-500
+                          flex items-center justify-center">
+            <Sparkles className="w-3.5 h-3.5 text-white" />
+          </div>
+          <span className="text-sm font-medium text-white">ORIZON Assistant</span>
+        </div>
+        <div className="flex items-center gap-1">
+          <button
+            onClick={() => setViewMode('sidebar')}
+            className="p-1.5 hover:bg-white/5 rounded text-text-secondary"
+            title="Expand to sidebar"
+          >
+            <Maximize2 className="w-4 h-4" />
+          </button>
+          <button
+            onClick={toggle}
+            className="p-1.5 hover:bg-white/5 rounded text-text-secondary"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      </div>
+
+      {/* Context Bar */}
+      {pageContext && <ContextBar context={pageContext} />}
+
+      {/* Messages */}
+      <div className="flex-1 overflow-y-auto">
+        <ChatMessages />
+        <QuickActions actions={pageContext?.suggestedActions} />
+      </div>
+
+      {/* Input */}
+      <ChatInput />
+    </div>
+  );
+}
+```
+
+### Collapsed Button Component
+
+```jsx
+// components/assistant/CollapsedButton.jsx
+'use client';
+
+import { useAssistantStore } from '@/app/stores/assistantStore';
+import { Sparkles, MessageSquare } from 'lucide-react';
+
+export default function CollapsedButton() {
+  const { isOpen, viewMode, toggle, messages } = useAssistantStore();
+
+  // Don't show if already open in floating/sidebar mode
+  if (isOpen && viewMode !== 'collapsed') return null;
+
+  const unreadCount = messages.filter(m => !m.read).length;
+
+  return (
+    <button
+      onClick={toggle}
+      className="fixed bottom-4 right-4 w-14 h-14
+                 bg-gradient-to-br from-primary to-cyan-500
+                 rounded-full shadow-lg shadow-primary/25
+                 flex items-center justify-center
+                 hover:scale-105 transition-transform z-50
+                 group"
+    >
+      <Sparkles className="w-6 h-6 text-white group-hover:hidden" />
+      <MessageSquare className="w-6 h-6 text-white hidden group-hover:block" />
+
+      {unreadCount > 0 && (
+        <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500
+                         rounded-full text-[10px] text-white font-bold
+                         flex items-center justify-center">
+          {unreadCount}
+        </span>
+      )}
+
+      {/* Tooltip */}
+      <span className="absolute right-16 bg-bg-dark px-2 py-1 rounded text-xs text-white
+                       whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity">
+        Ask ORIZON AI <kbd className="ml-1 px-1 bg-white/10 rounded">⌘J</kbd>
+      </span>
+    </button>
+  );
+}
+```
+
+### Integration with AppLayout
+
+```jsx
+// app/layout.js or app/components/layout/AppLayout.jsx
+import { AssistantProvider } from '@/app/providers/AssistantProvider';
+import FloatingAssistant from '@/app/components/assistant/FloatingAssistant';
+
+export default function RootLayout({ children }) {
+  return (
+    <html>
+      <body>
+        <AssistantProvider>
+          {children}
+          <FloatingAssistant />
+        </AssistantProvider>
+      </body>
+    </html>
+  );
+}
+```
+
+### Benefits of Global Floating Assistant
+
+| Benefit | Description |
+|---------|-------------|
+| **Persistent Context** | Conversation continues across page navigation |
+| **Universal Access** | AI help available from any page |
+| **Context-Aware** | Understands current page and data |
+| **Non-Intrusive** | Collapsed by default, user controls visibility |
+| **Flexible** | Switch between floating, sidebar, or collapsed |
+| **Consistent UX** | Same interface pattern everywhere |
 
 ---
 
@@ -590,13 +1018,30 @@ export class CrewAIAdapter {
 
 ## PART 5: Implementation Roadmap
 
-### Phase 1: V2 Chat Improvements (Current Sprint)
+### Phase 0: Global Floating Assistant (Foundation)
+| Task | Priority | Effort |
+|------|----------|--------|
+| Install Zustand for state management | P0 | 0.5h |
+| Create `assistantStore.js` | P0 | 2h |
+| Create `AssistantProvider.jsx` | P0 | 1h |
+| Build `CollapsedButton.jsx` (floating trigger) | P0 | 2h |
+| Build `FloatingPanel.jsx` (chat window) | P0 | 4h |
+| Build `SidebarPanel.jsx` (docked version) | P1 | 3h |
+| Build `ContextBar.jsx` (page context display) | P1 | 2h |
+| Create `usePageContext.js` hook | P0 | 2h |
+| Integrate with `AppLayout.jsx` | P0 | 1h |
+| Add keyboard shortcuts (⌘J, Escape) | P1 | 2h |
+| **Subtotal** | | **~20h** |
+
+### Phase 1: V2 Chat Improvements
 | Task | Priority | Effort |
 |------|----------|--------|
 | Fix P0 issues (reset, steps, navigation) | P0 | 4h |
 | Implement adaptive chat flows | P1 | 6h |
 | Add context bar with source info | P1 | 2h |
 | Chat history opt-in | P2 | 4h |
+| Integrate V2 with global assistant | P1 | 3h |
+| **Subtotal** | | **~19h** |
 
 ### Phase 2: Agent Testing Foundation
 | Task | Priority | Effort |
