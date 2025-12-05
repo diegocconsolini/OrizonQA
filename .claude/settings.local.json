@@ -47,7 +47,8 @@
       "Bash(npm install:*)",
       "Bash(docker-compose ps:*)",
       "Bash(grep:*)",
-      "Bash(vercel --prod --yes:*)"
+      "Bash(vercel --prod --yes:*)",
+      "Bash(git merge-base:*)"
     ],
     "deny": [],
     "ask": []
