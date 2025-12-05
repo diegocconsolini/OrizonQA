@@ -22,7 +22,7 @@ import { useEffect } from 'react';
 import AppLayout from '@/app/components/layout/AppLayout';
 import { TodoList } from '@/app/components/todos';
 import { useTodos } from '@/app/hooks/useTodos';
-import { Loader2 } from 'lucide-react';
+import { Loader2, CheckSquare } from 'lucide-react';
 
 export default function TodosPage() {
   const { data: session, status } = useSession();
@@ -69,13 +69,21 @@ export default function TodosPage() {
   return (
     <AppLayout>
       <div className="w-full">
-        {/* Page Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-white mb-2">Todos</h1>
-          <p className="text-text-secondary-dark">
-            Keep track of your tasks. Your todos persist across sessions.
-          </p>
-        </div>
+        <main className="p-4 md:p-6 lg:p-8">
+          {/* Page Header */}
+          <div className="flex items-start justify-between mb-8">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 bg-gradient-to-br from-primary to-cyan-500 rounded-xl flex items-center justify-center">
+                <CheckSquare className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <h1 className="text-2xl font-bold text-white font-primary">Todos</h1>
+                <p className="text-text-secondary-dark font-secondary mt-1">
+                  Keep track of your tasks. Your todos persist across sessions.
+                </p>
+              </div>
+            </div>
+          </div>
 
         {/* Todo List */}
         <TodoList
@@ -91,6 +99,7 @@ export default function TodosPage() {
           onFilterChange={updateFilters}
           onClearFilters={clearFilters}
         />
+        </main>
       </div>
     </AppLayout>
   );

@@ -156,20 +156,18 @@ function ExecutePageContent() {
   return (
     <AppLayout>
       <div className="w-full">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-4">
-            <button
-              onClick={() => router.back()}
-              className="p-2 text-slate-400 hover:text-white hover:bg-slate-700 rounded-lg transition-colors"
-            >
-              <ArrowLeft className="w-5 h-5" />
-            </button>
-            <div>
-              <h1 className="text-2xl font-bold text-white">Execute Tests</h1>
-              <p className="text-slate-400">Configure and run your test suite</p>
+        <main className="p-4 md:p-6 lg:p-8">
+          {/* Header */}
+          <div className="flex items-start justify-between mb-8">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 bg-gradient-to-br from-primary to-cyan-500 rounded-xl flex items-center justify-center">
+                <Play className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <h1 className="text-2xl font-bold text-white font-primary">Execute Tests</h1>
+                <p className="text-text-secondary-dark font-secondary mt-1">Configure and run your test suite</p>
+              </div>
             </div>
-          </div>
 
           {/* Start Button */}
           <button
@@ -322,6 +320,7 @@ function ExecutePageContent() {
             </div>
           </>
         )}
+        </main>
       </div>
     </AppLayout>
   );

@@ -151,26 +151,29 @@ export default function SharesPage() {
   return (
     <AppLayout>
       <div className="w-full">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-8">
-          <div className="flex items-center gap-4">
-            <Share2 className="w-8 h-8 text-primary" />
-            <div>
-              <h1 className="text-2xl font-bold text-white">Shared Links</h1>
-              <p className="text-text-secondary-dark">Manage your shared analyses</p>
+        <main className="p-4 md:p-6 lg:p-8">
+          {/* Header */}
+          <div className="flex items-start justify-between mb-8">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 bg-gradient-to-br from-primary to-cyan-500 rounded-xl flex items-center justify-center">
+                <Share2 className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <h1 className="text-2xl font-bold text-white font-primary">Shared Links</h1>
+                <p className="text-text-secondary-dark font-secondary mt-1">Manage your shared analyses</p>
+              </div>
+            </div>
+            <div className="flex gap-4">
+              <div className="text-center px-4 py-2 bg-slate-800 rounded-lg">
+                <p className="text-2xl font-bold text-white">{stats.activeCount}</p>
+                <p className="text-xs text-slate-400">Active</p>
+              </div>
+              <div className="text-center px-4 py-2 bg-slate-800 rounded-lg">
+                <p className="text-2xl font-bold text-white">{stats.total}</p>
+                <p className="text-xs text-slate-400">Total</p>
+              </div>
             </div>
           </div>
-          <div className="flex gap-4">
-            <div className="text-center px-4 py-2 bg-slate-800 rounded-lg">
-              <p className="text-2xl font-bold text-white">{stats.activeCount}</p>
-              <p className="text-xs text-slate-400">Active</p>
-            </div>
-            <div className="text-center px-4 py-2 bg-slate-800 rounded-lg">
-              <p className="text-2xl font-bold text-white">{stats.total}</p>
-              <p className="text-xs text-slate-400">Total</p>
-            </div>
-          </div>
-        </div>
 
         {error && (
           <div className="mb-6 p-4 bg-red-500/10 border border-red-500/30 rounded-lg text-red-400">
@@ -318,6 +321,7 @@ export default function SharesPage() {
             ))}
           </div>
         )}
+        </main>
       </div>
     </AppLayout>
   );
