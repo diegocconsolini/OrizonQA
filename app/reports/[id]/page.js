@@ -343,6 +343,7 @@ export default function ReportDetailPage() {
             </div>
           </div>
         )}
+        </main>
       </div>
     </AppLayout>
   );
