@@ -15,6 +15,13 @@ export const useAssistantStore = create(
       // Context from current page
       pageContext: null,
 
+      // API credentials (not persisted for security)
+      apiKey: null,
+      hasApiKey: false,
+
+      // Page actions (for tool execution)
+      pageActions: null,
+
       // Settings
       settings: {
         position: 'bottom-right', // 'bottom-right' | 'bottom-left'
@@ -40,6 +47,10 @@ export const useAssistantStore = create(
       setPageContext: (context) => set({ pageContext: context }),
 
       clearPageContext: () => set({ pageContext: null }),
+
+      setApiKey: (key) => set({ apiKey: key, hasApiKey: !!key }),
+
+      setPageActions: (actions) => set({ pageActions: actions }),
 
       addMessage: (message) => set(state => ({
         messages: [...state.messages, {

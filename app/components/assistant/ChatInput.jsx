@@ -1,14 +1,14 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { Send, Loader2 } from 'lucide-react';
+import { Send, Loader2, AlertCircle } from 'lucide-react';
 import { useAssistantStore } from '@/app/stores/assistantStore';
 
 export default function ChatInput({ onSend, disabled = false }) {
   const [input, setInput] = useState('');
   const [isSending, setIsSending] = useState(false);
   const inputRef = useRef(null);
-  const { addMessage, setIsTyping, pageContext } = useAssistantStore();
+  const { addMessage, setIsTyping, pageContext, apiKey, hasApiKey } = useAssistantStore();
 
   // Focus input when component mounts or assistant opens
   useEffect(() => {
@@ -20,6 +20,16 @@ export default function ChatInput({ onSend, disabled = false }) {
 
     const trimmedInput = input.trim();
     if (!trimmedInput || isSending || disabled) return;
+
+    // Check for API key
+    if (!hasApiKey) {
+      addMessage({
+        role: 'assistant',
+        content: 'Please add your Claude API key in Settings to use the assistant.',
+        read: false
+      });
+      return;
+    }
 
     // Add user message
     addMessage({
@@ -35,20 +45,22 @@ export default function ChatInput({ onSend, disabled = false }) {
     try {
       // Call the onSend callback if provided
       if (onSend) {
-        await onSend(trimmedInput, pageContext);
+        await onSend(trimmedInput, pageContext, apiKey);
       } else {
-        // Default: call the chat API
+        // Default: call the chat API with apiKey
         const response = await fetch('/api/chat-assistant', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             message: trimmedInput,
-            context: pageContext
+            context: pageContext || {},
+            apiKey: apiKey
           })
         });
 
         if (!response.ok) {
-          throw new Error('Failed to get response');
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(errorData.error || 'Failed to get response');
         }
 
         const data = await response.json();
@@ -57,6 +69,8 @@ export default function ChatInput({ onSend, disabled = false }) {
           role: 'assistant',
           content: data.response || data.message,
           suggestions: data.suggestions,
+          toolCalls: data.toolCalls,
+          usage: data.usage,
           read: false
         });
       }
@@ -64,7 +78,9 @@ export default function ChatInput({ onSend, disabled = false }) {
       console.error('Chat error:', error);
       addMessage({
         role: 'assistant',
-        content: 'Sorry, I encountered an error. Please try again.',
+        content: error.message === 'Invalid API key'
+          ? 'Invalid API key. Please check your settings.'
+          : 'Sorry, I encountered an error. Please try again.',
         read: false
       });
     } finally {
@@ -113,14 +129,23 @@ export default function ChatInput({ onSend, disabled = false }) {
         </div>
       </form>
 
-      {/* Hint */}
+      {/* Hint / Status */}
       <div className="flex items-center justify-between mt-2 text-[10px] text-text-secondary">
-        <span>
-          Press <kbd className="px-1 bg-white/10 rounded">Enter</kbd> to send
-        </span>
-        <span>
-          <kbd className="px-1 bg-white/10 rounded">Shift+Enter</kbd> for newline
-        </span>
+        {hasApiKey ? (
+          <>
+            <span>
+              Press <kbd className="px-1 bg-white/10 rounded">Enter</kbd> to send
+            </span>
+            <span>
+              <kbd className="px-1 bg-white/10 rounded">Shift+Enter</kbd> for newline
+            </span>
+          </>
+        ) : (
+          <span className="flex items-center gap-1 text-amber-400">
+            <AlertCircle className="w-3 h-3" />
+            Add API key in Settings to chat
+          </span>
+        )}
       </div>
     </div>
   );

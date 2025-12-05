@@ -1,14 +1,46 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import { useSession } from 'next-auth/react';
 import { useAssistantStore } from '@/app/stores/assistantStore';
 
 export function AssistantProvider({ children }) {
-  const { toggle, setViewMode, close } = useAssistantStore();
+  const { data: session, status: sessionStatus } = useSession();
+  const { toggle, setViewMode, close, setApiKey } = useAssistantStore();
+  const [settingsLoaded, setSettingsLoaded] = useState(false);
+
+  // Load user settings (API key) on mount
+  useEffect(() => {
+    async function loadUserSettings() {
+      if (sessionStatus === 'loading' || !session || settingsLoaded) return;
+
+      try {
+        const response = await fetch('/api/user/settings');
+        if (response.ok) {
+          const data = await response.json();
+          if (data.claudeApiKey) {
+            setApiKey(data.claudeApiKey);
+          }
+        }
+      } catch (error) {
+        console.error('Error loading user settings for assistant:', error);
+      } finally {
+        setSettingsLoaded(true);
+      }
+    }
+
+    loadUserSettings();
+  }, [session, sessionStatus, settingsLoaded, setApiKey]);
 
   // Global keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = (e) => {
+      // Don't trigger if user is typing in an input/textarea
+      const activeElement = document.activeElement;
+      const isTyping = activeElement?.tagName === 'INPUT' ||
+                       activeElement?.tagName === 'TEXTAREA' ||
+                       activeElement?.isContentEditable;
+
       // Cmd/Ctrl + J - Toggle assistant
       if ((e.metaKey || e.ctrlKey) && e.key === 'j' && !e.shiftKey) {
         e.preventDefault();
@@ -21,8 +53,8 @@ export function AssistantProvider({ children }) {
         setViewMode('sidebar');
       }
 
-      // Escape - Close assistant
-      if (e.key === 'Escape') {
+      // Escape - Close assistant (only if not typing)
+      if (e.key === 'Escape' && !isTyping) {
         close();
       }
     };
