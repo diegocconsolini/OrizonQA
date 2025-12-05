@@ -32,6 +32,9 @@ import useFileUpload from '@/app/hooks/useFileUpload';
 import useRepositories from '@/app/hooks/useRepositories';
 import useIndexedDB from '@/app/hooks/useIndexedDB';
 
+// Assistant integration
+import { useAssistantStore } from '@/app/stores/assistantStore';
+
 function AnalyzeV2Content() {
   const { data: session, status: sessionStatus } = useSession();
   const userId = session?.user?.id || 'anonymous';
@@ -222,6 +225,91 @@ function AnalyzeV2Content() {
   const handleReset = () => {
     resetStream();
   };
+
+  // Get assistant store actions
+  const { setPageContext, setPageActions } = useAssistantStore();
+
+  // Sync page context with assistant store
+  useEffect(() => {
+    const context = {
+      currentPage: '/analyze-v2',
+      selectedRepo,
+      selectedBranch,
+      selectedFiles,
+      fileTree,
+      config,
+      isAnalyzing: streamIsAnalyzing,
+      isComplete: streamIsComplete,
+      progress: streamProgress,
+      hasApiKey,
+      canAnalyze,
+    };
+    setPageContext(context);
+  }, [
+    selectedRepo,
+    selectedBranch,
+    selectedFiles,
+    fileTree,
+    config,
+    streamIsAnalyzing,
+    streamIsComplete,
+    streamProgress,
+    hasApiKey,
+    canAnalyze,
+    setPageContext,
+  ]);
+
+  // Provide page actions to assistant for tool execution
+  useEffect(() => {
+    const actions = {
+      toggleFileSelection,
+      batchToggleFiles,
+      selectAllCodeFiles,
+      clearSelection,
+      setConfig,
+      onAnalyze: handleAnalyze,
+      onCancel: cancelStreamAnalysis,
+      onReset: handleReset,
+      getState: () => ({
+        selectedRepo,
+        selectedBranch,
+        selectedFiles,
+        fileTree,
+        config,
+        isAnalyzing: streamIsAnalyzing,
+        isComplete: streamIsComplete,
+        progress: streamProgress,
+        results: streamResults,
+        hasApiKey,
+        canAnalyze,
+      }),
+    };
+    setPageActions(actions);
+
+    // Cleanup on unmount
+    return () => setPageActions(null);
+  }, [
+    toggleFileSelection,
+    batchToggleFiles,
+    selectAllCodeFiles,
+    clearSelection,
+    setConfig,
+    handleAnalyze,
+    cancelStreamAnalysis,
+    handleReset,
+    selectedRepo,
+    selectedBranch,
+    selectedFiles,
+    fileTree,
+    config,
+    streamIsAnalyzing,
+    streamIsComplete,
+    streamProgress,
+    streamResults,
+    hasApiKey,
+    canAnalyze,
+    setPageActions,
+  ]);
 
   return (
     <AppLayout>

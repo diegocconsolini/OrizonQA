@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { Send, Loader2, AlertCircle } from 'lucide-react';
 import { useAssistantStore } from '@/app/stores/assistantStore';
 
@@ -8,7 +8,52 @@ export default function ChatInput({ onSend, disabled = false }) {
   const [input, setInput] = useState('');
   const [isSending, setIsSending] = useState(false);
   const inputRef = useRef(null);
-  const { addMessage, setIsTyping, pageContext, apiKey, hasApiKey } = useAssistantStore();
+  const { addMessage, setIsTyping, pageContext, apiKey, hasApiKey, pageActions } = useAssistantStore();
+
+  /**
+   * Execute actions returned by the assistant
+   */
+  const executeActions = useCallback(async (actions) => {
+    if (!actions || !Array.isArray(actions) || actions.length === 0) return;
+    if (!pageActions) {
+      console.warn('Page actions not available - actions cannot be executed');
+      return;
+    }
+
+    for (const action of actions) {
+      try {
+        const { type, payload } = action;
+
+        switch (type) {
+          case 'SELECT_FILE':
+            pageActions.toggleFileSelection?.(payload.path);
+            break;
+          case 'SELECT_FILES_BATCH':
+            await pageActions.batchToggleFiles?.(payload.paths, true);
+            break;
+          case 'CLEAR_SELECTION':
+            pageActions.clearSelection?.();
+            break;
+          case 'UPDATE_CONFIG':
+            pageActions.setConfig?.((prev) => ({ ...prev, ...payload }));
+            break;
+          case 'SELECT_QUICK_ACTION':
+            pageActions.setConfig?.((prev) => ({ ...prev, ...payload.config }));
+            break;
+          case 'START_ANALYSIS':
+            await pageActions.onAnalyze?.();
+            break;
+          case 'CANCEL_ANALYSIS':
+            pageActions.onCancel?.();
+            break;
+          default:
+            console.warn(`Unknown action type: ${type}`);
+        }
+      } catch (error) {
+        console.error(`Failed to execute action ${action.type}:`, error);
+      }
+    }
+  }, [pageActions]);
 
   // Focus input when component mounts or assistant opens
   useEffect(() => {
@@ -65,11 +110,16 @@ export default function ChatInput({ onSend, disabled = false }) {
 
         const data = await response.json();
 
+        // Execute any actions returned by the assistant
+        if (data.actions && data.actions.length > 0) {
+          await executeActions(data.actions);
+        }
+
         addMessage({
           role: 'assistant',
           content: data.response || data.message,
-          suggestions: data.suggestions,
-          toolCalls: data.toolCalls,
+          actions: data.actions,
+          toolResults: data.toolResults,
           usage: data.usage,
           read: false
         });
