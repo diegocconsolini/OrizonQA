@@ -889,48 +889,17 @@ app/
     └── QuickActions.jsx              # Context-aware suggestions
 ```
 
-### Phase 0.5: Interactive Assistant Tools (~28h) 🔄 ACTIVE
-**Tracker**: `docs/ASSISTANT_TOOLS_PLAN.md`
-**Problem**: Assistant can see context but cannot execute actions (select files, change config, etc.)
+### Phase 0.5: Interactive Assistant Tools → SUPERSEDED
+**Note**: This phase has been superseded by the comprehensive **AI Assistant Interactive Tools (Security-First)** implementation above.
 
-| Task | Status |
-|------|--------|
-| **Phase 1: Bug Fixes** | |
-| Fix ChatInput.jsx missing apiKey | ⏳ |
-| Connect V2 page to usePageContext | ⏳ |
-| Test both assistants work | ⏳ |
-| **Phase 2: Rich Context** | |
-| Expand context (file list, actions, config) | ⏳ |
-| **Phase 3: Tool Definitions** | |
-| Create lib/assistantTools/definitions.js | ⏳ |
-| Define secure tool schemas | ⏳ |
-| Add validation functions | ⏳ |
-| **Phase 4: API Integration** | |
-| Update /api/chat-assistant for Claude tools | ⏳ |
-| Implement tool execution loop | ⏳ |
-| **Phase 5: Action Bridge** | |
-| Create useAssistantActions hook | ⏳ |
-| Connect to V2 page state | ⏳ |
-| **Phase 6: Security** | |
-| Add audit logging | ⏳ |
-| Implement rate limiting | ⏳ |
-| Input sanitization | ⏳ |
+The original 18-tool plan has been expanded to **74 tools** with:
+- 6-layer security architecture (input validation, permissions, rate limiting, ownership, audit logging, confirmations)
+- 4 permission levels instead of simple access control
+- Full admin panel for tool management
+- Abuse detection and progressive penalties
+- Comprehensive test suite
 
-#### Tool Categories (18 tools total)
-1. **File Selection** (6): list_files, select_file, select_by_pattern, select_all, clear, get_content
-2. **Configuration** (5): get_config, set_options, set_format, set_framework, set_context
-3. **Analysis** (4): start, cancel, get_status, get_results
-4. **Navigation** (2): get_page, suggest_navigation
-5. **Quick Actions** (2): select_action, list_actions
-
-#### Security Measures
-- All inputs validated against strict JSON schemas
-- Path traversal prevention (no `..`, no absolute paths)
-- Whitelist enum validation
-- Rate limiting per user/tool
-- Audit logging for all tool executions
-- No direct filesystem/database access
-- Session-scoped operations only
+See **"🚨 ACTIVE IMPLEMENTATION: AI Assistant Interactive Tools (Security-First)"** section above for current status.
 
 ---
 
