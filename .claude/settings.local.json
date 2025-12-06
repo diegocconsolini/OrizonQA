@@ -49,7 +49,8 @@
       "Bash(grep:*)",
       "Bash(vercel --prod --yes:*)",
       "Bash(git merge-base:*)",
-      "Skill(example-skills:webapp-testing)"
+      "Skill(example-skills:webapp-testing)",
+      "Bash(npm view:*)"
     ],
     "deny": [],
     "ask": []
