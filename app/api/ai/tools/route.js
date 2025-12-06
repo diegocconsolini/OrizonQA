@@ -7,8 +7,7 @@
  */
 
 import { NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { auth } from '@/lib/auth';
 import { getToolConfigs } from '@/lib/db-ai-assistant';
 import { executeTool } from '@/lib/assistantTools/executor';
 import {
@@ -26,7 +25,7 @@ import { ALL_TOOLS, getToolByName } from '@/lib/assistantTools/definitions';
  */
 export async function GET(request) {
   try {
-    const session = await getServerSession(authOptions);
+    const session = await auth();
     const user = session?.user || null;
 
     // Get tool configs from database (if available)
@@ -96,7 +95,7 @@ export async function POST(request) {
   const startTime = Date.now();
 
   try {
-    const session = await getServerSession(authOptions);
+    const session = await auth();
     const user = session?.user || null;
     const userId = user?.id || 'anonymous';
 
